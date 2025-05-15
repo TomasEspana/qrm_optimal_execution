@@ -1,0 +1,5 @@
+numpy==1.23.5
+pandas==2.2.3
+torch==2.6.0+cu124
+--find-links https://download.pytorch.org/whl/torch/
+wandb==0.19.11
