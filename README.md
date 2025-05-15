@@ -1,6 +1,12 @@
 # qrm_optimal_execution
 
-### 📌 **__Last update (02/05):__** uploaded the file `main_git.ipynb`
+### 📌 **__Last update (16/05):__** uploaded the file `main_git.ipynb`
+
+---
+
+Python files for the QRM simulation and first version of the RL environment.
+
+### 📌 **__Update (02/05):__** uploaded the file `main_git.ipynb`
 
 ---
 
