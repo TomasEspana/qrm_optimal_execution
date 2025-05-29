@@ -1,6 +1,15 @@
 # qrm_optimal_execution
 
-### 📌 \***\*Last update (16/05):\*\*** uploaded `simulate_qrm.py`, `rl_utils.py` and the folder `calibration_data`
+### 📌 \***\*Last update (29/05):\*\*** uploaded `simulate_qrm_numba.py`, `rl_utils_numba.py` and updated the folder `calibration_data`
+
+---
+
+Updated files for the QRM simulation and the RL environment.
+
+- `simulate_qrm_numba.py`: numba decorated functions to speed up the QRM simulation.
+- `rl_utils_numba.py`: full numpy version of the LOB to avoid Python overhead. Implementation of the *RLRunner* class to train and test. Implementation of the benchmark strategies *TWAPAgent*, *FrontLoadAgent* and *BackLoadAgent*.
+
+### 📌 \***\*Update (16/05):\*\*** uploaded `simulate_qrm.py`, `rl_utils.py` and the folder `calibration_data`
 
 ---
 
