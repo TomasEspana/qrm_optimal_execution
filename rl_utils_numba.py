@@ -10,6 +10,7 @@ import pickle
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
 from contextlib import nullcontext
+from collections import defaultdict
 
 from simulate_qrm_numba import IntensityTable, sample_stationary_lob, simulate_QRM_jit, update_LOB
 
@@ -26,7 +27,7 @@ class QueueReactiveMarketSimulator:
         inv_ask: np.ndarray,
         trader_times: np.ndarray,
         max_events: int, 
-        max_events_intra: int = 200
+        max_events_intra: int
     ):
         # core parameters
         self.intensity_table = intensity_table
@@ -113,8 +114,8 @@ class QueueReactiveMarketSimulator:
     def current_ref_price(self):
         return self.p_refs[self.step - 1]
 
-    def current_state(self):
-        return self.states[self.step - 1].copy()
+    def current_state(self, history_size=1):
+        return self.states[self.step - history_size:self.step].copy()
 
     def simulate_step(self):
         """
@@ -129,7 +130,7 @@ class QueueReactiveMarketSimulator:
             self.current_time(),
             self.current_mid_price(),
             self.current_ref_price(),
-            self.current_state(),
+            self.current_state()[0],
             self.intensity_table,
             self.tick, self.theta, self.theta_reinit,
             next_t, self.inv_bid, self.inv_ask, self.max_events_intra
@@ -205,7 +206,9 @@ class MarketEnvironment:
         vol_offset: float,
         vol_std: float,
         max_events: int, 
-        max_events_intra: int
+        max_events_intra: int, 
+        history_size: int, 
+        alpha_ramp: float
     ):
         # — core parameters —
         self.actions = actions
@@ -220,6 +223,8 @@ class MarketEnvironment:
         self.time_horizon      = time_horizon
         self.final_penalty     = final_penalty
         self.risk_aversion     = risk_aversion
+        self.history_size      = history_size
+        self.alpha_ramp        = alpha_ramp
 
         # load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
@@ -278,71 +283,96 @@ class MarketEnvironment:
     def current_ref_price(self):
         return self.simulator.current_ref_price()
     
-    def current_state(self):
-        return self.simulator.current_state()
+    def current_state(self, hist_size=1):
+        return self.simulator.current_state(history_size=hist_size)
 
-    def best_quotes(self):
+    @staticmethod
+    def _best_quotes(st, K, p_ref, tick):
         """
-            Reads the last LOB snapshot and returns 
-            ((bid_price, size, depth, total_bid), (ask_price, size, depth, total_ask))
+            Helper function to compute best quotes from LOB state.
         """
-        st = self.current_state()  # length 2K
-        K  = self.simulator.K
-        p_ref = self.current_ref_price()
-
         # best bid: first i where st[i]>0
         bid_idx = next((i for i in range(K) if st[i]>0), None)
         if bid_idx is None:
             raise ValueError("No best bid")
         size_bid = int(st[bid_idx])
-        price_bid = p_ref - self.tick*(bid_idx + 0.5)
+        price_bid = p_ref - tick*(bid_idx + 0.5)
         total_bid = int(st[:K].sum())
-
+        bid_info = (price_bid, size_bid, bid_idx+1, total_bid)
+    
         # best ask: first j where st[K+j]>0
         ask_idx = next((j for j in range(K) if st[K+j]>0), None)
         if ask_idx is None:
             raise ValueError("No best ask")
         size_ask = int(st[K+ask_idx])
-        price_ask = p_ref + self.tick*(ask_idx + 0.5)
+        price_ask = p_ref + tick*(ask_idx + 0.5)
         total_ask = int(st[K:].sum())
+        ask_info = (price_ask, size_ask, ask_idx+1, total_ask)
 
-        return (price_bid, size_bid, bid_idx+1, total_bid), \
-               (price_ask, size_ask, ask_idx+1, total_ask)
+        return bid_info, ask_info
+
+
+    def best_quotes(self):
+        """
+            Reads the last self.history_size LOB states snapshot and returns 
+            ((bid_price, size, depth, total_bid), (ask_price, size, depth, total_ask))
+        """
+        st = self.current_state(hist_size=self.history_size)[::-1]  # reverse order for most recent first
+        K  = self.simulator.K
+        p_ref = self.current_ref_price()
+        lob_states = np.empty((self.history_size, 2, 2), dtype=object)
+
+        for i in range(self.history_size):
+            bid_info, ask_info = self._best_quotes(st[i], K, p_ref, self.tick)
+            lob_states[i][0][:2] = bid_info[:2]  # (price_bid, size_bid)
+            lob_states[i][1][:2] = ask_info[:2]  # (price_ask, size_ask)
+
+        return lob_states.reshape(-1).tolist()
 
     def get_state(self):
-
-        (bid_price, bid_size, *_), (ask_price, ask_size, *_) = self.best_quotes()
+        """ 
+            Format: [
+                current_inventory, 
+                time,
+                'best_bid_price_1',
+                'best_bid_size_1':  ask_size,
+                'best_ask_price_1':  bid_size, 
+                'best_ask_size_1': bid_price, 
+                'best_bid_price_2', etc...
+            ]
+        """
+        lob_states = self.best_quotes()
         
         if self.simulator.next_trader_time_idx < len(self.trader_times):
             nxt = self.trader_times[self.simulator.next_trader_time_idx]
         else: # boundary case 
             nxt = self.trader_times[-1] + self.step_trader_times
+        
+        return [self.current_inventory, nxt] + lob_states
+        
 
-        return {
-            'inventory': self.current_inventory,
-            'time':      nxt,
-            'best_ask_price_1': ask_price,
-            'best_ask_size_1':  ask_size,
-            'best_bid_size_1':  bid_size
-        }
-
-    def state_to_vector(self, st: dict):
+    def state_to_vector(self, st):
         """
             Normalization for neural network input.
         """
-        inv  = st['inventory']
-        t    = st['time']
-        ap   = st['best_ask_price_1']
-        asz  = st['best_ask_size_1']
-        bsz  = st['best_bid_size_1']
+        st_n = np.empty_like(st, dtype=np.float64)
+        st = np.array(st)
+        st_n[0] = 2 * st[0] / self.initial_inventory - 1  # inventory
+        st_n[1] = 2 * st[1] / self.time_horizon - 1  # time
+        st_n[2::2] = (st[2::2] - self.arrival_price - self.price_offset) / self.price_std  # prices
+        st_n[3::2] = (st[3::2] - self.vol_offset) / self.vol_std  # volumes
 
-        inv_n = 2*inv / self.initial_inventory - 1
-        t_n   = 2*t / self.time_horizon - 1
-        ap_n  = (ap - self.arrival_price - self.price_offset) / self.price_std
-        asz_n = (asz - self.vol_offset) / self.vol_std
-        bsz_n = (bsz - self.vol_offset) / self.vol_std
+        return st_n
 
-        return np.array([inv_n, t_n, ap_n, asz_n, bsz_n], dtype=np.float64)
+    @staticmethod
+    def exponential_ramp(t, time_horizon, alpha, max_penalty_intra_ep=1):
+        """
+            Exponential ramp function for the penalty term. 
+            Finishes at `max_penalty_intra_ep` (default 1) at time `time_horizon`.
+        """
+        numerator = np.exp(alpha * t / time_horizon) - 1
+        denominator = np.exp(alpha) - 1
+        return max_penalty_intra_ep * numerator / denominator
 
     def step(self, action: int):
         """
@@ -350,7 +380,7 @@ class MarketEnvironment:
             then simulate QRM to the next trader time, compute reward/break.
         """
         nxt     = self.trader_times[self.simulator.next_trader_time_idx]
-        st      = self.current_state()
+        st      = self.current_state()[0]
         p_ref   = self.current_ref_price()
         K       = self.simulator.K
 
@@ -381,7 +411,7 @@ class MarketEnvironment:
         self.final_is  += reward
 
         # risk aversion term
-        rat = self.risk_aversion * self.current_inventory / (self.time_horizon + 2 - nxt)
+        rat = self.risk_aversion * self.current_inventory * self.exponential_ramp(nxt, self.time_horizon, self.alpha_ramp)
         reward -= rat
         self.risk_aversion_term = rat
 
@@ -421,7 +451,7 @@ class MarketEnvironment:
             reward -= self.final_penalty * self.current_inventory
             self.simulator.next_trader_time_idx += 1
 
-        return self.get_state(), reward, done
+        return self.get_state(), reward, done, q
 
 
 Transition = namedtuple('Transition', ('state', 'action', 'reward', 'next_state', 'done'))
@@ -438,7 +468,13 @@ class ReplayMemory:
         self.memory.append(Transition(*args))
     
     def sample(self, batch_size):
-        indices = np.random.choice(len(self.memory), size=batch_size, replace=False)
+        """
+            Always sample the latest transition and a batch of previous transitions.
+        """
+        latest_transition = self.memory[-1]
+        indices = np.random.choice(len(self.memory)-1, size=batch_size-1, replace=False)
+        batch = [self.memory[i] for i in indices]
+        batch.append(latest_transition)
         return [self.memory[i] for i in indices]
     
     def __len__(self):
@@ -467,27 +503,27 @@ class DQNNetwork(nn.Module):
         #     nn.Linear(20, action_dim)
         # )
         ### --- NN 1 ---- 
-        # self.fc = nn.Sequential(
-        #     nn.Linear(state_dim, 128),
-        #     nn.ReLU(),
-        #     nn.Linear(128, 128),
-        #     nn.ReLU(),
-        #     nn.Linear(128, action_dim)
-        # )
-        ### --- NN 2 ----
         self.fc = nn.Sequential(
             nn.Linear(state_dim, 128),
             nn.ReLU(),
             nn.Linear(128, 128),
             nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, action_dim)
+            nn.Linear(128, action_dim)
         )
+        ### --- NN 2 ----
+        # self.fc = nn.Sequential(
+        #     nn.Linear(state_dim, 128),
+        #     nn.ReLU(),
+        #     nn.Linear(128, 128),
+        #     nn.ReLU(),
+        #     nn.Linear(128, 128),
+        #     nn.ReLU(),
+        #     nn.Linear(128, 64),
+        #     nn.ReLU(),
+        #     nn.Linear(64, 32),
+        #     nn.ReLU(),
+        #     nn.Linear(32, action_dim)
+        # )
     
     def forward(self, x):
         return self.fc(x)
@@ -593,9 +629,8 @@ class DDQNAgent:
         """
             Sample a batch of transitions from the replay memory and update the policy network.
         """
-
         if len(self.memory) < self.batch_size:
-            return
+            return {}
         
         transitions = self.memory.sample(self.batch_size)
         batch = Transition(*zip(*transitions))
@@ -606,7 +641,8 @@ class DDQNAgent:
         next_state_batch = torch.tensor(np.array(batch.next_state), dtype=torch.float32, device=self.device)
         done_batch = torch.tensor(batch.done, dtype=torch.float32, device=self.device).unsqueeze(1)
         
-        current_q_values = self.policy_net(state_batch).gather(1, action_batch)
+        all_q_values = self.policy_net(state_batch)
+        current_q_values = all_q_values.gather(1, action_batch)
         
         with torch.no_grad():
             next_actions = self.policy_net(next_state_batch).argmax(dim=1, keepdim=True)
@@ -616,7 +652,37 @@ class DDQNAgent:
         loss = self.loss_fn(current_q_values, target_q_values)
         self.optimizer.zero_grad()
         loss.backward()
+
+        # Log total gradient norm
+        total_norm = torch.norm(
+            torch.stack([param.grad.norm() for param in self.policy_net.parameters() if param.grad is not None])
+        )
+
+        wandb_dic = {
+            "Loss - TD Error": loss.item(),
+            "Policy Q Values - Mean": all_q_values.mean().item(),
+            "Policy Q Values - Std": all_q_values.std().item(),
+            "grad_norm/total": total_norm.item()
+        }
+        for i in range(self.action_dim):
+            wandb_dic[f"Policy Q Value - Action {i} - Mean"] = all_q_values[:, i].mean().item()
+            wandb_dic[f"Policy Q Value - Action {i} - Std"] = all_q_values[:, i].std().item()
+
+        # # Log gradient norm for each layer
+        # layer_grads = defaultdict(list)
+        # for name, param in self.policy_net.named_parameters():
+        #     if param.grad is not None:
+        #         layer_name = name.split('.')[0]  # e.g., 'fc1' from 'fc1.weight'
+        #         layer_grads[layer_name].append(param.grad.view(-1))
+
+        # for layer, grads in layer_grads.items():
+        #     total_norm = torch.norm(torch.cat(grads)).item()
+        #     wandb.log({f"grad_norm/{layer}": total_norm})
+
+        ### --
         self.optimizer.step()
+
+        return wandb_dic
 
 
     def update_target_network(self):
@@ -680,324 +746,18 @@ def load_model(agent, path, test_mode=False):
             return 
     else:
         if not path:
-            raise ValueError("Must provide load_model_path in test mode.")
-        checkpoint = torch.load(path, weights_only=False)
-        agent.policy_net.load_state_dict(checkpoint['policy_net'])
-        agent.target_net.load_state_dict(checkpoint['policy_net'])  
-        agent.optimizer = None
-        agent.policy_net.eval()
-        agent.target_net.eval()
-        agent.epsilon = 0.0
-
+            return
+        else:
+            checkpoint = torch.load(path, weights_only=False)
+            agent.policy_net.load_state_dict(checkpoint['policy_net'])
+            agent.target_net.load_state_dict(checkpoint['policy_net'])  
+            agent.optimizer = None
+            agent.policy_net.eval()
+            agent.target_net.eval()
+            agent.epsilon = 0.0
 
 
 exploration_mode_dic = {'rl': int(0), 'front_load': int(1), 'back_load': int(2), 'twap': int(3)}
-
-def train(episodes, risk_aversion=1, proba_0=0.2):
-
-    ### use: train(episodes=10000, risk_aversion=0, proba_0=1-0.025)
-    
-    # === Simulation Parameters ===
-    time_horizon = 300
-    initial_inventory = 75
-    actions = [0, 1, 2, 3, 4]
-    proba_0 = proba_0
-    max_events = 20000
-    max_events_intra = 200
-
-    price_offset = 0.
-    price_std = 0.1
-    vol_offset = 5      # 4 for asym
-    vol_std = 4         # 3.5 for sym
-
-    theta = 0.6
-    theta_reinit = 0.85
-    tick = 0.01
-    arrival_price = 100.005
-    trader_times = np.arange(0, int(time_horizon)+1, 1.0)
-    final_penalty = 1.0
-    risk_aversion = risk_aversion
-
-    # === Others ===
-    state_dim = 5
-    action_dim = len(actions)
-    logging_every = 5
-    rl_agent_type = 'ddqn'
-
-    # === Epsilons ===
-    epsilon_start = 1.0 
-    epsilon_decay = 0.995
-    epsilon_end = 0.01
-
-    # === NN hyper parameters ===
-    gamma = 0.99
-    learning_rate = 0.001
-    alpha = 0.95
-    eps = 0.01
-    batch_size = 64
-    memory_capacity = 10000 # as in Ning et al.
-    target_update_freq = 3000 # Ning et al: 15
-    burn_in = False
-
-    # === Invariant Distribution ===
-    file_name_bid = 'aapl_corrected.npy' 
-    file_name_ask = 'aapl_corrected.npy' 
-    file_name_bid = 'aapl_price_down_bid.npy' 
-    file_name_ask = 'aapl_price_down_ask.npy' 
-    folder_path_invariant_distrib = 'calibration_data/invariant_distribution/'
-    inv_bid_file = folder_path_invariant_distrib + file_name_bid
-    inv_ask_file = folder_path_invariant_distrib + file_name_ask
-
-    # === Intensity Table ===
-    file_name = 'aapl_corrected.npy'
-    file_name = 'aapl_price_down.npy'
-    folder_path_intensity_table = 'calibration_data/intensity_table/' 
-    intensity_table_array = np.load(folder_path_intensity_table + file_name)
-    K, Q_plus_1, *_ = intensity_table_array.shape
-    Q = Q_plus_1 - 1
-    inten_table = IntensityTable(max_depth=K, max_queue=Q)
-    inten_table._data = intensity_table_array
-
-    # === Load pre-trained model ===
-    load_model_bool = False
-    load_model_path = '.pth'
-
-    ######### END OF PARAMETERS #########
-
-
-    # === Initialize Weights & Biases ===
-    wandb.init(
-        project="QRM_RL_Agent",
-        name=f"{rl_agent_type}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
-        config={
-            # Simulation Parameters
-            "rl_agent_type": rl_agent_type,
-            "episodes": episodes,
-            "time_horizon": time_horizon,
-            "initial_inventory": initial_inventory,
-            "price_offset": price_offset,
-            "price_std": price_std,
-            "vol_offset": vol_offset,
-            "vol_std": vol_std,
-            "theta": theta,
-            "theta_reinit": theta_reinit,
-            "final_penalty": final_penalty,
-            "risk_aversion": risk_aversion,
-
-            # Epsilon Parameters
-            "proba_0": proba_0,
-            "epsilon_start": epsilon_start,
-            "epsilon_end": epsilon_end,
-            "epsilon_decay": epsilon_decay,
-
-            # Neural Network Hyperparameters
-            "gamma": gamma,
-            "learning_rate": learning_rate,
-            "alpha": alpha,
-            "eps": eps,
-            "batch_size": batch_size,
-            "memory_capacity": memory_capacity,
-            "target_update_freq": target_update_freq,
-            "burn_in": burn_in,
-
-            # Intensity Table
-            "file_name": file_name,
-
-            # Model Loading
-            "load_model_bool": load_model_bool,
-            "load_model_path": load_model_path
-        }
-    )
-    run_id = wandb.run.id
-    wandb.run.name = f"{rl_agent_type}_{run_id}"
-
-    # === Environment Initialization ===
-    env = MarketEnvironment(
-        intensity_table=inten_table,
-        actions=actions,
-        theta=theta,
-        theta_reinit=theta_reinit,
-        tick=tick,
-        arrival_price=arrival_price,
-        inv_bid_file=inv_bid_file,
-        inv_ask_file=inv_ask_file,
-        trader_times=trader_times,
-        initial_inventory=initial_inventory,
-        time_horizon=time_horizon,
-        final_penalty=final_penalty,
-        risk_aversion=risk_aversion, 
-        price_offset=price_offset,
-        price_std=price_std,
-        vol_offset=vol_offset,
-        vol_std=vol_std, 
-        max_events=max_events, 
-        max_events_intra=max_events_intra
-    )
-
-    # === Agent Initialization ===
-    agent = DDQNAgent(
-        state_dim=state_dim, 
-        action_dim=action_dim,
-        device='cuda' if torch.cuda.is_available() else 'cpu',
-        epsilon_start=epsilon_start,
-        epsilon_end=epsilon_end,
-        epsilon_decay=epsilon_decay,
-        memory_capacity=memory_capacity,
-        batch_size=batch_size,
-        gamma=gamma,    
-        lr=learning_rate,
-        alpha=alpha, 
-        eps=eps, 
-        proba_0=proba_0
-    )
-
-    twap_agent = TWAPAgent(
-            time_horizon=time_horizon,
-            initial_inventory=initial_inventory,
-            trader_time_step=trader_times[1] - trader_times[0]
-        )
-    agent.twap_agent = twap_agent
-    backload_agent = BackLoadAgent(
-        time_horizon=time_horizon,
-        initial_inventory=initial_inventory,
-        trader_time_step=trader_times[1] - trader_times[0], 
-        fixed_action=1 # this will be modified accordingly during training
-    ) 
-    agent.backload_agent = backload_agent
-
-    # === Load pre-trained weights if specified ===
-    if load_model_bool:
-        load_model(agent, load_model_path)
-        print(f"Model loaded from {load_model_path}")
-
-    # === Burn-in phase ===
-    if burn_in:
-        pass
-
-    # === Book-keeping ===
-    episodes_rewards = []
-    detailed_rewards = {}
-    final_inventories = []
-    episode_lengths = []
-    final_is = []
-    l_returns = []
-    p_mids = {}
-
-    # Python seed (RL agent)
-    np.random.seed(42) 
-    # Numba seed (QRM simulator)
-    @njit
-    def initialize_numba_rng(seed):
-        np.random.seed(seed)
-    initialize_numba_rng(42)
-
-    count = 0
-    for ep in range(episodes):
-
-        # === Environment initialization ===
-        state = env.reset()
-        state_vec = env.state_to_vector(state)
-
-        # === Epsilon policy ===
-        if ep < int(0.2* episodes):
-            agent.exploration_mode = np.random.choice(
-                ['front_load', 'twap', 'back_load'], p=[0.3, 0.4, 0.3])
-            agent.epsilon = 0.0
-            fixed_action = np.random.choice(
-                [i for i in range(1, agent.action_dim)]
-            )
-            agent.fixed_action = fixed_action
-        else:
-            agent.exploration_mode = 'rl'
-            if ep < int(0.8* episodes):
-                # linear decay
-                a = (epsilon_end - epsilon_start) / (0.6 * episodes)
-                b = epsilon_start - 0.2 * episodes * a
-                agent.epsilon = a * ep + b
-            else:
-                agent.epsilon = epsilon_end
-
-        # === Logging ===
-        done, ep_reward, rewards = False, 0.0, []
-        actions_taken = []
-
-        while not done:
-
-            # === Action and simulation step ===
-            action = agent.select_action(state_vec, ep) 
-            next_state, reward, done = env.step(action)
-            next_state_vec = env.state_to_vector(next_state)
-
-            # === Learn ===
-            agent.store_transition(state_vec, action, reward, next_state_vec, done)
-            agent.learn()
-            # === Update target network ===
-            if count % target_update_freq == 0 and count > 0:
-                agent.update_target_network()
-            count += 1
-
-            # === Logging ===
-            state_vec = next_state_vec
-            ep_reward += reward
-            actions_taken.append(action)
-            # rewards.append(reward)
-
-            wandb.log({
-                "Inventory Normalized": state_vec[0],
-                "Time Normalized": state_vec[1],
-                "Best Ask Price Normalized": state_vec[2],
-                "Best Ask Size Normalized": state_vec[3],
-                "Best Ask Size": next_state['best_ask_size_1'],
-                "Best Ask Price 1": next_state['best_ask_price_1'],
-                "Reward": reward, 
-                "Risk Aversion Term in Reward": env.risk_aversion_term,
-                "Inventory": env.current_inventory, 
-                "Implementation Shortfall": env.current_is,
-                "Action": action,
-                "Mid Price": env.current_mid_price()
-            })
-
-        # === Print progress ===
-        if ep % logging_every == 0:
-            print(f"Episode {ep+1}/{episodes}, Reward: {ep_reward:.2f} | Epsilon: {agent.epsilon:.2f}")
-
-        # === End-of-episode book-keeping ===
-        # detailed_rewards[ep] = rewards
-        # final_inventories.append(env.current_inventory)
-        # episode_lengths.append(env.current_time())
-        # episodes_rewards.append(ep_reward)
-        # final_is.append(env.final_is)
-        # p_mids[ep] = env.simulator.p_mids[:env.simulator.step].copy()
-        # LOB = env.simulator.current_LOB
-        # LOB_trades = LOB[LOB.time.isin(env.trader_times[1:])]
-        # returns = LOB_trades.p_mid.pct_change().fillna(0).values
-        # l_returns.append(returns)
-
-        # === Wandb Logging ===
-        wandb.log({
-            "Episode": ep,
-            "Final Reward": ep_reward,
-            "Epsilon": agent.epsilon,
-            "Final Inventory": env.current_inventory,
-            "Final Implementation Shortfall": env.final_is,
-            "Episode Length": env.current_time(),
-            **{f"Action_{a}_count": actions_taken.count(a) for a in range(agent.action_dim)}, 
-            "Non Executed Liquidity Constraint": env.non_executed_liquidity_constraint, 
-            "Exploration Mode": exploration_mode_dic[agent.exploration_mode],
-            "Fixed Action": agent.fixed_action
-        })
-
-
-    # === Save weights of NNs and optimizer ===
-    print("\n[INFO] Saving model...")
-    save_model(agent, path=f'save_model/{rl_agent_type}_{run_id}.pth')
-    print(f"[INFO] Model saved at episode {ep}. Exiting cleanly.")
-
-    # === Finish wandb run ===
-    # all_returns = np.concatenate(l_returns).flatten()
-    # table = wandb.Table(data=[[i, v] for i, v in enumerate(all_returns)], columns=["index", "return"])
-    # wandb.log({"Returns between Trader Times": table})
-    wandb.finish()
 
 
 class InactiveAgent:
@@ -1069,7 +829,6 @@ class TWAPAgent:
         assert idx < len(self.actions), "TWAP Error: Index out of bounds."      
         return self.actions[idx] 
 
-
 class BackLoadAgent:
     """
         Back-loaded execution agent with a fixed per-step execution size.
@@ -1105,7 +864,6 @@ class BackLoadAgent:
         else:
             return 0
 
-
 class FrontLoadAgent:
     def __init__(self, fixed_action):
         self.fixed_action = fixed_action
@@ -1115,291 +873,17 @@ class FrontLoadAgent:
         
 
 
-
-def test(episodes, risk_aversion, agent, load_model_path=None):
-    
-    # === Simulation Parameters ===
-    time_horizon = 300
-    initial_inventory = 75
-    actions = [0, 1, 2, 3, 4]
-    proba_0 = 1 - 0.025
-    max_events = 20000
-    max_events_intra = 200
-
-    price_offset = 0.
-    price_std = 0.1
-    vol_offset = 5      # 5 for sym
-    vol_std = 4       # 4 for sym
-
-    theta = 0.6
-    theta_reinit = 0.85
-    tick = 0.01
-    arrival_price = 100.005
-    trader_times = np.arange(0, int(time_horizon)+1, 1.0)
-    final_penalty = 1
-    risk_aversion = risk_aversion
-
-    # === Others ===
-    state_dim = 5
-    action_dim = len(actions)
-    logging_every = 5
-    agent_name_map = {
-        DDQNAgent: 'ddqn', 
-        InactiveAgent: 'inactive', 
-        RandomAgent: 'random',
-        PassiveAgent: 'passive',
-        TWAPAgent: 'twap', 
-        BackLoadAgent: 'back_load',
-        FrontLoadAgent: 'front_load'
-    }
-    agent_type = agent_name_map.get(type(agent), 'Unknown')
-
-    # === Epsilons ===
-    epsilon_start = 1.0 
-    epsilon_decay = 0.995
-    epsilon_end = 0.01
-
-    # === NN hyper parameters ===
-    gamma = 0.99
-    learning_rate = 0.001
-    alpha = 0.95
-    eps = 0.01
-    batch_size = 64
-    memory_capacity = 10000
-    target_update_freq = 15 
-    burn_in = False
-
-    # === Invariant Distribution ===
-    file_name_bid = 'aapl_corrected.npy' 
-    file_name_ask = 'aapl_corrected.npy' 
-    folder_path_invariant_distrib = 'calibration_data/invariant_distribution/'
-    inv_bid_file = folder_path_invariant_distrib + file_name_bid
-    inv_ask_file = folder_path_invariant_distrib + file_name_ask
-
-    # === Intensity Table ===
-    file_name = 'aapl_corrected.npy'
-    folder_path_intensity_table = 'calibration_data/intensity_table/' 
-    intensity_table_array = np.load(folder_path_intensity_table + file_name)
-    K, Q_plus_1, *_ = intensity_table_array.shape
-    Q = Q_plus_1 - 1
-    inten_table = IntensityTable(max_depth=K, max_queue=Q)
-    inten_table._data = intensity_table_array
-
-    ######### END OF PARAMETERS #########
-
-
-    # === Initialize Weights & Biases ===
-    wandb.init(
-        project="QRM_RL_Agent",
-        name=f"test_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
-        config={
-
-            # Simulation Parameters
-            "agent_type": agent_type,
-            "episodes": episodes,
-            "time_horizon": time_horizon,
-            "initial_inventory": initial_inventory,
-            "price_offset": price_offset,
-            "price_std": price_std,
-            "vol_offset": vol_offset,
-            "vol_std": vol_std,
-            "theta": theta,
-            "theta_reinit": theta_reinit,
-            "final_penalty": final_penalty,
-            "risk_aversion": risk_aversion,
-
-            # Epsilon Parameters
-            "proba_0": proba_0,
-            "epsilon_start": epsilon_start,
-            "epsilon_end": epsilon_end,
-            "epsilon_decay": epsilon_decay,
-
-            # Neural Network Hyperparameters
-            "gamma": gamma,
-            "learning_rate": learning_rate,
-            "alpha": alpha,
-            "eps": eps,
-            "batch_size": batch_size,
-            "memory_capacity": memory_capacity,
-            "target_update_freq": target_update_freq,
-            "burn_in": burn_in,
-
-            # Intensity Table
-            "file_name": file_name
-        }
-    )
-    run_id = wandb.run.id
-    wandb.run.name = f"{agent_type}_{run_id}"
-
-    # === Environment and Agent Initialization ===
-    env = MarketEnvironment(
-        intensity_table=inten_table,
-        actions=actions,
-        theta=theta,
-        theta_reinit=theta_reinit,
-        tick=tick,
-        arrival_price=arrival_price,
-        inv_bid_file=inv_bid_file,
-        inv_ask_file=inv_ask_file,
-        trader_times=trader_times,
-        initial_inventory=initial_inventory,
-        time_horizon=time_horizon,
-        final_penalty=final_penalty,
-        risk_aversion=risk_aversion,
-        price_offset=price_offset,
-        price_std=price_std,
-        vol_offset=vol_offset,
-        vol_std=vol_std,
-        max_events=max_events, 
-        max_events_intra=max_events_intra
-    )
-
-    # === Agent Initialization ===
-    if isinstance(agent, DDQNAgent):
-        agent = DDQNAgent(
-            state_dim=state_dim, 
-            action_dim=action_dim,
-            device='cuda' if torch.cuda.is_available() else 'cpu',
-            epsilon_start=epsilon_start,
-            epsilon_end=epsilon_end,
-            epsilon_decay=epsilon_decay,
-            memory_capacity=memory_capacity,
-            batch_size=batch_size,
-            gamma=gamma,    
-            lr=learning_rate,
-            alpha=alpha, 
-            eps=eps, 
-            proba_0=proba_0
-        )
-        # === Load pre-trained weights if specified ===
-        if load_model_path is None:
-            raise ValueError("Please provide a path to load the model.")
-        else:
-            load_model(agent, load_model_path, test_mode=True)
-            print(f"Model loaded from {load_model_path}")
-        # === Test mode ===
-        agent.policy_net.eval()
-        agent.target_net.eval()
-        agent.epsilon = 0.0
-
-    # === Book-keeping ===
-    episodes_rewards = []
-    detailed_rewards = {}
-    final_inventories = []
-    episode_lengths = []
-    final_is = []
-    mid_prices = {}
-    actions = {}
-    idx_actions = {}
-    LOBs = {}
-    l_returns = []
-
-    # Python seed (RL agent)
-    np.random.seed(2025) 
-    # Numba seed (QRM simulator)
-    @njit
-    def initialize_numba_rng(seed):
-        np.random.seed(seed)
-    initialize_numba_rng(2025)
-
-    for ep in range(episodes):
-
-        # Environment initialization
-        state = env.reset()
-        state_vec = env.state_to_vector(state)
-
-        done, ep_reward, rewards = False, 0.0, []
-        actions_taken = []
-
-        with torch.no_grad():
-            while not done:
-
-                # === Action and simulation step ===
-                action = agent.select_action(state_vec, ep) 
-                next_state, reward, done = env.step(action)
-                next_state_vec = env.state_to_vector(next_state)
-
-                # === Logging ===
-                state_vec = next_state_vec
-                ep_reward += reward
-                actions_taken.append(action)
-                # rewards.append(reward)
-
-                wandb.log({
-                    "Inventory Normalized": state_vec[0],
-                    "Time Normalized": state_vec[1],
-                    "Best Ask Price Normalized": state_vec[2],
-                    "Best Ask Size Normalized": state_vec[3],
-                    "Best Ask Size": next_state['best_ask_size_1'],
-                    "Best Ask Price 1": next_state['best_ask_price_1'],
-                    "Reward": reward, 
-                    "Risk Aversion Term in Reward": env.risk_aversion_term,
-                    "Inventory": env.current_inventory, 
-                    "Implementation Shortfall": env.current_is,
-                    "Action": action,
-                    "Mid Price": env.current_mid_price()
-                })
-
-        # === Print progress ===
-        if ep % logging_every == 0:
-            print(f"Episode {ep+1}/{episodes}")
-
-        # === End-of-episode book-keeping ===
-        final_is.append(env.final_is)
-        mid_prices[ep] = env.simulator.p_mids[:env.simulator.step]
-        actions[ep] = actions_taken
-        all_times = env.simulator.times[:env.simulator.step]
-        idx_actions[ep] = np.where(np.isin(all_times, env.trader_times[1:]))[0].tolist()
-        # detailed_rewards[ep] = rewards
-        # final_inventories.append(env.current_inventory)
-        # episode_lengths.append(env.current_time())
-        # episodes_rewards.append(ep_reward)
-        # returns = LOB_trades.p_mid.pct_change().fillna(0).values
-        # l_returns.append(returns)
-        # LOBs[ep] = LOB
-
-        # === Wandb Logging ===
-        wandb.log({
-            "Episode": ep,
-            "Final Reward": ep_reward,
-            "Final Inventory": env.current_inventory,
-            "Final Implementation Shortfall": env.final_is,
-            "Episode Length": env.current_time(),
-            **{f"Action_{a}_count": actions_taken.count(a) for a in range(action_dim)}, 
-            "Non Executed Liquidity Constraint": env.non_executed_liquidity_constraint
-        })
-
-    # === Finish wandb run ===
-    # all_returns = np.concatenate(l_returns).flatten()
-    # table = wandb.Table(data=[[i, v] for i, v in enumerate(all_returns)], columns=["index", "return"])
-    # wandb.log({"Returns between Trader Times": table})
-    wandb.finish()
-
-    dic = {'final_is': final_is, 
-           'mid_prices': mid_prices,
-           'actions': actions,
-           'idx_actions': idx_actions
-           }
-    
-    return dic, run_id
-
-
-
-
-
-
-
-
-
-
-
 class RLRunner:
     def __init__(self, config, load_model_path=None):
         # Unpack config
         self.cfg = config
         self.mode = config['mode']
         self.episodes = config['episodes']
+        self.exec_security_margin = config['exec_security_margin']
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.unif_deter_strats = config['unif_deter_strats']
+        self.prop_greedy_eps = config['prop_greedy_eps']
+        self.prop_deter_strats = config['prop_deter_strats'] 
         self.agent = None
         self.agent_name_map = {
             DDQNAgent: 'ddqn', 
@@ -1450,7 +934,9 @@ class RLRunner:
             vol_offset=config['vol_offset'],
             vol_std=config['vol_std'],
             max_events=config['max_events'],
-            max_events_intra=config['max_events_intra']
+            max_events_intra=config['max_events_intra'], 
+            history_size=config['history_size'], 
+            alpha_ramp=config['alpha_ramp']
         )
 
         # Agent
@@ -1489,8 +975,14 @@ class RLRunner:
 
     def _update_epsilon(self, ep):
         E = self.episodes
-        bs = int(0.2 * E)
-        ge = int(0.8 * E)
+        bs = int(self.prop_deter_strats * E)
+        ge = int(self.prop_greedy_eps * E)
+
+        decay_steps = ge - bs
+        eps_start, eps_end = self.cfg['epsilon_start'], self.cfg['epsilon_end']
+        a = (eps_end - eps_start) / decay_steps
+        b = eps_start - bs * a
+
         if ep < bs:
             self.agent.exploration_mode = np.random.choice(
                 ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
@@ -1501,23 +993,52 @@ class RLRunner:
             )
         elif ep < ge:
             self.agent.exploration_mode = 'rl'
-            decay_steps = ge - bs
-            eps_start, eps_end = self.cfg['epsilon_start'], self.cfg['epsilon_end']
-            a = (eps_end - eps_start) / decay_steps
-            b = eps_start - bs * a
             self.agent.epsilon = a * ep + b
         else:
             self.agent.exploration_mode = 'rl'
             self.agent.epsilon = self.cfg['epsilon_end']
 
-    def _log_step(self, state_vec, next_state, reward, action):
+    def _update_epsilon_unif(self, ep):
+        """ 
+            the deterministic strategies are uniformly distributed over the entire exploration phase.
+        """
+        E = self.episodes
+        bs = int(self.prop_deter_strats * E)
+        ge = int(self.prop_greedy_eps * E)
+
+        if bs > 0:
+            det_indices = set(int(np.floor(i * E / bs)) for i in range(bs))
+        else:
+            det_indices = set()
+
+        eps_start, eps_end = self.cfg['epsilon_start'], self.cfg['epsilon_end']
+        slope = (eps_end - eps_start) / float(ge)
+        intercept = eps_start
+
+        if ep in det_indices:
+            self.agent.exploration_mode = np.random.choice(
+                ['front_load', 'twap', 'back_load'], p=[0.3, 0.4, 0.3]
+            )
+            self.agent.epsilon = 0.0
+            self.agent.fixed_action = np.random.choice(
+                [a for a in range(1, self.agent.action_dim)]
+            )
+        elif ep < ge:
+            self.agent.exploration_mode = 'rl'
+            self.agent.epsilon = max(eps_end, slope * ep + intercept)
+        else:
+            self.agent.exploration_mode = 'rl'
+            self.agent.epsilon = self.cfg['epsilon_end']
+
+
+    def _log_step(self, state_vec, next_state, reward, action, dic, step):
         d = {
             "Inventory Normalized": state_vec[0],
             "Time Normalized": state_vec[1],
-            "Best Ask Price Normalized": state_vec[2],
-            "Best Ask Size Normalized": state_vec[3],
-            "Best Ask Size": next_state['best_ask_size_1'],
-            "Best Ask Price 1": next_state['best_ask_price_1'],
+            "Best Ask Price Normalized": state_vec[4],
+            "Best Ask Size Normalized": state_vec[5],
+            "Best Ask Size": next_state[5],
+            "Best Ask Price 1": next_state[4],
             "Reward": reward, 
             "Risk Aversion Term in Reward": self.env.risk_aversion_term,
             "Inventory": self.env.current_inventory, 
@@ -1525,47 +1046,73 @@ class RLRunner:
             "Action": action,
             "Mid Price": self.env.current_mid_price()
         }
-        wandb.log(d)
+        d.update(dic)
+        wandb.log(d, step=step)
 
     def run(self):
         agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
         self.run_id = wandb.run.id
-        wandb.run.name = f"{agent_type}_{self.run_id}"
-
         train_mode = (self.mode == 'train')
+        if train_mode:
+            wandb.run.name = f"{agent_type}_{self.run_id}"
+        else:
+            wandb.run.name = f"{agent_type}_test_{self.run_id}"
+
         if not train_mode:
             final_is = []
             mid_prices = {}
             actions_taken = {}
-            idx_actions = {}
+            executed_dic = {}
+
         step_count = 0
         for ep in range(self.episodes):
 
             state = self.env.reset()
             state_vec = self.env.state_to_vector(state)
             if train_mode:
-                self._update_epsilon(ep)
+                if not self.unif_deter_strats:
+                    self._update_epsilon(ep)
+                else:
+                    self._update_epsilon_unif(ep)
 
             ctx = torch.no_grad() if not train_mode else nullcontext()
             with ctx:
-                done, ep_reward, actions = False, 0.0, []
-
+                done, ep_reward, actions, executed = False, 0.0, [], []
+                k = 1
                 while not done:
-                    action = self.agent.select_action(state_vec, ep)
-                    nxt, reward, done = self.env.step(action)
-                    nxt_vec = self.env.state_to_vector(nxt)
 
                     if train_mode:
+
+                        action = self.agent.select_action(state_vec, ep)
+                        nxt, reward, done, exec = self.env.step(action)
+                        nxt_vec = self.env.state_to_vector(nxt)
+                        
                         self.agent.store_transition(state_vec, action, reward, nxt_vec, done)
-                        self.agent.learn()
-                        if step_count % self.cfg['target_update_freq'] == 0:
-                            self.agent.update_target_network()
+                        wandb_dic = self.agent.learn()
+                        # if step_count % self.cfg['target_update_freq'] == 0:
+                        #     self.agent.update_target_network()
+
+                    else:
+                        current_inventory = self.env.current_inventory
+                        t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin 
+                        if len(self.env.trader_times) - k > t_left:
+                            action = self.agent.select_action(state_vec, ep)
+                        else:
+                            action = max(self.env.actions)
+                        nxt, reward, done, exec = self.env.step(action)
+                        nxt_vec = self.env.state_to_vector(nxt)
+                        wandb_dic = {}
 
                     state_vec = nxt_vec
                     ep_reward += reward
                     actions.append(action)
-                    self._log_step(state_vec, nxt, reward, action)
+                    executed.append(exec)
+                    self._log_step(state_vec, nxt, reward, action, wandb_dic, step_count)
                     step_count += 1
+                    k += 1
+                
+            if train_mode and ep % self.cfg['target_update_freq'] == 0 and ep > 0:
+                self.agent.update_target_network()
 
             # end of episode logging
             summary = {
@@ -1582,7 +1129,7 @@ class RLRunner:
                 summary['Exploration Mode'] = exploration_mode_dic[self.agent.exploration_mode]
                 summary['Fixed Action'] = self.agent.fixed_action
             
-            wandb.log(summary)
+            wandb.log(summary, step=step_count-1)
 
             # === Print progress ===
             if ep % self.cfg['logging_every'] == 0:
@@ -1593,8 +1140,7 @@ class RLRunner:
                 final_is.append(self.env.final_is)
                 mid_prices[ep] = self.env.simulator.p_mids[:self.env.simulator.step]
                 actions_taken[ep] = actions
-                all_times = self.env.simulator.times[:self.env.simulator.step]
-                idx_actions[ep] = np.where(np.isin(all_times, self.env.trader_times[1:]))[0].tolist()
+                executed_dic[ep] = executed
 
         # save model if training
         if train_mode:
@@ -1606,8 +1152,8 @@ class RLRunner:
             dic = {
                 'final_is': final_is, 
                 'mid_prices': mid_prices,
-                'actions': actions_taken,
-                'idx_actions': idx_actions
+                'actions': actions_taken, 
+                'executed': executed_dic
             }
             return dic, self.run_id
 
@@ -1624,8 +1170,9 @@ config = {
     # simulation parameters
     'time_horizon': 300,
     'trader_time_step': 1.0,  # in seconds
-    'initial_inventory': 375,
+    'initial_inventory': 75,
     'actions': [0,1,2,3,4],
+    'history_size': 5,  # number of past trader times to consider in the state
     'max_events': 20000,
     'max_events_intra': 200,
 
@@ -1639,12 +1186,17 @@ config = {
     'arrival_price': 100.005,
     'final_penalty': 1.0,
     'risk_aversion': 0.05,
+    'alpha_ramp': 15, # ramping parameter for the risk aversion term
+    'exec_security_margin': 1,  # security margin for the back-loaded execution agent
 
     # DQN hyperparams
     'proba_0': 0.975,
     'epsilon_start': 1.0,
     'epsilon_end': 0.01,
     'epsilon_decay': 0.995,
+    'unif_deter_strats': False,
+    'prop_greedy_eps': 0.5,  # proportion of episodes where the agent is greedy
+    'prop_deter_strats': 0.,  # proportion of episodes where the agent is deterministic
     'gamma': 0.99,
     'learning_rate': 1e-3,
     'alpha': 0.95,
@@ -1664,8 +1216,8 @@ st = config['trader_time_step']
 config['trader_times'] = np.arange(0, th + st, st)
 config['action_dim'] = len(config['actions'])
 
-normal_prices = False
-decreasing_prices = True
+normal_prices = True
+decreasing_prices = False
 if normal_prices:
     config['file_name'] = 'aapl_corrected.npy'
     config['file_name_bid'] = 'aapl_corrected.npy'
@@ -1676,55 +1228,85 @@ if decreasing_prices:
     config['file_name_ask'] = 'aapl_price_down_ask.npy'
 
 
-
-
-
-
 if __name__ == "__main__":
 
+    ## THREE THINGS TO CHECK
+    # 1. Neural Network Achitecture
+    # 1'. Target update frequency: episodes or steps ? 
+    # 2. Pseudo epsilon-greedy policy
+    # 3. Config parameters
+
     ### ==== TRAIN ===== ###
-    # config['episodes'] = 10000
-    # runner = RLRunner(config)
-    # runner.run() 
+    config['episodes'] = 10_000
+    config['memory_capacity'] = 2_000
+    config['proba_0'] = 0.2
+    config['price_offset'] = 0.0
+    config['price_std'] = 0.3
+    config['vol_offset'] = 5 #4
+    config['vol_std'] = 4 #3.5
+    config['target_update_freq'] = 1
 
-
-
-    ### ==== TEST ===== ###
-    config['mode'] = 'test'
-    config['seed'] = 2025
-    config['episodes'] = 10
-    train_run_id = 'cszrsnrn'
-    runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.pth')
-
-    th = runner.cfg['time_horizon']
-    ii = runner.cfg['initial_inventory']
-    tts = runner.cfg['trader_time_step']
-    max_action = max(runner.cfg['actions'])
-    run_ids = [] 
-    order = ['ddqn', 'twap', 'back_load', 'front_load']
-    final_is = {}
+    config['history_size'] = 5
+    config['state_dim'] = 4 * config['history_size'] + 2
+    config['prop_greedy_eps'] = 0.5
+    config['alpha_ramp'] = 15
+    config['risk_aversion'] = 0.5 # 0.1
+    # config['final_penalty'] = 0.1
+    # config['memory_capacity'] = 10_000
+    # config['batch_size'] = 128
+    # config['unif_deter_strats'] = True
+    # config['prop_deter_strats'] = config['prop_greedy_eps'] / 5
     
-    ### === TWAP Agent Testing === ###
-    agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
-    actions = agent.actions
-    actions[-1] += 1 # avoid remaining inventory because of the QRM liquidity constraints
-    agent.actions = actions
-
-    runner.agent = agent
-    dic, run_id = runner.run()
-    run_ids.append(run_id)
-    final_is['twap'] = dic['final_is']
+    runner = RLRunner(config)
+    runner.run() 
 
 
+
+
+
+    # ### ==== TEST ===== ###
+    # train_run_id = 't40nwadb'
+    # config['episodes'] = 10_000
+    # config['mode'] = 'test'
+    # config['seed'] = 2025
+    # config['exec_security_margin'] = 1
+
+    # config['memory_capacity'] = 2_000
+    # config['proba_0'] = 0.2
+    # config['price_offset'] = 0.0
+    # config['price_std'] = 0.3
+    # config['vol_offset'] = 5 #4
+    # config['vol_std'] = 4 #3.5
+    # config['target_update_freq'] = 1
+
+    # config['history_size'] = 5
+    # config['state_dim'] = 4 * config['history_size'] + 2
+    # config['prop_greedy_eps'] = 0.5
+    # config['alpha_ramp'] = 15
+    # config['risk_aversion'] = 0.5 # 0.1
+    # # config['final_penalty'] = 0.1
+    # # config['memory_capacity'] = 10_000
+    # # config['batch_size'] = 128
+    # # config['unif_deter_strats'] = True
+    # # config['prop_deter_strats'] = config['prop_greedy_eps'] / 5
+
+    # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.pth')
+
+    # th = runner.cfg['time_horizon']
+    # ii = runner.cfg['initial_inventory']
+    # tts = runner.cfg['trader_time_step']
+    # max_action = max(runner.cfg['actions'])
+    # final_is = {}
+    
 
     # ### === DDQN Agent Testing === ###
     # dic, run_id = runner.run()
-    # run_ids.append(run_id)
-    # final_is['ddqn'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/ddqn_{run_id}.pkl', 'wb') as f:
+    # final_is['DDQN'] = dic['final_is']
+    # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
     # ### === TWAP Agent Testing === ###
+    # runner = RLRunner(config)
     # agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
     # actions = agent.actions
     # actions[-1] += 1 # avoid remaining inventory because of the QRM liquidity constraints
@@ -1732,37 +1314,41 @@ if __name__ == "__main__":
 
     # runner.agent = agent
     # dic, run_id = runner.run()
-    # run_ids.append(run_id)
-    # final_is['twap'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/twap_{run_id}.pkl', 'wb') as f:
+    # final_is['TWAP'] = dic['final_is']
+    # with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
     # ### === Back Load Agent Testing === ###
+    # runner = RLRunner(config)
     # agent = BackLoadAgent(time_horizon=th, initial_inventory=ii, 
     #                       trader_time_step=tts, fixed_action=max_action, security_margin=2)
     
     # runner.agent = agent
     # dic, run_id = runner.run()
-    # run_ids.append(run_id)
-    # final_is['back_load'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/back_load_{run_id}.pkl', 'wb') as f:
+    # final_is['Back Load'] = dic['final_is']
+    # with open(f'data_wandb/dictionaries/back_load_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
     # ### === Front Load Agent Testing === ###
+    # runner = RLRunner(config)
     # agent = FrontLoadAgent(fixed_action=max_action)
     # runner.agent = agent
     # dic, run_id = runner.run()
-    # run_ids.append(run_id)
-    # final_is['front_load'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/front_load_{run_id}.pkl', 'wb') as f:
+    # final_is['Front Load'] = dic['final_is']
+    # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
+
+    # ### === Front Load Agent Testing === ###
+    # runner = RLRunner(config)
+    # agent = FrontLoadAgent(fixed_action=1)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # final_is['Front Load - 1'] = dic['final_is']
+    # with open(f'data_wandb/dictionaries/front_load_1_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
 
     # # === Plot Implementation Shortfall ===
-    # for i, strat in enumerate(order):
-    #     print(f"Run ID for {strat}: {run_ids[i]}")
-    # print(f'Plot has been saved with the DDQN run ID: {run_ids[0]}')
-
     # plt.figure(figsize=(7, 5))
     # maxi = max(
     #     max(np.abs(np.max(values)), np.abs(np.min(values)))
@@ -1780,6 +1366,6 @@ if __name__ == "__main__":
     # plt.grid(True)
     # plt.legend()
     # plt.tight_layout()
-    # plt.savefig(f'plots/implementation_shortfall/{run_ids[0]}.pdf', bbox_inches='tight')
+    # plt.savefig(f'plots/implementation_shortfall/{train_run_id}.pdf', bbox_inches='tight')
     # plt.show()
     # plt.close()
