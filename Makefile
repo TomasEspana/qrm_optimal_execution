@@ -31,9 +31,9 @@ train: install  ## Train the RL agent
 test: install  ## Test the RL agent
 	. $(VENV_DIR)/bin/activate && python scripts/run_test.py
 
-format:  ## Format code using black
-	. $(VENV_DIR)/bin/activate && pip install black && \
-	black src/ tests/ scripts/
+# format:  ## Format code using black
+# 	. $(VENV_DIR)/bin/activate && pip install black && \
+# 	black src/ tests/ scripts/
 
 ##@ Maintenance
 
