@@ -2,6 +2,10 @@ import yaml
 import os
 import numpy as np
 
+""" 
+    Upload run configuration as dictionary from YAML file.
+"""
+
 def load_config(filename="default.yaml"):
     config_path = os.path.join(os.path.dirname(__file__), filename)
     with open(config_path, "r") as f:
