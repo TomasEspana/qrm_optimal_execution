@@ -28,8 +28,14 @@ if __name__ == "__main__":
     # 2. Pseudo epsilon-greedy policy
     # 3. Config parameters
 
-    ### ==== TRAIN ===== ###
+
+    ### ==== TEST ===== ###
+    train_run_id = 't40nwadb'
     config['episodes'] = 10_000
+    config['mode'] = 'test'
+    config['seed'] = 2025
+    config['exec_security_margin'] = 1
+
     config['memory_capacity'] = 2_000
     config['proba_0'] = 0.2
     config['price_offset'] = 0.0
@@ -48,116 +54,83 @@ if __name__ == "__main__":
     # config['batch_size'] = 128
     # config['unif_deter_strats'] = True
     # config['prop_deter_strats'] = config['prop_greedy_eps'] / 5
+
+    runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.pth')
+
+    th = runner.cfg['time_horizon']
+    ii = runner.cfg['initial_inventory']
+    tts = runner.cfg['trader_time_step']
+    max_action = max(runner.cfg['actions'])
+    final_is = {}
     
+
+    ### === DDQN Agent Testing === ###
+    dic, run_id = runner.run()
+    final_is['DDQN'] = dic['final_is']
+    with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
+
+    ### === TWAP Agent Testing === ###
     runner = RLRunner(config)
-    runner.run() 
+    agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
+    actions = agent.actions
+    actions[-1] += 1 # avoid remaining inventory because of the QRM liquidity constraints
+    agent.actions = actions
 
+    runner.agent = agent
+    dic, run_id = runner.run()
+    final_is['TWAP'] = dic['final_is']
+    with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
-
-
-
-    # ### ==== TEST ===== ###
-    # train_run_id = 't40nwadb'
-    # config['episodes'] = 10_000
-    # config['mode'] = 'test'
-    # config['seed'] = 2025
-    # config['exec_security_margin'] = 1
-
-    # config['memory_capacity'] = 2_000
-    # config['proba_0'] = 0.2
-    # config['price_offset'] = 0.0
-    # config['price_std'] = 0.3
-    # config['vol_offset'] = 5 #4
-    # config['vol_std'] = 4 #3.5
-    # config['target_update_freq'] = 1
-
-    # config['history_size'] = 5
-    # config['state_dim'] = 4 * config['history_size'] + 2
-    # config['prop_greedy_eps'] = 0.5
-    # config['alpha_ramp'] = 15
-    # config['risk_aversion'] = 0.5 # 0.1
-    # # config['final_penalty'] = 0.1
-    # # config['memory_capacity'] = 10_000
-    # # config['batch_size'] = 128
-    # # config['unif_deter_strats'] = True
-    # # config['prop_deter_strats'] = config['prop_greedy_eps'] / 5
-
-    # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.pth')
-
-    # th = runner.cfg['time_horizon']
-    # ii = runner.cfg['initial_inventory']
-    # tts = runner.cfg['trader_time_step']
-    # max_action = max(runner.cfg['actions'])
-    # final_is = {}
+    ### === Back Load Agent Testing === ###
+    runner = RLRunner(config)
+    agent = BackLoadAgent(time_horizon=th, initial_inventory=ii, 
+                          trader_time_step=tts, fixed_action=max_action, security_margin=2)
     
+    runner.agent = agent
+    dic, run_id = runner.run()
+    final_is['Back Load'] = dic['final_is']
+    with open(f'data_wandb/dictionaries/back_load_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
-    # ### === DDQN Agent Testing === ###
-    # dic, run_id = runner.run()
-    # final_is['DDQN'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    ### === Front Load Agent Testing === ###
+    runner = RLRunner(config)
+    agent = FrontLoadAgent(fixed_action=max_action)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    final_is['Front Load'] = dic['final_is']
+    with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
-    # ### === TWAP Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
-    # actions = agent.actions
-    # actions[-1] += 1 # avoid remaining inventory because of the QRM liquidity constraints
-    # agent.actions = actions
-
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # final_is['TWAP'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
-
-    # ### === Back Load Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = BackLoadAgent(time_horizon=th, initial_inventory=ii, 
-    #                       trader_time_step=tts, fixed_action=max_action, security_margin=2)
-    
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # final_is['Back Load'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/back_load_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
-
-    # ### === Front Load Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = FrontLoadAgent(fixed_action=max_action)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # final_is['Front Load'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
-
-    # ### === Front Load Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = FrontLoadAgent(fixed_action=1)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # final_is['Front Load - 1'] = dic['final_is']
-    # with open(f'data_wandb/dictionaries/front_load_1_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    ### === Front Load Agent Testing === ###
+    runner = RLRunner(config)
+    agent = FrontLoadAgent(fixed_action=1)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    final_is['Front Load - 1'] = dic['final_is']
+    with open(f'data_wandb/dictionaries/front_load_1_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
 
-    # # === Plot Implementation Shortfall ===
-    # plt.figure(figsize=(7, 5))
-    # maxi = max(
-    #     max(np.abs(np.max(values)), np.abs(np.min(values)))
-    #     for values in final_is.values()
-    # )
-    # x = np.linspace(-maxi, maxi, 1000)
-    # for key, values in final_is.items():
-    #     kde = gaussian_kde(values)
-    #     y_kde = kde(x)
-    #     plt.plot(x, y_kde, label=key)
+    # === Plot Implementation Shortfall ===
+    plt.figure(figsize=(7, 5))
+    maxi = max(
+        max(np.abs(np.max(values)), np.abs(np.min(values)))
+        for values in final_is.values()
+    )
+    x = np.linspace(-maxi, maxi, 1000)
+    for key, values in final_is.items():
+        kde = gaussian_kde(values)
+        y_kde = kde(x)
+        plt.plot(x, y_kde, label=key)
 
-    # plt.xlabel('Implementation Shortfall')
-    # plt.ylabel('Density')
-    # plt.title('')
-    # plt.grid(True)
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.savefig(f'plots/implementation_shortfall/{train_run_id}.pdf', bbox_inches='tight')
-    # plt.show()
-    # plt.close()
+    plt.xlabel('Implementation Shortfall')
+    plt.ylabel('Density')
+    plt.title('')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f'plots/implementation_shortfall/{train_run_id}.pdf', bbox_inches='tight')
+    plt.show()
+    plt.close()
