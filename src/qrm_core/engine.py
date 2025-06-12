@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+from .sampling import choose_next_event, update_LOB
 
 @njit
 def simulate_QRM_jit(time: float,
