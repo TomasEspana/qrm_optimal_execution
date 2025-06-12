@@ -1,5 +1,5 @@
 import numpy as np
-from src.qrm_core.intensity import IntensityTable
+
 
 def compute_invariant_distribution(
         side: float,
