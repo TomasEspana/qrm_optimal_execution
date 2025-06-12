@@ -1,6 +1,5 @@
 import numpy as np
 
-
 """ 
     Benchmark trading strategies.
 """
