@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from .intensity import IntensityTable
+from .engine import simulate_QRM_jit
 
 def simulate_QRM(current_LOB: pd.DataFrame,
                      intensity_table: IntensityTable,
