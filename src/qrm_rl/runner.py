@@ -3,7 +3,11 @@ import numpy as np
 import torch
 from numba import njit
 from contextlib import nullcontext
-
+from agents.ddqn import DDQNAgent
+from agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent
+from qrm_core.intensity import IntensityTable
+from .market_environment import MarketEnvironment
+from .utils import load_model, save_model
 
 
 exploration_mode_dic = {'rl': int(0), 'front_load': int(1), 'back_load': int(2), 'twap': int(3)}
@@ -21,13 +25,13 @@ class RLRunner:
         self.prop_deter_strats = config['prop_deter_strats'] 
         self.agent = None
         self.agent_name_map = {
-            DDQNAgent: 'ddqn', 
-            InactiveAgent: 'inactive', 
-            RandomAgent: 'random',
-            PassiveAgent: 'passive',
+            DDQNAgent: 'ddqn',
             TWAPAgent: 'twap', 
             BackLoadAgent: 'back_load',
             FrontLoadAgent: 'front_load'
+            # InactiveAgent: 'inactive', 
+            # RandomAgent: 'random',
+            # PassiveAgent: 'passive',
         }
 
         # Seeds
