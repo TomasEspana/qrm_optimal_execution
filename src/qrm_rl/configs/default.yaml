@@ -39,7 +39,7 @@ prop_greedy_eps: 0.5 # proportion of episodes where the agent is greedy
 prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmark strategies (TWAP, Back Load, etc)
 
 gamma: 0.99
-learning_rate: 1e-3
+learning_rate: 0.001
 alpha: 0.95
 eps: 0.01
 batch_size: 64
