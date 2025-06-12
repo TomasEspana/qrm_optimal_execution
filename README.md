@@ -5,7 +5,7 @@
 ### 1. Clone the repository
 
 ```bash
-pip install git+https://github.com/espanato/qrm_optimal_execution.git
+git clone https://github.com/espanato/qrm_optimal_execution.git
 cd qrm_optimal_execution
 ```
 
