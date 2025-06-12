@@ -3,6 +3,11 @@ import pandas as pd
 from .intensity import IntensityTable
 from .engine import simulate_QRM_jit
 
+""" 
+    Simulate the QRM model in a more user-friendly way than in .engine.py.
+    Returns a Pandas DataFrame with the simulation results.
+"""
+
 def simulate_QRM(current_LOB: pd.DataFrame,
                      intensity_table: IntensityTable,
                      tick: float,
