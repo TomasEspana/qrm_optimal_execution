@@ -1,5 +1,9 @@
 import numpy as np
 
+
+""" 
+    Benchmark trading strategies.
+"""
     
 class TWAPAgent:
     """
@@ -68,6 +72,7 @@ class BackLoadAgent:
             return self.fixed_action
         else:
             return 0
+
 
 class FrontLoadAgent:
     def __init__(self, fixed_action):
