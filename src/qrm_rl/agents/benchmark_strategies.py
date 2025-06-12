@@ -33,6 +33,7 @@ class TWAPAgent:
         assert idx < len(self.actions), "TWAP Error: Index out of bounds."      
         return self.actions[idx] 
 
+
 class BackLoadAgent:
     """
         Back-loaded execution agent with a fixed per-step execution size.

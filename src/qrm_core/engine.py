@@ -2,6 +2,20 @@ import numpy as np
 from numba import njit
 from .sampling import choose_next_event, update_LOB
 
+"""  
+    Code to simulate the QRM model using Numba.
+    All the events of the LOB are stored in arrays.
+    The function returns the arrays of: 
+        - times
+        - mid prices
+        - reference prices
+        - sides (1 for bid, 2 for ask)
+        - depths (1 to K) depth of the event (wrt to the reference price)
+        - events (1 for limit, 2 for cancel, 3 for market, 4 for trader)
+        - redrawns (boolean, True if the queues were redrawn)
+        - states (LOB state after the event, with format [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK])
+"""
+
 @njit
 def simulate_QRM_jit(time: float,
                          p_mid: float,
