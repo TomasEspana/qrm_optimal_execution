@@ -2,6 +2,9 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import numpy as np
+from .network import DQNNetwork
+from .replay import ReplayMemory, Transition
+
 
 class DDQNAgent:
     """
