@@ -1,5 +1,5 @@
 # mode + seeding
-mode: "train" # or 'test'
+mode: train # or test
 seed: 42
 episodes: 10000 # number of episodes to run
 state_dim: 5
