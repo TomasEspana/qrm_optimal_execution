@@ -2,8 +2,19 @@ import numpy as np
 from numba import njit
 
 
+""" 
+    Auxiliary functions for simulating the QRM model.
+    1) `sample_stationary_lob`: redraw the queues from the invariant distribution.
+    2) `choose_next_event`: sample the next event in the LOB.
+    3) `update_LOB`: update the LOB according to the QRM model.
+
+    `choose_next_event` and `update_LOB` are used in the `simulate_QRM_jit` (.engine.py) function.
+
+"""
+
+
 # -----------------------------------------------------------------------------
-# 1) Draw from invariant distribution
+# 1) Sample from invariant distribution
 # -----------------------------------------------------------------------------
 @njit
 def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
@@ -35,8 +46,9 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
                 break
     return out
 
+
 # -----------------------------------------------------------------------------
-# 2) Pick next event
+# 2) Sample next event
 # -----------------------------------------------------------------------------
 @njit
 def choose_next_event(K: int,
@@ -90,8 +102,9 @@ def choose_next_event(K: int,
         if best_bid >= 0 and best_ask >= 0:
             return best_bid, best_ask, new_state, side_f, depth, evf, skip
 
+
 # -----------------------------------------------------------------------------
-# 3) Update on mid‐price move, with separate bid/ask invariants
+# 3) Update LOB
 # -----------------------------------------------------------------------------
 @njit
 def update_LOB(K: int,
