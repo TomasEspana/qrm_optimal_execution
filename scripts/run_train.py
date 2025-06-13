@@ -7,6 +7,6 @@ from qrm_rl.runner import RLRunner
 
 if __name__ == "__main__":
 
-    config = load_config("src/qrm_rl/configs/default.yaml")
+    config = load_config()
     runner = RLRunner(config)
     runner.run()
