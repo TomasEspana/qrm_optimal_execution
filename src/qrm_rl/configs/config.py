@@ -15,6 +15,7 @@ def load_config(filename="default.yaml"):
     st = config['trader_time_step']
     config['trader_times'] = np.arange(0, th + st, st)
     config['action_dim'] = len(config['actions'])
+    config['state_dim'] = 4 * config['history_size'] + 2
 
     normal_prices = True
     decreasing_prices = False
