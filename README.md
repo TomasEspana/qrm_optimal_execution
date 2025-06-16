@@ -12,10 +12,10 @@ cd qrm_optimal_execution
 ### 2. Create the virtual environment and install dependencies
 
 ```bash
-make install
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 ```
-
-### 3. Don't forget to activate the virtual environment and have fun!
 
 ### 📌 \***\*Last update (29/05):\*\*** uploaded `simulate_qrm_numba.py`, `rl_utils_numba.py` and updated the folder `calibration_data`
 
