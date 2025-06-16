@@ -3,6 +3,7 @@ mode: train # or test
 seed: 42
 episodes: 3000 # number of episodes to run
 state_dim: 5
+normal_prices: True
 
 # simulation parameters
 time_horizon: 300 # in seconds

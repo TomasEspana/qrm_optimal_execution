@@ -17,13 +17,11 @@ def load_config(filename="default.yaml"):
     config['action_dim'] = len(config['actions'])
     config['state_dim'] = 4 * config['history_size'] + 2
 
-    normal_prices = True
-    decreasing_prices = False
-    if normal_prices:
+    if config['normal_prices']:
         config['file_name'] = 'aapl_corrected.npy'
         config['file_name_bid'] = 'aapl_corrected.npy'
         config['file_name_ask'] = 'aapl_corrected.npy'
-    if decreasing_prices:
+    else:
         config['file_name'] = 'aapl_price_down.npy'
         config['file_name_bid'] = 'aapl_price_down_bid.npy'
         config['file_name_ask'] = 'aapl_price_down_ask.npy'
