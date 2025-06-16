@@ -14,7 +14,7 @@ class DDQNAgent:
     def __init__(self, state_dim=1, action_dim=1, device='cpu',
                  epsilon_start=1.0, epsilon_end=0.01, epsilon_decay=0.995,
                  memory_capacity=10000, batch_size=64, gamma=0.99, lr=1e-3,
-                 alpha=0.95, eps=0.01, proba_0=0.8):
+                 alpha=0.95, eps=0.01, proba_0=0.8, warmup_steps=5000):
         
         self.device = torch.device(device)
         self.state_dim = state_dim
@@ -25,6 +25,7 @@ class DDQNAgent:
         self.alpha = alpha
         self.eps = eps
         self.proba_0 = proba_0
+        self.warmup_steps = warmup_steps
         
         # Policy and target networks
         self.policy_net = DQNNetwork(state_dim, action_dim).to(self.device)
@@ -105,7 +106,7 @@ class DDQNAgent:
         """
             Sample a batch of transitions from the replay memory and update the policy network.
         """
-        if len(self.memory) < self.batch_size:
+        if len(self.memory) < self.warmup_steps:
             return {}
         
         transitions = self.memory.sample(self.batch_size)

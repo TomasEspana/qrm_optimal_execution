@@ -92,7 +92,8 @@ class RLRunner:
             lr=config['learning_rate'],
             alpha=config['alpha'],
             eps=config['eps'],
-            proba_0=config['proba_0']
+            proba_0=config['proba_0'], 
+            warmup_steps=config['warmup_steps']
         )
 
         if self.mode == 'train':
@@ -228,8 +229,8 @@ class RLRunner:
                         
                         self.agent.store_transition(state_vec, action, reward, nxt_vec, done)
                         wandb_dic = self.agent.learn()
-                        # if step_count % self.cfg['target_update_freq'] == 0:
-                        #     self.agent.update_target_network()
+                        if step_count % self.cfg['target_update_freq'] == 0:
+                            self.agent.update_target_network()
 
                     else:
                         current_inventory = self.env.current_inventory
@@ -250,8 +251,8 @@ class RLRunner:
                     step_count += 1
                     k += 1
                 
-            if train_mode and ep % self.cfg['target_update_freq'] == 0 and ep > 0:
-                self.agent.update_target_network()
+            # if train_mode and ep % self.cfg['target_update_freq'] == 0 and ep > 0:
+            #     self.agent.update_target_network()
 
             # end of episode logging
             summary = {
