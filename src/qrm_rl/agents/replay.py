@@ -22,7 +22,7 @@ class ReplayMemory:
         indices = np.random.choice(len(self.memory)-1, size=batch_size-1, replace=False)
         batch = [self.memory[i] for i in indices]
         batch.append(latest_transition)
-        return [self.memory[i] for i in indices]
+        return batch
     
     def __len__(self):
         return len(self.memory)
