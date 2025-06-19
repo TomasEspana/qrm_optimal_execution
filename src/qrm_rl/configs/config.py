@@ -17,6 +17,10 @@ def load_config(filename="default.yaml"):
     config['action_dim'] = len(config['actions'])
     config['state_dim'] = 4 * config['history_size'] + 2
 
+    # Size pre initialization for LOB
+    config['max_events_intra'] = 200 * config['trader_time_step']
+    config['max_events'] = (int(config['time_horizon'] / config['trader_time_step']) + 1) * config['max_events_intra']
+
     if config['normal_prices']:
         config['file_name'] = 'aapl_corrected.npy'
         config['file_name_bid'] = 'aapl_corrected.npy'

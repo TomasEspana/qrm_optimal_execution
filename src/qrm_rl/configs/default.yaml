@@ -11,8 +11,6 @@ trader_time_step: 1.0 # in seconds
 initial_inventory: 75 # initial inventory of the trader
 actions: [0, 1, 2, 3, 4] # actions: 0 = do nothing, 1 = execute 1 share, 2 = execute 2 shares, etc
 history_size: 5 # number of past trader times to consider in the state
-max_events: 20000 # maximum number of events in the LOB (to avoid using append lists)
-max_events_intra: 200 # maximum number of events between two trader times (to avoid using append lists)
 final_penalty: 1.0 # reward -= final_penalty * current_inventory (at the end of the episode)
 risk_aversion: 0.05 # reward -= risk_aversion * penalty (current inventory, or risk aversion term, during the episode)
 alpha_ramp: 15 # ramping parameter for the risk aversion term
