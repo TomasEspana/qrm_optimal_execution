@@ -45,6 +45,9 @@ batch_size: 64
 memory_capacity: 10000
 warmup_steps: 64
 target_update_freq: 3000
+target_update_freq_2: 500
+dynamic_lr: False
+dynamic_batch_size: False
 
 # environment
 logging_every: 5 # print reward in the terminal every `logging_every` episodes during training
