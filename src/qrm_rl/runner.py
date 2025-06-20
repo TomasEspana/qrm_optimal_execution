@@ -205,7 +205,15 @@ class RLRunner:
             executed_dic = {}
 
         step_count = 0
+        nb_eps_greedy = int(self.prop_greedy_eps * self.episodes)
         for ep in range(self.episodes):
+
+            if self.cfg['dynamic_lr'] and ep > nb_eps_greedy:
+                for param_group in self.agent.optimizer.param_groups:
+                    param_group['lr'] = 5e-4
+            
+            if self.cfg['dynamic_batch_size'] and ep > nb_eps_greedy:
+                self.agent.batch_size = 512
 
             state = self.env.reset()
             state_vec = self.env.state_to_vector(state)
@@ -229,8 +237,13 @@ class RLRunner:
                         
                         self.agent.store_transition(state_vec, action, reward, nxt_vec, done)
                         wandb_dic = self.agent.learn()
-                        if step_count % self.cfg['target_update_freq'] == 0:
-                            self.agent.update_target_network()
+                        # update the target network
+                        if step_count < nb_eps_greedy:
+                            if step_count % self.cfg['target_update_freq'] == 0:
+                                self.agent.update_target_network()
+                        else:
+                            if step_count % self.cfg['target_update_freq_2'] == 0:
+                                self.agent.update_target_network()
 
                     else:
                         current_inventory = self.env.current_inventory
