@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 ### 3. Run the `scripts\run_train.py` file and have fun!
 
-
+---
 
 ### 📌 \***\*Last update (29/05):\*\*** uploaded `simulate_qrm_numba.py`, `rl_utils_numba.py` and updated the folder `calibration_data`
 
