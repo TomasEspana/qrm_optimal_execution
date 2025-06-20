@@ -11,7 +11,7 @@ if __name__ == "__main__":
     train_run_id = 't40nwadb'
     ### ----------------------###
 
-    config = load_config("src/qrm_rl/configs/default.yaml")
+    config = load_config()
 
     runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.pth')
 
