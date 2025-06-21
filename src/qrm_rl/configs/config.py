@@ -16,6 +16,7 @@ def load_config(filename="default.yaml"):
     config['trader_times'] = np.arange(0, th + st, st)
     config['action_dim'] = len(config['actions'])
     config['state_dim'] = 4 * config['history_size'] + 2
+    config['proba_0'] = 1 / len(config['actions'])
 
     # Size pre initialization for LOB
     config['max_events_intra'] = int(200 * config['trader_time_step'])
