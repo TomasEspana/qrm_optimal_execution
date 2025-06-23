@@ -203,10 +203,13 @@ class RLRunner:
             mid_prices = {}
             actions_taken = {}
             executed_dic = {}
+            index_actions ={}
 
         step_count = 0
         nb_eps_greedy = int(self.prop_greedy_eps * self.episodes)
         for ep in range(self.episodes):
+
+            idx_actions = []
 
             if self.cfg['dynamic_lr'] and ep > nb_eps_greedy:
                 for param_group in self.agent.optimizer.param_groups:
@@ -217,6 +220,7 @@ class RLRunner:
 
             state = self.env.reset()
             state_vec = self.env.state_to_vector(state)
+            idx_actions.append(self.env.simulator.step + 1)
             if train_mode:
                 if not self.unif_deter_strats:
                     self._update_epsilon(ep)
@@ -265,6 +269,7 @@ class RLRunner:
                     ep_reward += reward
                     actions.append(action)
                     executed.append(exec)
+                    idx_actions.append(self.env.simulator.step + 1)
                     self._log_step(state_vec, nxt, reward, action, wandb_dic, step_count)
                     step_count += 1
                     k += 1
@@ -299,6 +304,7 @@ class RLRunner:
                 mid_prices[ep] = self.env.simulator.p_mids[:self.env.simulator.step]
                 actions_taken[ep] = actions
                 executed_dic[ep] = executed
+                index_actions[ep] = idx_actions
 
         # save model if training
         if train_mode:
@@ -311,6 +317,7 @@ class RLRunner:
                 'final_is': final_is, 
                 'mid_prices': mid_prices,
                 'actions': actions_taken, 
-                'executed': executed_dic
+                'executed': executed_dic, 
+                'index_actions': index_actions
             }
             return dic, self.run_id
