@@ -220,7 +220,7 @@ class RLRunner:
 
             state = self.env.reset()
             state_vec = self.env.state_to_vector(state)
-            idx_actions.append(self.env.simulator.step + 1)
+            idx_actions.append(self.env.simulator.step)
             if train_mode:
                 if not self.unif_deter_strats:
                     self._update_epsilon(ep)
@@ -269,7 +269,7 @@ class RLRunner:
                     ep_reward += reward
                     actions.append(action)
                     executed.append(exec)
-                    idx_actions.append(self.env.simulator.step + 1)
+                    idx_actions.append(self.env.simulator.step)
                     self._log_step(state_vec, nxt, reward, action, wandb_dic, step_count)
                     step_count += 1
                     k += 1
