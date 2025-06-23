@@ -80,6 +80,16 @@ class FrontLoadAgent:
     def select_action(self, state, episode):
         return self.fixed_action
     
+class RandomAgent:
+    """
+        Random agent samples uniformly from the action space.
+    """
+    def __init__(self, action_dim):
+        self.action_dim = action_dim
+
+    def select_action(self, state, episode):
+        return np.random.choice(self.action_dim)
+    
 
 
 ### --- Deprecated agents --- ###
@@ -91,17 +101,6 @@ class InactiveAgent:
     """
     def select_action(self, state, episode):
         return 0
-
-class RandomAgent:
-    """
-        Random agent samples uniformly from the action space.
-    """
-    def __init__(self, action_dim, rng):
-        self.action_dim = action_dim
-        self.rng = rng
-
-    def select_action(self, state, episode):
-        return self.rng.integers(self.action_dim)
 
 class PassiveAgent:
     """
