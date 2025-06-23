@@ -37,19 +37,19 @@ def simulate_QRM_jit(time: float,
     p_mid_old = p_mid
     count = 0
 
-    times   = np.empty(max_events, np.float64)
-    p_mids  = np.empty(max_events, np.float64)
-    p_refs  = np.empty(max_events, np.float64)
-    sides   = np.empty(max_events, np.int32)
-    depths  = np.empty(max_events, np.int32)
-    events  = np.empty(max_events, np.int32)
-    redrawns = np.empty(max_events, np.int32)
-    states  = np.empty((max_events, 2*K), np.int32)
+    times   = np.empty(max_events, np.float32)
+    p_mids  = np.empty(max_events, np.float32)
+    p_refs  = np.empty(max_events, np.float32)
+    sides   = np.empty(max_events, np.int8)
+    depths  = np.empty(max_events, np.int8)
+    events  = np.empty(max_events, np.int8)
+    redrawns = np.empty(max_events, np.int8)
+    states  = np.empty((max_events, 2*K), np.int8)
 
     while True:
         # build rates
         n_rates = 2 * K * 3
-        rates   = np.empty((n_rates, 4), np.float64)
+        rates   = np.empty((n_rates, 4), np.float32)
         idx     = 0
         total   = 0.0
         for s in range(2):
