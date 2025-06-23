@@ -304,7 +304,7 @@ class RLRunner:
                 mid_prices[ep] = self.env.simulator.p_mids[:self.env.simulator.step]
                 actions_taken[ep] = actions
                 executed_dic[ep] = executed
-                index_actions[ep] = idx_actions
+                index_actions[ep] = idx_actions[:-1]
 
         # save model if training
         if train_mode:
