@@ -4,7 +4,7 @@ import torch
 from numba import njit
 from contextlib import nullcontext
 from qrm_rl.agents.ddqn import DDQNAgent
-from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent
+from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent, RandomAgent
 from qrm_core.intensity import IntensityTable
 from .market_environment import MarketEnvironment
 from .utils import load_model, save_model
@@ -28,9 +28,9 @@ class RLRunner:
             DDQNAgent: 'ddqn',
             TWAPAgent: 'twap', 
             BackLoadAgent: 'back_load',
-            FrontLoadAgent: 'front_load'
+            FrontLoadAgent: 'front_load', 
+            RandomAgent: 'random'
             # InactiveAgent: 'inactive', 
-            # RandomAgent: 'random',
             # PassiveAgent: 'passive',
         }
 
