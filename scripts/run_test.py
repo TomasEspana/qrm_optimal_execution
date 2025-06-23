@@ -1,7 +1,7 @@
 import pickle 
 from src.qrm_rl.configs.config import load_config
 from src.qrm_rl.runner import RLRunner
-from src.qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent
+from src.qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent, RandomAgent
 
 if __name__ == "__main__":
 
@@ -69,4 +69,13 @@ if __name__ == "__main__":
     dic, run_id = runner.run()
     final_is['Front Load - 1'] = dic['final_is']
     with open(f'data_wandb/dictionaries/front_load_1_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
+
+    ### === Random Agent Testing === ###
+    runner = RLRunner(config)
+    agent = RandomAgent(action_dim=runner.cfg['action_dim'])
+    runner.agent = agent
+    dic, run_id = runner.run()
+    final_is['Random'] = dic['final_is']
+    with open(f'data_wandb/dictionaries/random_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)
