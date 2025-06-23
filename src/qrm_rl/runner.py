@@ -246,12 +246,17 @@ class RLRunner:
                                 self.agent.update_target_network()
 
                     else:
-                        current_inventory = self.env.current_inventory
-                        t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin 
-                        if len(self.env.trader_times) - k > t_left:
-                            action = self.agent.select_action(state_vec, ep)
+
+                        if self.cfg['safety_test']: # enforce zero inventory on test trajectories
+                            current_inventory = self.env.current_inventory
+                            t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin
+                            if len(self.env.trader_times) - k > t_left:
+                                action = self.agent.select_action(state_vec, ep)
+                            else:
+                                action = max(self.env.actions)
                         else:
-                            action = max(self.env.actions)
+                            action = self.agent.select_action(state_vec, ep)
+
                         nxt, reward, done, exec = self.env.step(action)
                         nxt_vec = self.env.state_to_vector(nxt)
                         wandb_dic = {}
