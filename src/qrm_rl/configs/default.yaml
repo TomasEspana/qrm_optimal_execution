@@ -33,9 +33,9 @@ arrival_price: 100.005 # must be a multiple of half tick (0.005 in this case)
 epsilon_start: 1.0
 epsilon_end: 0.01
 epsilon_decay: 0.995
-unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
 prop_greedy_eps: 0.75 # proportion of episodes where the agent is greedy
 prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmark strategies (TWAP, Back Load, etc)
+unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
 
 gamma: 0.99
 learning_rate: 0.001
