@@ -15,7 +15,10 @@ def load_config(filename="default.yaml"):
     st = config['trader_time_step']
     config['trader_times'] = np.arange(0, th + st, st)
     config['action_dim'] = len(config['actions'])
-    config['state_dim'] = 4 * config['history_size'] + 2
+    if config['basic_state']:
+        config['state_dim'] = 3 # Basic state: [inventory, time, mid_price]
+    else:
+        config['state_dim'] = 4 * config['history_size'] + 2
     config['proba_0'] = 1 / len(config['actions'])
 
     # Size pre initialization for LOB
