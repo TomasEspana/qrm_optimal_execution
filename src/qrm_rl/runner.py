@@ -75,7 +75,8 @@ class RLRunner:
             max_events=config['max_events'],
             max_events_intra=config['max_events_intra'], 
             history_size=config['history_size'], 
-            alpha_ramp=config['alpha_ramp']
+            alpha_ramp=config['alpha_ramp'], 
+            basic_state=config['basic_state']
         )
 
         # Agent

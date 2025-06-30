@@ -3,6 +3,7 @@ mode: train # or test
 seed: 42
 episodes: 3000 # number of episodes to run
 normal_prices: True
+basic_state: False
 safety_test: True
 
 # simulation parameters
