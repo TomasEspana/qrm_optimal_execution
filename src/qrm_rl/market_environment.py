@@ -32,7 +32,8 @@ class MarketEnvironment:
         max_events: int, 
         max_events_intra: int, 
         history_size: int, 
-        alpha_ramp: float
+        alpha_ramp: float, 
+        basic_state: bool
     ):
         # — core parameters —
         self.actions = actions
