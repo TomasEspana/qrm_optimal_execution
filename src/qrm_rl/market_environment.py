@@ -67,6 +67,7 @@ class MarketEnvironment:
         self.final_is   = 0.0
         self.risk_aversion_term = 0.0
         self.non_executed_liquidity_constraint = 0
+        self.basic_state = basic_state
 
         # instantiate our fast, NumPy-backed simulator
         self.simulator = QueueReactiveMarketSimulator(
@@ -173,7 +174,10 @@ class MarketEnvironment:
         else: # boundary case 
             nxt = self.trader_times[-1] + self.step_trader_times
         
-        return [self.current_inventory, nxt] + lob_states
+        if self.basic_state:
+            return [self.current_inventory, nxt, self.current_mid_price()]
+        else:
+            return [self.current_inventory, nxt] + lob_states
         
 
     def state_to_vector(self, st):
