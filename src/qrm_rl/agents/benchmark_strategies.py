@@ -13,7 +13,7 @@ class TWAPAgent:
         self.time_horizon = time_horizon
         self.initial_inventory = initial_inventory
         self.trader_time_step = trader_time_step
-        ratio = int(initial_inventory / time_horizon / trader_time_step)
+        ratio = int(initial_inventory / (time_horizon / trader_time_step))
         self.actions = self.distribute_ones(int(time_horizon/trader_time_step), initial_inventory, ratio)
 
     @staticmethod
