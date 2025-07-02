@@ -44,7 +44,7 @@ alpha: 0.95
 eps: 0.01
 batch_size: 64
 memory_capacity: 10000
-warmup_steps: 64
+warmup_steps: 0
 target_update_freq: 3000
 target_update_freq_2: 500
 dynamic_lr: False
