@@ -35,7 +35,7 @@ class DDQNAgent:
         
         self.optimizer = optim.Adam(
             self.policy_net.parameters(),
-            lr=0.0001
+            lr=self.lr
         )
         
         # self.optimizer = optim.RMSprop(
