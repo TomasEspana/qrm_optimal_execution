@@ -33,12 +33,17 @@ class DDQNAgent:
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         
-        self.optimizer = optim.RMSprop(
+        self.optimizer = optim.Adam(
             self.policy_net.parameters(),
-            lr=self.lr,       
-            alpha=self.alpha,     
-            eps=self.eps          
-            )
+            lr=0.0001
+        )
+        
+        # self.optimizer = optim.RMSprop(
+        #     self.policy_net.parameters(),
+        #     lr=self.lr,       
+        #     alpha=self.alpha,     
+        #     eps=self.eps          
+        #     )
         
         # Epsilon-greedy parameters
         self.epsilon = epsilon_start
