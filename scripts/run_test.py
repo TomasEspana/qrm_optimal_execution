@@ -47,7 +47,7 @@ if __name__ == "__main__":
     ### === Back Load Agent Testing === ###
     runner = RLRunner(config)
     agent = BackLoadAgent(time_horizon=th, initial_inventory=ii, 
-                            trader_time_step=tts, fixed_action=max_action, security_margin=runner.cfg['exec_security_margin'])
+                            trader_time_step=tts, fixed_action=max_action, security_margin=0)
 
     runner.agent = agent
     dic, run_id = runner.run()
