@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     ### === Random Agent Testing === ###
     runner = RLRunner(config)
-    agent = RandomAgent(action_dim=runner.cfg['action_dim'])
+    agent = RandomAgent(actions=actions)
     runner.agent = agent
     dic, run_id = runner.run()
     final_is['Random'] = dic['final_is']
