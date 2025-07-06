@@ -241,7 +241,7 @@ class RLRunner:
                         nxt, reward, done, exec = self.env.step(action)
                         nxt_vec = self.env.state_to_vector(nxt)
                         
-                        self.agent.store_transition(state_vec, action, reward, nxt_vec, done)
+                        self.agent.store_transition(state_vec, action_idx, reward, nxt_vec, done)
                         wandb_dic = self.agent.learn()
                         # update the target network
                         if step_count < nb_eps_greedy:
