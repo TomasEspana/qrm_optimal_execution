@@ -47,7 +47,7 @@ if __name__ == "__main__":
     ### === Back Load Agent Testing === ###
     runner = RLRunner(config)
     agent = BackLoadAgent(time_horizon=th, initial_inventory=ii, 
-                            trader_time_step=tts, fixed_action=max_action, security_margin=0)
+                            trader_time_step=tts, fixed_action=-1, security_margin=0)
 
     runner.agent = agent
     dic, run_id = runner.run()
@@ -57,16 +57,16 @@ if __name__ == "__main__":
 
     ### === Front Load Agent Testing === ###
     runner = RLRunner(config)
-    agent = FrontLoadAgent(fixed_action=max_action)
+    agent = FrontLoadAgent(fixed_action=-1)
     runner.agent = agent
     dic, run_id = runner.run()
     final_is['Front Load'] = dic['final_is']
     with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)
 
-    ### === Front Load Agent Testing === ###
+    ### === Front Load - 1 Agent Testing === ###
     runner = RLRunner(config)
-    agent = FrontLoadAgent(fixed_action=actions[1])
+    agent = FrontLoadAgent(fixed_action=1)
     runner.agent = agent
     dic, run_id = runner.run()
     final_is['Front Load - 1'] = dic['final_is']
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     ### === Random Agent Testing === ###
     runner = RLRunner(config)
-    agent = RandomAgent(actions=actions)
+    agent = RandomAgent(action_dim=len(actions))
     runner.agent = agent
     dic, run_id = runner.run()
     final_is['Random'] = dic['final_is']
