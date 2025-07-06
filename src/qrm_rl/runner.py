@@ -257,11 +257,13 @@ class RLRunner:
                             current_inventory = self.env.current_inventory
                             t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin
                             if len(self.env.trader_times) - k > t_left:
-                                action = self.agent.select_action(state_vec, ep)
+                                action_idx = self.agent.select_action(state_vec, ep)
+                                action = self.env.actions[action_idx]
                             else:
                                 action = max(self.env.actions)
                         else:
-                            action = self.agent.select_action(state_vec, ep)
+                            action_idx = self.agent.select_action(state_vec, ep)
+                            action = self.env.actions[action_idx]
 
                         nxt, reward, done, exec = self.env.step(action)
                         nxt_vec = self.env.state_to_vector(nxt)
