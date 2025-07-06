@@ -70,7 +70,7 @@ class BackLoadAgent:
         curr_time = (time_norm + 1) * self.time_horizon / 2 # inverse transform of state normalization
         idx = round(curr_time / self.trader_time_step)
 
-        if idx >= self.n_steps - exec_steps - self.security_margin: 
+        if idx >= self.n_steps - exec_steps - self.security_margin: # 1 time step security margin
             return self.fixed_action
         else:
             return 0

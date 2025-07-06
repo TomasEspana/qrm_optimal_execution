@@ -107,7 +107,9 @@ class RLRunner:
                 time_horizon=config['time_horizon'],
                 initial_inventory=config['initial_inventory'],
                 trader_time_step=config['trader_time_step'], 
-                fixed_action=1
+                fixed_action=-1, 
+                actions=config['actions'], 
+                security_margin=0
             )
 
         # Load weights
