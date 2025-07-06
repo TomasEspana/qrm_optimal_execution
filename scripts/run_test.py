@@ -13,7 +13,6 @@ if __name__ == "__main__":
 
     config = load_config()
     config['mode'] = 'test'
-    config['safety_test'] = True
 
     runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.pth')
 
