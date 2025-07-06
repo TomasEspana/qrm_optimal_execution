@@ -74,13 +74,14 @@ class BackLoadAgent:
 
 
 class FrontLoadAgent:
-    def __init__(self, fixed_action):
+    def __init__(self, fixed_action, actions):
         self.fixed_action = fixed_action
+        self.actions = actions
     
     def select_action(self, state, episode):
-        return self.fixed_action
+        return self.actions[self.fixed_action]
     
-    
+
 class RandomAgent:
     """
         Random agent samples uniformly from the action space.
