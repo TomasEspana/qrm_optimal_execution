@@ -14,7 +14,7 @@ class TWAPAgent:
         self.initial_inventory = initial_inventory
         self.trader_time_step = trader_time_step
         ratio = int(initial_inventory / (time_horizon / trader_time_step))
-        self.actions = self.distribute_ones(int(time_horizon/trader_time_step), initial_inventory, ratio)
+        self.actions_schedule = self.distribute_ones(int(time_horizon/trader_time_step), initial_inventory, ratio)
 
     @staticmethod
     def distribute_ones(n, n_0, ratio):
@@ -33,8 +33,8 @@ class TWAPAgent:
         time_norm = state[1]
         time = (time_norm + 1)*self.time_horizon / 2
         idx = round(time / self.trader_time_step) - 1 
-        assert idx < len(self.actions), "TWAP Error: Index out of bounds."      
-        return self.actions[idx] 
+        assert idx < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
+        return self.actions_schedule[idx]
 
 
 class BackLoadAgent:
