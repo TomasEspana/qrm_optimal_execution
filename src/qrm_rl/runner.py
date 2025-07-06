@@ -236,7 +236,8 @@ class RLRunner:
 
                     if train_mode:
 
-                        action = self.agent.select_action(state_vec, ep)
+                        action_idx = self.agent.select_action(state_vec, ep)
+                        action = self.env.actions[action_idx]
                         nxt, reward, done, exec = self.env.step(action)
                         nxt_vec = self.env.state_to_vector(nxt)
                         
