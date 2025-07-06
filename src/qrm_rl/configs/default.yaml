@@ -15,7 +15,7 @@ history_size: 5 # number of past trader times to consider in the state
 final_penalty: 1.0 # reward -= final_penalty * current_inventory (at the end of the episode)
 risk_aversion: 0.05 # reward -= risk_aversion * penalty (current inventory, or risk aversion term, during the episode)
 alpha_ramp: 15 # ramping parameter for the risk aversion term
-exec_security_margin: 1 # security margin for the back-loaded execution agent
+exec_security_margin: 0 # security margin for the back-loaded execution agent
 
 # normalization parameters (for NN input)
 price_offset: 0.
