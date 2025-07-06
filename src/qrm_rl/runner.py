@@ -288,7 +288,7 @@ class RLRunner:
                 "Final Inventory": self.env.current_inventory,
                 "Final Implementation Shortfall": self.env.final_is,
                 "Episode Length": self.env.current_time(),
-                **{f"Action_{a}_count": actions.count(a) for a in range(self.cfg['action_dim'])}, 
+                **{f"Action_{a}_count": actions.count(a) for a in self.env.actions}, 
                 "Non Executed Liquidity Constraint": self.env.non_executed_liquidity_constraint, 
             }
             if train_mode:
