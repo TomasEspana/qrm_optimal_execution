@@ -71,9 +71,9 @@ class DDQNAgent:
 
         if self.exploration_mode == 'rl':
             if np.random.random() < self.epsilon:
-                actions = [i for i in range(self.action_dim)]
+                idx_actions = [i for i in range(self.action_dim)]
                 probs = [self.proba_0] + [(1-self.proba_0) / (self.action_dim - 1)] * (self.action_dim - 1)
-                return np.random.choice(actions, p=probs)
+                return np.random.choice(idx_actions, p=probs)
             else:
                 with torch.no_grad():
                     return self.policy_net(state_tensor).argmax().item()
