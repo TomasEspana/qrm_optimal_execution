@@ -83,7 +83,6 @@ class DDQNAgent:
         
         elif self.exploration_mode == 'back_load':
             self.backload_agent.fixed_action = self.fixed_action
-            self.backload_agent.exec_steps = int(np.ceil(self.backload_agent.initial_inventory / self.fixed_action))
             return self.backload_agent.select_action(state, episode)
         
         elif self.exploration_mode == 'twap':
@@ -161,8 +160,6 @@ class DDQNAgent:
         #     total_norm = torch.norm(torch.cat(grads)).item()
         #     wandb.log({f"grad_norm/{layer}": total_norm})
 
-        ### --
-        
         self.optimizer.step()
 
         return wandb_dic
