@@ -49,25 +49,28 @@ class BackLoadAgent:
         time_horizon: float,
         initial_inventory: int,
         trader_time_step: float, 
-        fixed_action: int = 1, 
-        security_margin: int = 0
+        fixed_action: int, 
+        actions: list,
+        security_margin: int
     ):
         self.time_horizon      = time_horizon
         self.initial_inventory = initial_inventory
         self.trader_time_step  = trader_time_step
         self.fixed_action      = fixed_action
+        self.actions           = actions
         self.security_margin   = security_margin # start slightly earlier to ensure full liquidation because of QRM liquidity constraints
         self.n_steps = int(np.ceil(time_horizon / trader_time_step))
-        self.exec_steps = int(np.ceil(initial_inventory / fixed_action))
 
 
     def select_action(self, state, episode):
         
+        exec_steps = int(np.ceil(self.initial_inventory / self.actions[self.fixed_action]))
+
         time_norm = state[1]
         curr_time = (time_norm + 1) * self.time_horizon / 2 # inverse transform of state normalization
         idx = round(curr_time / self.trader_time_step)
 
-        if idx >= self.n_steps - self.exec_steps - self.security_margin: 
+        if idx >= self.n_steps - exec_steps - self.security_margin: 
             return self.fixed_action
         else:
             return 0
