@@ -130,9 +130,7 @@ class RLRunner:
             #     ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
             # )
             self.agent.epsilon = 0.0
-            self.agent.fixed_action = np.random.choice(
-                [a for a in range(1, self.agent.action_dim)]
-            )
+            self.agent.fixed_action = np.random.choice(len(self.env.actions) - 1) + 1
         elif ep < ge:
             self.agent.exploration_mode = 'rl'
             self.agent.epsilon = a * ep + b
@@ -163,9 +161,7 @@ class RLRunner:
             #     ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
             # )
             self.agent.epsilon = 0.0
-            self.agent.fixed_action = np.random.choice(
-                [a for a in range(1, self.agent.action_dim)]
-            )
+            self.agent.fixed_action = np.random.choice(len(self.env.actions) - 1) + 1
         elif ep < ge:
             self.agent.exploration_mode = 'rl'
             self.agent.epsilon = max(eps_end, slope * ep + intercept)
