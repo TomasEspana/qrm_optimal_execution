@@ -125,9 +125,10 @@ class RLRunner:
         b = eps_start - bs * a
 
         if ep < bs:
-            self.agent.exploration_mode = np.random.choice(
-                ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
-            )
+            self.agent.exploration_mode = np.random.choice(['front_load','back_load'])
+            # self.agent.exploration_mode = np.random.choice(
+            #     ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
+            # )
             self.agent.epsilon = 0.0
             self.agent.fixed_action = np.random.choice(
                 [a for a in range(1, self.agent.action_dim)]
@@ -157,9 +158,10 @@ class RLRunner:
         intercept = eps_start
 
         if ep in det_indices:
-            self.agent.exploration_mode = np.random.choice(
-                ['front_load', 'twap', 'back_load'], p=[0.3, 0.4, 0.3]
-            )
+            self.agent.exploration_mode = np.random.choice(['front_load','back_load'])
+            # self.agent.exploration_mode = np.random.choice(
+            #     ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
+            # )
             self.agent.epsilon = 0.0
             self.agent.fixed_action = np.random.choice(
                 [a for a in range(1, self.agent.action_dim)]
