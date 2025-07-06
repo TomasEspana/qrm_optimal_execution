@@ -162,6 +162,7 @@ class DDQNAgent:
         #     wandb.log({f"grad_norm/{layer}": total_norm})
 
         ### --
+        
         self.optimizer.step()
 
         return wandb_dic
