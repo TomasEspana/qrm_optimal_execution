@@ -253,7 +253,7 @@ class RLRunner:
 
                     else:
 
-                        if self.cfg['safety_test']: # enforce zero inventory on test trajectories
+                        if self.cfg['safety_test'] and isinstance(self.agent, DDQNAgent): # enforce zero inventory on test trajectories
                             current_inventory = self.env.current_inventory
                             t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin
                             if len(self.env.trader_times) - k > t_left:
