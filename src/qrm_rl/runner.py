@@ -251,19 +251,25 @@ class RLRunner:
                             if step_count % self.cfg['target_update_freq_2'] == 0:
                                 self.agent.update_target_network()
 
-                    else:
+                    else: # test mode
 
                         if self.cfg['safety_test'] and isinstance(self.agent, DDQNAgent): # enforce zero inventory on test trajectories
                             current_inventory = self.env.current_inventory
                             t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin
+
                             if len(self.env.trader_times) - k > t_left:
+                                    action_idx = self.agent.select_action(state_vec, ep)
+                                    action = self.env.actions[action_idx]
+                            else:
+                                action = max(self.env.actions)
+
+                        else:
+                            
+                            if not isinstance(self.agent, TWAPAgent):
                                 action_idx = self.agent.select_action(state_vec, ep)
                                 action = self.env.actions[action_idx]
                             else:
-                                action = max(self.env.actions)
-                        else:
-                            action_idx = self.agent.select_action(state_vec, ep)
-                            action = self.env.actions[action_idx]
+                                action = self.agent.select_action(state_vec, ep)
 
                         nxt, reward, done, exec = self.env.step(action)
                         nxt_vec = self.env.state_to_vector(nxt)
