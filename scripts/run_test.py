@@ -34,9 +34,9 @@ if __name__ == "__main__":
     runner = RLRunner(config)
     agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
     # # avoid remaining inventory because of the QRM liquidity constraints
-    # actions = agent.actions
-    # actions[-1] += 1
-    # agent.actions = actions
+    # actions_ag = agent.actions
+    # actions_ag[-1] += 1
+    # agent.actions = actions_ag
 
     runner.agent = agent
     dic, run_id = runner.run()
