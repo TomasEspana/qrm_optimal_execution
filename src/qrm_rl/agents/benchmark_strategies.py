@@ -19,14 +19,14 @@ class TWAPAgent:
     @staticmethod
     def distribute_ones(n, n_0, ratio):
         """
-            Uniformly distribute n_0 ones in an array of size n.
+            Uniformly distribute the n_0 TWAP actions in an array of size n.
         """
         arr = ratio * np.ones(n, dtype=int)
         new_n_0 = n_0 % n
         for i in range(new_n_0):
             index = round(i * (n - 1) / (new_n_0 - 1)) if new_n_0 > 1 else n // 2
             arr[index] += 1
-        assert np.sum(arr) == n_0, "TWAP Error: The number of ones in the array does not match n_0."
+        assert np.sum(arr) == n_0, "TWAP Error: The number of actions in the array does not match n_0."
         return arr
 
     def select_action(self, state, episode):
