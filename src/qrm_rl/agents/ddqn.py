@@ -57,7 +57,7 @@ class DDQNAgent:
         self.loss_fn = nn.SmoothL1Loss()
 
         # === Trading strategies ===
-        self.fixed_action = 2
+        self.fixed_action = 1
         self.twap_agent = None
         self.backload_agent = None
 
