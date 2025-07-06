@@ -32,9 +32,10 @@ if __name__ == "__main__":
     ### === TWAP Agent Testing === ###
     runner = RLRunner(config)
     agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
-    actions = agent.actions
-    actions[-1] += 1 # avoid remaining inventory because of the QRM liquidity constraints
-    agent.actions = actions
+    # # avoid remaining inventory because of the QRM liquidity constraints
+    # actions = agent.actions
+    # actions[-1] += 1
+    # agent.actions = actions
 
     runner.agent = agent
     dic, run_id = runner.run()
