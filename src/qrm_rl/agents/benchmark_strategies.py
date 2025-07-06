@@ -80,15 +80,16 @@ class FrontLoadAgent:
     def select_action(self, state, episode):
         return self.fixed_action
     
+    
 class RandomAgent:
     """
         Random agent samples uniformly from the action space.
     """
-    def __init__(self, action_dim):
-        self.action_dim = action_dim
+    def __init__(self, actions):
+        self.actions = actions
 
     def select_action(self, state, episode):
-        return np.random.choice(self.action_dim)
+        return np.random.choice(self.actions)
     
 
 

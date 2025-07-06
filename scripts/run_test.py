@@ -19,7 +19,8 @@ if __name__ == "__main__":
     th = runner.cfg['time_horizon']
     ii = runner.cfg['initial_inventory']
     tts = runner.cfg['trader_time_step']
-    max_action = max(runner.cfg['actions'])
+    actions = runner.cfg['actions']
+    max_action = max(actions)
     final_is = {}
 
 
@@ -65,7 +66,7 @@ if __name__ == "__main__":
 
     ### === Front Load Agent Testing === ###
     runner = RLRunner(config)
-    agent = FrontLoadAgent(fixed_action=1)
+    agent = FrontLoadAgent(fixed_action=actions[1])
     runner.agent = agent
     dic, run_id = runner.run()
     final_is['Front Load - 1'] = dic['final_is']
