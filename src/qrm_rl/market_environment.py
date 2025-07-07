@@ -150,8 +150,8 @@ class MarketEnvironment:
 
         for i in range(self.history_size):
             bid_info, ask_info = self._best_quotes(st[i], K, p_ref, self.tick)
-            lob_states[i][0][:2] = bid_info[:2]  # (price_bid, size_bid)
-            lob_states[i][1][:2] = ask_info[:2]  # (price_ask, size_ask)
+            lob_states[i][0][:2] = ask_info[:2]  # (price_ask, size_ask)
+            lob_states[i][1][:2] = bid_info[:2]  # (price_bid, size_bid)
 
         return lob_states.reshape(-1).tolist()
 
@@ -175,7 +175,7 @@ class MarketEnvironment:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state:
-            return [self.current_inventory, nxt, self.current_mid_price()]
+            return [self.current_inventory, nxt, lob_states[0]]
         else:
             return [self.current_inventory, nxt] + lob_states
         
