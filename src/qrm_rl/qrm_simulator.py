@@ -43,9 +43,9 @@ class QueueReactiveMarketSimulator:
         self.step = 0
         self.next_trader_time_idx = 0
 
-        self.times   = np.empty(self.max_events, np.float32)
-        self.p_mids  = np.empty(self.max_events, np.float32)
-        self.p_refs  = np.empty(self.max_events, np.float32)
+        self.times   = np.empty(self.max_events, np.float64)
+        self.p_mids  = np.empty(self.max_events, np.float64)
+        self.p_refs  = np.empty(self.max_events, np.float64)
         self.sides   = np.zeros(self.max_events, np.int8) # 1 = bid, 2 = ask
         self.depths  = np.zeros(self.max_events, np.int8) # depth of the event (nb of executed shares when trader action)
         self.events  = np.zeros(self.max_events, np.int8) # 1 = limit, 2 = cancel, 3 = order, 4 = trader
