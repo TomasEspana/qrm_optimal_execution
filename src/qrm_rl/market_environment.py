@@ -146,12 +146,19 @@ class MarketEnvironment:
         st = self.current_state(hist_size=self.history_size)[::-1]  # reverse order for most recent first
         K  = self.simulator.K
         p_ref = self.current_ref_price()
-        lob_states = np.empty((self.history_size, 2, 2), dtype=object)
 
+        # lob_states = np.empty((self.history_size, 2, 2), dtype=object)
+        # for i in range(self.history_size):
+        #     bid_info, ask_info = self._best_quotes(st[i], K, p_ref, self.tick)
+        #     lob_states[i][0][:2] = ask_info[:2]  # (price_ask, size_ask)
+        #     lob_states[i][1][:2] = bid_info[:2]  # (price_bid, size_bid)
+
+        lob_states = np.empty((self.history_size, 3), dtype=object)
         for i in range(self.history_size):
             bid_info, ask_info = self._best_quotes(st[i], K, p_ref, self.tick)
-            lob_states[i][0][:2] = ask_info[:2]  # (price_ask, size_ask)
-            lob_states[i][1][:2] = bid_info[:2]  # (price_bid, size_bid)
+            lob_states[i][0] = ask_info[0]  # (ask price)
+            lob_states[i][1] = ask_info[1]  # (ask size)
+            lob_states[i][2] = bid_info[1]  # (bid size)
 
         return lob_states.reshape(-1).tolist()
 
@@ -174,8 +181,8 @@ class MarketEnvironment:
         else: # boundary case 
             nxt = self.trader_times[-1] + self.step_trader_times
         
-        if self.basic_state:
-            return [self.current_inventory, nxt, lob_states[0]]
+        if self.basic_state: 
+            return [self.current_inventory, nxt, lob_states[0]] # ask price
         else:
             return [self.current_inventory, nxt] + lob_states
         
@@ -188,8 +195,12 @@ class MarketEnvironment:
         st = np.array(st)
         st_n[0] = 2 * st[0] / self.initial_inventory - 1  # inventory
         st_n[1] = 2 * st[1] / self.time_horizon - 1  # time
-        st_n[2::2] = (st[2::2] - self.arrival_price - self.price_offset) / self.price_std  # prices
-        st_n[3::2] = (st[3::2] - self.vol_offset) / self.vol_std  # volumes
+        # st_n[2::2] = (st[2::2] - self.arrival_price - self.price_offset) / self.price_std  # prices
+        # st_n[3::2] = (st[3::2] - self.vol_offset) / self.vol_std  # volumes
+
+        st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std  # prices
+        st_n[3::3] = (st[3::3] - self.vol_offset) / self.vol_std  # volumes
+        st_n[4::3] = (st[4::3] - self.vol_offset) / self.vol_std  # volumes
 
         return st_n
 
@@ -280,4 +291,5 @@ class MarketEnvironment:
             reward -= self.final_penalty * self.current_inventory
             self.simulator.next_trader_time_idx += 1
 
-        return self.get_state(), reward, done, q
+
+        return self.get_state(), reward, done, q, total_ask

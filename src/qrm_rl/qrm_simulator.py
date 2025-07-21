@@ -49,7 +49,7 @@ class QueueReactiveMarketSimulator:
         self.sides   = np.zeros(self.max_events, np.int8) # 1 = bid, 2 = ask
         self.depths  = np.zeros(self.max_events, np.int8) # depth of the event (nb of executed shares when trader action)
         self.events  = np.zeros(self.max_events, np.int8) # 1 = limit, 2 = cancel, 3 = order, 4 = trader
-        self.redrawn = np.zeros(self.max_events, np.8) # 0 = not redrawn, 1 = redrawn
+        self.redrawn = np.zeros(self.max_events, np.int8) # 0 = not redrawn, 1 = redrawn
         self.states  = np.empty((self.max_events, 2*self.K), np.int8) # [q_bid1, ..., q_bidK, q_ask1, ..., q_askK] format
 
         # sample from invariant distribution

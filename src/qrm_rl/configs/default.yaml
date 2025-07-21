@@ -1,25 +1,27 @@
 # mode + seeding
 mode: train # or test
 seed: 42
-episodes: 3000 # number of episodes to run
+episodes: 5000 # number of episodes to run
 normal_prices: True
-basic_state: False
-safety_test: True
+basic_state: True
+len_state_lob: 3
+action_ask_vol: True
+safety_test: False # this has to be set to False if 'action_ask_vol' is True
 
 # simulation parameters
-time_horizon: 300 # in seconds
-trader_time_step: 1.0 # in seconds
-initial_inventory: 75 # initial inventory of the trader
-actions: [0, 1, 2, 3, 4] # actions: 0 = do nothing, 1 = execute 1 share, 2 = execute 2 shares, etc
-history_size: 5 # number of past trader times to consider in the state
-final_penalty: 1.0 # reward -= final_penalty * current_inventory (at the end of the episode)
-risk_aversion: 0.05 # reward -= risk_aversion * penalty (current inventory, or risk aversion term, during the episode)
+time_horizon: 10000 # in seconds
+trader_time_step: 1000 # 6 # in seconds
+initial_inventory: 30 # 15 # initial inventory of the trader
+actions: [0, 1]
+history_size: 1 # number of past trader times to consider in the state
+final_penalty: 1 # reward -= final_penalty * current_inventory (at the end of the episode)
+risk_aversion: 0. # reward -= risk_aversion * penalty (current inventory, or risk aversion term, during the episode)
 alpha_ramp: 15 # ramping parameter for the risk aversion term
 exec_security_margin: 1 # security margin for the back-loaded execution agent
 
 # normalization parameters (for NN input)
 price_offset: 0.
-price_std: 0.1
+price_std: 0.3
 vol_offset: 5
 vol_std: 4
 
@@ -32,25 +34,85 @@ arrival_price: 100.005 # must be a multiple of half tick (0.005 in this case)
 # DQN hyperparams
 # proba_0: 0.2 # probability of sampling 0 action (do nothing) in the ε-greedy policy
 epsilon_start: 1.0
-epsilon_end: 0.01
+epsilon_end: 0.0
 epsilon_decay: 0.995
-prop_greedy_eps: 0.75 # proportion of episodes where the agent is greedy
+prop_greedy_eps: 0.09 # proportion of episodes where the agent is greedy
 prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmark strategies (TWAP, Back Load, etc)
 unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
 
-gamma: 0.99
-learning_rate: 0.001
+gamma: 1.0
+learning_rate: 0.0001
 alpha: 0.95
 eps: 0.01
 batch_size: 64
-memory_capacity: 10000
-warmup_steps: 0
-target_update_freq: 3000
-target_update_freq_2: 500
+memory_capacity: 300000 #
+warmup_steps: 0 # 2000 #10000 # 2000
+target_update_freq: 100 # 250 # 1500 # 250
+target_update_freq_2: 100 # 75 # 450 # 75
 dynamic_lr: False
 dynamic_batch_size: False
 
 # environment
-logging_every: 5 # print reward in the terminal every `logging_every` episodes during training
+logging_every: 10 # print reward in the terminal every `logging_every` episodes during training
 folder_path_intensity_table: "calibration_data/intensity_table/"
 folder_path_invariant: "calibration_data/invariant_distribution/"
+# ### S25
+
+# # mode + seeding
+# mode: train # or test
+# seed: 42
+# episodes: 1000 # number of episodes to run
+# normal_prices: True
+# basic_state: True
+# safety_test: True
+# len_state_lob: 3
+
+# # simulation parameters
+# time_horizon: 50 # in seconds
+# trader_time_step: 5 # 6 # in seconds
+# initial_inventory: 150 # 15 # initial inventory of the trader
+# actions: [0, 10, 20, 30] # actions: 0 = do nothing, 1 = execute 1 share, 2 = execute 2 shares, etc
+# history_size: 1 # number of past trader times to consider in the state
+# final_penalty: 1 # reward -= final_penalty * current_inventory (at the end of the episode)
+# risk_aversion: 0. # reward -= risk_aversion * penalty (current inventory, or risk aversion term, during the episode)
+# alpha_ramp: 15 # ramping parameter for the risk aversion term
+# exec_security_margin: 1 # security margin for the back-loaded execution agent
+
+# # normalization parameters (for NN input)
+# price_offset: 0.
+# price_std: 0.3
+# vol_offset: 5
+# vol_std: 4
+
+# # QRM parameters
+# theta: 0.6
+# theta_reinit: 0.85
+# tick: 0.01
+# arrival_price: 100.005 # must be a multiple of half tick (0.005 in this case)
+
+# # DQN hyperparams
+# # proba_0: 0.2 # probability of sampling 0 action (do nothing) in the ε-greedy policy
+# epsilon_start: 1.0
+# epsilon_end: 0.0
+# epsilon_decay: 0.995
+# prop_greedy_eps: 0.09 # proportion of episodes where the agent is greedy
+# prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmark strategies (TWAP, Back Load, etc)
+# unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
+
+# gamma: 1.0
+# learning_rate: 0.0001
+# alpha: 0.95
+# eps: 0.01
+# batch_size: 64
+# memory_capacity: 300000 #
+# warmup_steps: 0 # 2000 #10000 # 2000
+# target_update_freq: 100 # 250 # 1500 # 250
+# target_update_freq_2: 100 # 75 # 450 # 75
+# dynamic_lr: False
+# dynamic_batch_size: False
+
+# # environment
+# logging_every: 10 # print reward in the terminal every `logging_every` episodes during training
+# folder_path_intensity_table: "calibration_data/intensity_table/"
+# folder_path_invariant: "calibration_data/invariant_distribution/"
+

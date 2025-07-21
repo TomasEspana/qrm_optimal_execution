@@ -94,6 +94,46 @@ class RandomAgent:
     def select_action(self, state, episode):
         return np.random.choice(self.action_dim)
     
+class ConstantAgent:
+    """
+        Aggressive agent: always buys two shares.
+    """
+    def __init__(self, fixed_action):
+        self.fixed_action = fixed_action
+
+    def select_action(self, state, episode):
+        return self.fixed_action
+    
+class BimodalAgent:
+    """
+        Aggressive agent: always buys two shares.
+    """
+    def __init__(self, k=0):
+        self.k = k
+
+    def select_action(self, state, episode):
+        if self.k % 2 == 1:
+            return 1
+        else:
+            return 0
+
+
+class BestVolumeAgent:
+    """
+
+    """
+    def __init__(self, fixed_action=-1, k=0, modulo=2):
+        self.fixed_action = fixed_action
+        self.k = k
+        self.modulo = modulo
+
+
+    def select_action(self, state, episode):
+        if self.k % self.modulo == 1:
+            return self.fixed_action
+        else:
+            return 0
+    
 
 
 ### --- Deprecated agents --- ###
@@ -105,6 +145,7 @@ class InactiveAgent:
     """
     def select_action(self, state, episode):
         return 0
+
 
 class PassiveAgent:
     """
@@ -118,9 +159,3 @@ class PassiveAgent:
         probs = [0.5] + [0.5 / (self.action_dim - 1)] * (self.action_dim - 1)
         return self.rng.choice([i for i in range(self.action_dim)], p=probs)
     
-class AggressiveAgent:
-    """
-        Aggressive agent: always buys two shares.
-    """
-    def select_action(self, state, episode):
-        return 2

@@ -16,7 +16,7 @@ class ReplayMemory:
     
     def sample(self, batch_size):
         """
-            Always sample the current state.
+            Always sample the latest transition and a batch of previous transitions.
         """
         latest_transition = self.memory[-1]
         indices = np.random.choice(len(self.memory)-1, size=batch_size-1, replace=False)

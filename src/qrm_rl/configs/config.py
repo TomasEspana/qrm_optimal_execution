@@ -18,7 +18,8 @@ def load_config(filename="default.yaml"):
     if config['basic_state']:
         config['state_dim'] = 3 # Basic state: [inventory, time, mid_price]
     else:
-        config['state_dim'] = 4 * config['history_size'] + 2
+        config['state_dim'] = config['len_state_lob'] * config['history_size'] + 2
+    
     config['proba_0'] = 1 / len(config['actions'])
 
     if config['warmup_steps'] == 0:
@@ -29,9 +30,12 @@ def load_config(filename="default.yaml"):
     config['max_events'] = int((int(config['time_horizon'] / config['trader_time_step']) + 1) * config['max_events_intra'])
 
     if config['normal_prices']:
-        config['file_name'] = 'aapl_corrected.npy'
-        config['file_name_bid'] = 'aapl_corrected.npy'
-        config['file_name_ask'] = 'aapl_corrected.npy'
+        config['file_name'] = 'qrm_paper.npy'
+        config['file_name_bid'] = 'qrm_paper.npy'
+        config['file_name_ask'] = 'qrm_paper.npy'
+        # config['file_name'] = 'aapl_corrected.npy'
+        # config['file_name_bid'] = 'aapl_corrected.npy'
+        # config['file_name_ask'] = 'aapl_corrected.npy'
     else:
         config['file_name'] = 'aapl_price_down.npy'
         config['file_name_bid'] = 'aapl_price_down_bid.npy'

@@ -80,11 +80,15 @@ def choose_next_event(K: int,
             if new_state[pos] < Q:
                 new_state[pos] += 1
             else:
+                print('FORBIDDEN: limit order exceeds max queue size \n')
+                print('DEPTH', depth, 'SIDE', side_f)
                 skip = True
         else:         # cancel/market
             if new_state[pos] > 0:
                 new_state[pos] -= 1
             else:
+                print('FORBIDDEN: cancel/market order on empty queue \n')
+                print('DEPTH', depth, 'SIDE', side_f)
                 skip = True
 
         # ensure non‐empty book
@@ -98,9 +102,70 @@ def choose_next_event(K: int,
             if new_state[K + i] > 0:
                 best_ask = i
                 break
-
+        
+        count += 1
         if best_bid >= 0 and best_ask >= 0:
             return best_bid, best_ask, new_state, side_f, depth, evf, skip
+        
+
+@njit
+def choose_next_event_bis(K: int,
+                      Q: int,
+                      rates: np.ndarray,
+                      state: np.ndarray, 
+                      t: float
+                      ):
+    
+    n = rates.shape[0]
+    rates_array = rates[:, 0]
+    dt_array = np.empty(n)
+
+    while True:
+        # sample dt
+        for i in range(n):
+            if rates_array[i] == 0:
+                dt_array[i] = np.inf
+            else:
+                dt_array[i] = np.random.exponential(1.0 / rates_array[i])
+        idx = np.argmin(dt_array)
+        t += dt_array[idx]
+
+        side_f = np.int32(rates[idx, 1])
+        depth  = np.int32(rates[idx, 2])
+        evf    = np.int32(rates[idx, 3])
+        pos    = (depth - 1) if side_f == 1 else (K + depth - 1)
+
+        new_state = state.copy()
+        skip = False
+        if evf == 1:  # limit
+            if new_state[pos] < Q:
+                new_state[pos] += 1
+            else:
+                # print('FORBIDDEN: limit order exceeds max queue size \n')
+                # print('DEPTH', depth, 'SIDE', side_f)
+                skip = True
+        else:         # cancel/market
+            if new_state[pos] > 0:
+                new_state[pos] -= 1
+            else:
+                # print('FORBIDDEN: cancel/market order on empty queue \n')
+                # print('DEPTH', depth, 'SIDE', side_f)
+                skip = True
+
+        # ensure non‐empty book
+        best_bid = -1
+        for i in range(K):
+            if new_state[i] > 0:
+                best_bid = i
+                break
+        best_ask = -1
+        for i in range(K):
+            if new_state[K + i] > 0:
+                best_ask = i
+                break
+        
+        if (best_bid >= 0 and best_ask >= 0) and not skip:
+            return best_bid, best_ask, new_state, side_f, depth, evf, t
 
 
 # -----------------------------------------------------------------------------

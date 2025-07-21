@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-from .sampling import choose_next_event, update_LOB
+from .sampling import choose_next_event, choose_next_event_bis, update_LOB
 
 """  
     Code to simulate the QRM model using Numba.
@@ -28,7 +28,7 @@ def simulate_QRM_jit(time: float,
                          time_end: float,
                          inv_bid: np.ndarray,
                          inv_ask: np.ndarray, 
-                         max_events=200 
+                         max_events: int 
                          ):
     
     K, Q_plus_1 = rate_int_all.shape[1:3]
@@ -64,17 +64,27 @@ def simulate_QRM_jit(time: float,
                     total += r
                     idx += 1
 
-        # sample dt
-        dt = np.random.exponential(1.0 / total)
-        t += dt
+        # dt = np.random.exponential(1.0 / total)
+        # t += dt
+        # if t > time_end:
+        #     break
+        
+        # nb, na, st2, sf, dp, ef, skip = choose_next_event(
+        #     K, Q, total, rates, state
+        # )
+
+        ## start new
+        nb, na, st2, sf, dp, ef, t = choose_next_event_bis(
+            K, Q, rates, state, t)
+        
         if t > time_end:
             break
-    
-        nb, na, st2, sf, dp, ef, skip = choose_next_event(
-            K, Q, total, rates, state
-        )
-        if skip:
-            continue
+        ## end new
+
+
+        # if skip:
+        #     print('CAREFUL: skip event, no change in state ////////////////')
+        #     continue
         state = st2
 
         # mid‐price update
