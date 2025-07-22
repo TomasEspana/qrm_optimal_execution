@@ -150,7 +150,6 @@ class RLRunner:
             return
         
         else:
-            # NO WANDB HEREEEEEEEEEEEEE
             # ===== TEST MODE =====
             wandb.run.name = f"{agent_type}_test_{self.run_id}"
 
@@ -193,18 +192,21 @@ class RLRunner:
                     ep_reward += reward
                     k += 1
 
-                    # SIMULATOR - 1 OR NOT ??
-
                 # end-of-episode book-keeping (single ep test; extend if multiple desired)
-                final_is.append(self.unwrap_env(self.env)._env.final_is)
+                unwrapped_env = self.unwrap_env(self.env)
+                final_is.append(unwrapped_env._env.final_is)
                 actions_taken[ep] = actions
                 executed_dic[ep] = executed
                 index_actions[ep] = idx_actions[:-1]
-                # mid_prices_events[ep] = ???
+                mid_prices_events[ep] = unwrapped_env._env.simulator.p_mids[:unwrapped_env._env.simulator.step][idx_actions[:-1]].astype(np.float32)
 
                 if not self.cfg['test_save_memory']:
-                    lob_dataframe[ep] = self.unwrap_env(self.env)._env.simulator.to_dataframe()
-                    mid_prices[ep] = self.unwrap_env(self.env)._env.simulator.p_mids[:self.unwrap_env(self.env)._env.simulator.step]
+                    lob = unwrapped_env._env.simulator.to_dataframe()
+                    lob['time'] = lob['time'].astype(np.float32)
+                    lob['p_mid'] = lob['p_mid'].astype(np.float32)
+                    lob['p_ref'] = lob['p_ref'].astype(np.float32)
+                    lob_dataframe[ep] = lob
+                    mid_prices[ep] = unwrapped_env._env.simulator.p_mids[:unwrapped_env._env.simulator.step].astype(np.float32)
                 # NOTE: that the mid price observed at index_action corresponds to the price after the action was taken.
                 # When plotting, you may want to shift(-1) the index actions to better grasp the change in mid price after the action.
 
@@ -216,9 +218,11 @@ class RLRunner:
             dic = {
                 "final_is": final_is,
                 "lob": lob_dataframe,
+                "mid_prices": mid_prices,
+                "mid_prices_events": mid_prices_events,
                 "actions": actions_taken,
                 "executed": executed_dic,
-                "index_actions": index_actions,
+                "index_actions": index_actions
             }
 
             return dic, self.run_id

@@ -13,7 +13,7 @@ if __name__ == "__main__":
     ### Specify the run id of the trained model to test. ###
     ### ----------------------###
     train_run_id = 'glbpbi4x'
-    config['test_save_memory'] = False
+    config['test_save_memory'] = True
     ### ----------------------###
 
     config['mode'] = 'test'
