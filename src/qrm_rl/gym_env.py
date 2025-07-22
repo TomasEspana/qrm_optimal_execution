@@ -1,7 +1,7 @@
-import gym
+import gymnasium as gym
+from gymnasium.envs.registration import register
+from gymnasium import spaces
 import numpy as np
-from gym import spaces
-from gym.envs.registration import register
 from qrm_core.intensity import IntensityTable
 from .market_environment import MarketEnvironment
 
@@ -123,5 +123,5 @@ class QRMEnv(gym.Env):
 # Register the QRMEnv with Gym
 register(
     id="QRM-v0",
-    entry_point="qrm_rl.gym_env:QRMEnv"
+    entry_point="qrm_rl.gym_env:QRMEnv",
 )

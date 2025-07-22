@@ -1,0 +1,15 @@
+{"time":"2025-07-22T11:12:12.9786242+02:00","level":"INFO","msg":"stream: starting","core version":"0.20.1","symlink path":"C:\\Users\\etoma\\OneDrive\\Documents\\GitHub\\qrm_optimal_execution\\wandb\\run-20250722_111212-5iywqiwt\\logs\\debug-core.log"}
+{"time":"2025-07-22T11:12:14.5354267+02:00","level":"INFO","msg":"stream: created new stream","id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:14.5359518+02:00","level":"INFO","msg":"stream: started","id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:14.5359518+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:14.5359518+02:00","level":"INFO","msg":"sender: started","stream_id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:14.5359518+02:00","level":"INFO","msg":"handler: started","stream_id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:15.021295+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-07-22T11:12:15.444599+02:00","level":"INFO","msg":"stream: closing","id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:15.444599+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-07-22T11:12:15.444599+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-07-22T11:12:16.4508375+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-07-22T11:12:16.7372141+02:00","level":"INFO","msg":"sender: closed","stream_id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:16.7372141+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:16.7372141+02:00","level":"INFO","msg":"handler: closed","stream_id":"5iywqiwt"}
+{"time":"2025-07-22T11:12:16.7379562+02:00","level":"INFO","msg":"stream: closed","id":"5iywqiwt"}

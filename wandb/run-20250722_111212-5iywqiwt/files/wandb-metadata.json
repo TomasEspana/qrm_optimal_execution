@@ -1,0 +1,43 @@
+{
+  "os":  "Windows-10-10.0.19045-SP0",
+  "python":  "CPython 3.13.0",
+  "startedAt":  "2025-07-22T09:12:12.975625Z",
+  "program":  "C:\\Users\\etoma\\OneDrive\\Documents\\GitHub\\qrm_optimal_execution\\scripts\\run_train.py",
+  "codePath":  "scripts\\run_train.py",
+  "git":  {
+    "remote":  "https://github.com/TomasEspana/qrm_optimal_execution.git",
+    "commit":  "d8861c615eb8b5bde8d49de58d5735f05625fa9b"
+  },
+  "email":  "tomashimalaya@gmail.com",
+  "root":  "C:\\Users\\etoma\\OneDrive\\Documents\\GitHub\\qrm_optimal_execution",
+  "host":  "DEKSTOP-TE",
+  "executable":  "C:\\Users\\etoma\\OneDrive\\Documents\\GitHub\\qrm_optimal_execution\\.venv\\Scripts\\python.exe",
+  "codePathLocal":  "scripts\\run_train.py",
+  "cpu_count":  6,
+  "cpu_count_logical":  12,
+  "gpu":  "Quadro P1000",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "510240223232",
+      "used":  "478060433408"
+    }
+  },
+  "memory":  {
+    "total":  "16928251904"
+  },
+  "cpu":  {
+    "count":  6,
+    "countLogical":  12
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "Quadro P1000",
+      "memoryTotal":  "4294967296",
+      "cudaCores":  512,
+      "architecture":  "Pascal",
+      "uuid":  "GPU-887ca312-1716-8eda-0d60-3dfe7e45667e"
+    }
+  ],
+  "cudaVersion":  "12.9"
+}
