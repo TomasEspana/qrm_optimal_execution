@@ -11,6 +11,7 @@ def load_config(filename="default.yaml"):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
+    config['total_timesteps'] = config['episodes'] * config['time_horizon'] / config['trader_time_step']
     th = config['time_horizon']
     st = config['trader_time_step']
     config['trader_times'] = np.arange(0, th + st, st)

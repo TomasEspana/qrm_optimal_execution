@@ -2,17 +2,24 @@ import wandb
 import numpy as np
 import torch
 from numba import njit
-from contextlib import nullcontext
-from qrm_rl.agents.ddqn import DDQNAgent
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent, RandomAgent, BimodalAgent, BestVolumeAgent
 from qrm_core.intensity import IntensityTable
-from .market_environment import MarketEnvironment
-from .utils import load_model, save_model
+
 import gym
 import qrm_rl.gym_env 
+from stable_baselines3 import DQN, PPO
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import BaseCallback, CallbackList
+from wandb.integration.sb3 import WandbCallback
+from qrm_rl.callbacks import InfoLoggerCallback
+
+# from contextlib import nullcontext
+# from qrm_rl.agents.ddqn import DDQNAgent
+# from .market_environment import MarketEnvironment
+# from .utils import load_model, save_model
 
 
-exploration_mode_dic = {'rl': int(0), 'front_load': int(1), 'back_load': int(2), 'twap': int(3)}
+# exploration_mode_dic = {'rl': int(0), 'front_load': int(1), 'back_load': int(2), 'twap': int(3)}
 
 class RLRunner:
     def __init__(self, config, load_model_path=None):
@@ -27,7 +34,8 @@ class RLRunner:
         self.prop_deter_strats = config['prop_deter_strats'] 
         self.agent = None
         self.agent_name_map = {
-            DDQNAgent: 'ddqn',
+            DQN: 'ddqn',
+            PPO: 'ppo',
             TWAPAgent: 'twap', 
             BackLoadAgent: 'back_load',
             FrontLoadAgent: 'front_load', 
@@ -85,120 +93,35 @@ class RLRunner:
         )
 
         # Agent
-        self.agent = DDQNAgent(
-            state_dim=config['state_dim'],
-            action_dim=config['action_dim'],
+        # Wrap in Monitor for SB3 episode logging
+        self.env = Monitor(self.env)
+
+        # SB3 DQN model
+        policy_kwargs = dict(net_arch=[256, 256], dueling=True)
+        self.model = DQN(
+            policy="MlpPolicy",
+            env=self.env,
+            learning_rate=config["learning_rate"],
+            buffer_size=config["memory_capacity"],
+            batch_size=config["batch_size"],
+            gamma=config["gamma"],
+            target_update_interval=config["target_update_freq"],
+            train_freq=1, # update every step
+            exploration_initial_eps=config["epsilon_start"],
+            exploration_final_eps=config["epsilon_end"],
+            exploration_fraction=config["prop_greedy_eps"],
+            verbose=1,
+            policy_kwargs=policy_kwargs,
             device=self.device,
-            epsilon_start=config['epsilon_start'],
-            epsilon_end=config['epsilon_end'],
-            epsilon_decay=config['epsilon_decay'],
-            memory_capacity=config['memory_capacity'],
-            batch_size=config['batch_size'],
-            gamma=config['gamma'],
-            lr=config['learning_rate'],
-            alpha=config['alpha'],
-            eps=config['eps'],
-            proba_0=config['proba_0'], 
-            warmup_steps=config['warmup_steps']
         )
-
-        if self.mode == 'train':
-            self.agent.twap_agent = TWAPAgent(
-                time_horizon=config['time_horizon'],
-                initial_inventory=config['initial_inventory'],
-                trader_time_step=config['trader_time_step']
-            )
-            self.agent.backload_agent = BackLoadAgent(
-                time_horizon=config['time_horizon'],
-                initial_inventory=config['initial_inventory'],
-                trader_time_step=config['trader_time_step'], 
-                fixed_action=-1, 
-                actions=config['actions'], 
-                security_margin=0
-            )
-        # Load weights
-        test_mode = (self.mode == 'test')
-        load_model(self.agent, load_model_path, test_mode=test_mode)
-
-    def _update_epsilon(self, ep):
-        E = self.episodes
-        bs = int(self.prop_deter_strats * E)
-        ge = int(self.prop_greedy_eps * E)
-
-        decay_steps = ge - bs
-        eps_start, eps_end = self.cfg['epsilon_start'], self.cfg['epsilon_end']
-        a = (eps_end - eps_start) / decay_steps
-        b = eps_start - bs * a
-
-        if ep < bs:
-            self.agent.exploration_mode = np.random.choice(['front_load', 'back_load'])
-            # self.agent.exploration_mode = np.random.choice(
-            #     ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
-            # )
-            self.agent.epsilon = 0.0
-            self.agent.fixed_action = np.random.choice(len(self.env.actions) - 1) + 1
-        elif ep < ge:
-            self.agent.exploration_mode = 'rl'
-            self.agent.epsilon = a * ep + b
-        else:
-            self.agent.exploration_mode = 'rl'
-            self.agent.epsilon = self.cfg['epsilon_end']
-
-    def _update_epsilon_unif(self, ep):
-        """ 
-            the deterministic strategies are uniformly distributed over the entire exploration phase.
-        """
-        E = self.episodes
-        bs = int(self.prop_deter_strats * E)
-        ge = int(self.prop_greedy_eps * E)
-
-        if bs > 0:
-            det_indices = set(int(np.floor(i * E / bs)) for i in range(bs))
-        else:
-            det_indices = set()
-
-        eps_start, eps_end = self.cfg['epsilon_start'], self.cfg['epsilon_end']
-        slope = (eps_end - eps_start) / float(ge)
-        intercept = eps_start
-
-        if ep in det_indices:
-            self.agent.exploration_mode = np.random.choice(['front_load','back_load'])
-            # self.agent.exploration_mode = np.random.choice(
-            #     ['front_load','twap','back_load'], p=[0.3,0.4,0.3]
-            # )
-            self.agent.epsilon = 0.0
-            self.agent.fixed_action = np.random.choice(len(self.env.actions) - 1) + 1
-        elif ep < ge:
-            self.agent.exploration_mode = 'rl'
-            self.agent.epsilon = max(eps_end, slope * ep + intercept)
-        else:
-            self.agent.exploration_mode = 'rl'
-            self.agent.epsilon = self.cfg['epsilon_end']
-
-
-    def _log_step(self, state_vec, next_state, reward, action, dic, step, total_ask):
-        d = {
-            "Inventory Normalized": state_vec[0],
-            "Time Normalized": state_vec[1],
-            # "Best Ask Price Normalized": state_vec[4],
-            # "Best Ask Size Normalized": state_vec[5],
-            # "Best Ask Size": next_state[5],
-            # "Best Ask Price 1": next_state[4],
-            "Reward": reward, 
-            "Risk Aversion Term in Reward": self.env.risk_aversion_term,
-            "Inventory": self.env.current_inventory, 
-            "Implementation Shortfall": self.env.current_is,
-            "Action": action,
-            "Mid Price": self.env.current_mid_price(), 
-            "Total Ask Volume": total_ask
-        }
-        d.update(dic)
-        wandb.log(d, step=step)
+        #????? CORRECT: we lost proba_0 in the agent
+        
 
     def run(self):
         agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
         self.run_id = wandb.run.id
         train_mode = (self.mode == 'train')
+
         if train_mode:
             wandb.run.name = f"{agent_type}_{self.run_id}"
         else:
@@ -212,164 +135,16 @@ class RLRunner:
             executed_dic = {}
             index_actions = {}
 
-        step_count = 0
-        nb_eps_greedy = int(self.prop_greedy_eps * self.episodes)
-        for ep in range(self.episodes):
-
-            idx_actions = []
-
-            if self.cfg['dynamic_lr'] and ep > nb_eps_greedy:
-                for param_group in self.agent.optimizer.param_groups:
-                    param_group['lr'] = 1e-4
-            
-            if self.cfg['dynamic_batch_size'] and ep > nb_eps_greedy:
-                self.agent.batch_size = 1024
-
-            state_vec = self.env.reset()
-            idx_actions.append(self.env.simulator.step) # index of the first action in the episode
-            if train_mode:
-                if not self.unif_deter_strats:
-                    self._update_epsilon(ep)
-                else:
-                    self._update_epsilon_unif(ep)
-
-            ctx = torch.no_grad() if not train_mode else nullcontext()
-            with ctx:
-                done, ep_reward, actions, executed = False, 0.0, [], []
-                k = 1
-                while not done:
-
-                    if train_mode:
-
-                        action_idx = self.agent.select_action(state_vec, ep)
-
-                        if not self.cfg['action_ask_vol']:
-                            action = self.env.actions[action_idx]
-                        else:
-                            # percentage of best ask volume version
-                            ask_volumes = self.env.simulator.states[self.env.simulator.step - 1, self.env.simulator.K:]
-                            best_ask_volume = next(x for x in ask_volumes if x != 0)
-                            action = round(self.env.actions[action_idx] * best_ask_volume)
-
-                        nxt_vec, reward, done, info = self.env.step(action)
-                        nxt = info['next_state']
-                        exec = info['executed']
-                        total_ask = info['total ask volume']
-                        
-                        self.agent.store_transition(state_vec, action_idx, reward, nxt_vec, done)
-                        wandb_dic = self.agent.learn()
-                        # update the target network
-                        if step_count < nb_eps_greedy:
-                            if step_count % self.cfg['target_update_freq'] == 0:
-                                self.agent.update_target_network()
-                        else:
-                            if step_count % self.cfg['target_update_freq_2'] == 0:
-                                self.agent.update_target_network()
-
-                    else: # test mode
-
-                        if self.cfg['safety_test'] and isinstance(self.agent, DDQNAgent): # enforce zero inventory on test trajectories
-                            current_inventory = self.env.current_inventory
-                            t_left = np.ceil(current_inventory / max(self.env.actions)) + self.exec_security_margin
-
-                            if len(self.env.trader_times) - k > t_left:
-                                    action_idx = self.agent.select_action(state_vec, ep)
-                                    action = self.env.actions[action_idx] # TAKE ACTION and take safety test off 
-                            else:
-                                action = max(self.env.actions)
-
-                        else:
-
-                            if isinstance(self.agent, (BimodalAgent, BestVolumeAgent)):
-                                self.agent.k = k
-
-                            if isinstance(self.agent, TWAPAgent):
-                                action = self.agent.select_action(state_vec, ep)
-                            else:
-                                action_idx = self.agent.select_action(state_vec, ep)
-                                ask_volumes = self.env.simulator.states[self.env.simulator.step - 1, self.env.simulator.K:]
-                                best_ask_volume = next(x for x in ask_volumes if x != 0)
-                                action = round(self.env.actions[action_idx] * best_ask_volume)
-
-                            # # Version without percentage of best ask volume    
-                            # if not isinstance(self.agent, (TWAPAgent, BestVolumeAgent)):
-                            #     action_idx = self.agent.select_action(state_vec, ep)
-                            #     action = self.env.actions[action_idx] # TAKE ACTION
-                            # else:
-                            #     if isinstance(self.agent, BestVolumeAgent):
-                            #         ask_volumes = self.env.simulator.states[self.env.simulator.step - 1, self.env.simulator.K:]
-                            #         best_ask_volume = next(x for x in ask_volumes if x != 0)
-                            #         self.agent.best_ask_vol = best_ask_volume
-                            #     action = self.agent.select_action(state_vec, ep)
-
-                        nxt_vec, reward, done, info = self.env.step(action)
-                        nxt = info['next_state']
-                        exec = info['executed']
-                        total_ask = info['total ask volume']
-                        wandb_dic = {}
-
-                    state_vec = nxt_vec
-                    ep_reward += reward
-                    actions.append(action)
-                    executed.append(exec)
-                    idx_actions.append(self.env.simulator.step)
-                    self._log_step(state_vec, nxt, reward, action, wandb_dic, step_count, total_ask)
-                    step_count += 1
-                    k += 1
-                
-            # if train_mode and ep % self.cfg['target_update_freq'] == 0 and ep > 0:
-            #     self.agent.update_target_network()
-
-            # end of episode logging
-            summary = {
-                "Episode": ep,
-                "Final Reward": ep_reward,
-                "Final Inventory": self.env.current_inventory,
-                "Final Implementation Shortfall": self.env.final_is,
-                "Episode Length": self.env.current_time(),
-                **{f"Action_{a}_count": actions.count(a) for a in self.env.actions}, 
-                "Non Executed Liquidity Constraint": self.env.non_executed_liquidity_constraint, 
-            }
-            if train_mode:
-                summary['Epsilon'] = self.agent.epsilon
-                summary['Exploration Mode'] = exploration_mode_dic[self.agent.exploration_mode]
-                summary['Fixed Action'] = self.agent.fixed_action
-            
-            wandb.log(summary, step=step_count-1)
-
-            # === Print progress ===
-            if ep % self.cfg['logging_every'] == 0:
-                print(f"[{self.mode.upper()}][{ep}/{self.episodes}]  Reward={ep_reward:.2f}") #  Eps={self.agent.epsilon:.3f}")
-
-            # === End-of-episode book-keeping ===
-            if not train_mode:
-                final_is.append(self.env.final_is)
-                lob_dataframe[ep] = self.env.simulator.to_dataframe()
-                # times[ep] = self.env.simulator.times[:self.env.simulator.step]
-                mid_prices[ep] = self.env.simulator.p_mids[:self.env.simulator.step]
-                # ref_prices[ep] = self.env.simulator.p_refs[:self.env.simulator.step]
-                # sides[ep] = self.env.simulator.sides[:self.env.simulator.step]
-                # depths[ep] = self.env.simulator.depths[:self.env.simulator.step]
-                # events[ep] = self.env.simulator.events[:self.env.simulator.step]
-                # redrawn[ep] = self.env.simulator.redrawn[:self.env.simulator.step]
-
-                actions_taken[ep] = actions
-                executed_dic[ep] = executed
-                index_actions[ep] = idx_actions[:-1]
-
-        # save model if training
+        
         if train_mode:
-            save_model(self.agent, f"save_model/{self.agent_name_map[type(self.agent)]}_{self.run_id}.pth")
+            total_steps = self.cfg["total_timesteps"]
 
-        wandb.finish()
+            callback = CallbackList([
+                WandbCallback(model_save_path="save_model", verbose=2),
+                InfoLoggerCallback()
+            ])
 
-        if not train_mode:
-            dic = {
-                'final_is': final_is, 
-                'lob': lob_dataframe,
-                # 'p_mid': mid_prices,
-                'actions': actions_taken, 
-                'executed': executed_dic, 
-                'index_actions': index_actions
-            }
-            return dic, self.run_id
+            self.model.learn(total_timesteps=total_steps, callback=callback)
+            self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
+            wandb.finish()
+            return
