@@ -8,6 +8,8 @@ from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLo
 from qrm_core.intensity import IntensityTable
 from .market_environment import MarketEnvironment
 from .utils import load_model, save_model
+import gym
+import qrm_rl.gym_env 
 
 
 exploration_mode_dic = {'rl': int(0), 'front_load': int(1), 'back_load': int(2), 'twap': int(3)}
@@ -54,7 +56,8 @@ class RLRunner:
         inten_table._data = inten_arr
 
         # Environment
-        self.env = MarketEnvironment(
+        self.env = gym.make(
+            "QRM-v0",
             intensity_table=inten_table,
             actions=config['actions'],
             theta=config['theta'],
@@ -73,10 +76,12 @@ class RLRunner:
             vol_offset=config['vol_offset'],
             vol_std=config['vol_std'],
             max_events=config['max_events'],
-            max_events_intra=config['max_events_intra'], 
-            history_size=config['history_size'], 
-            alpha_ramp=config['alpha_ramp'], 
-            basic_state=config['basic_state']
+            max_events_intra=config['max_events_intra'],
+            history_size=config['history_size'],
+            alpha_ramp=config['alpha_ramp'],
+            basic_state=config['basic_state'],
+            state_dim=config['state_dim'],
+            action_dim=config['action_dim']
         )
 
         # Agent

@@ -7,6 +7,11 @@ from qrm_rl.runner import RLRunner
 
 if __name__ == "__main__":
 
+    print('Loading configuration...')
     config = load_config()
+    # runner = RLRunner(config)
+    # runner.run()
+
     runner = RLRunner(config)
-    runner.run()
+    obs = runner.env.reset()
+    print(obs.shape, runner.env.action_space, runner.env.observation_space)
