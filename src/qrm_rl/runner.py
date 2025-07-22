@@ -119,7 +119,6 @@ class RLRunner:
             policy_kwargs=policy_kwargs,
             device=self.device,
         )
-        #????? CORRECT: we lost proba_0 in the agent
         self.agent = self.model
 
     def run(self):
