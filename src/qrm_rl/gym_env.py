@@ -11,7 +11,7 @@ class QRMEnv(gym.Env):
         Gym wrapper for the Queue Reactive Model market environment.
     """
     metadata = {"render_modes": ["human"]}
-    
+
     def __init__(
         self,
         intensity_table: IntensityTable,
@@ -106,11 +106,17 @@ class QRMEnv(gym.Env):
 
         # You can include additional diagnostics in info
         info = {
+            "obs": obs,
             "next_state": next_state,
             "executed": executed,
             "inventory": self._env.current_inventory,
             "implementation_shortfall": self._env.current_is,
-            "total ask volume": total_ask
+            "total_ask_volume": total_ask, 
+            "reward": reward, 
+            "Risk Aversion Term in Reward": self._env.risk_aversion_term,
+            "action_idx": action,  
+            "mid_price": self._env.current_mid_price(), 
+            "Non Executed Liquidity Constraint": self._env.non_executed_liquidity_constraint
         }
         return obs, reward, done, False, info   
 

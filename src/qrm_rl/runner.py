@@ -34,6 +34,7 @@ class RLRunner:
         self.prop_greedy_eps = config['prop_greedy_eps']
         self.prop_deter_strats = config['prop_deter_strats'] 
         self.agent = None
+        self.load_model_path = load_model_path
         self.agent_name_map = {
             DQN: 'ddqn',
             PPO: 'ppo',
@@ -141,14 +142,62 @@ class RLRunner:
 
         
         if train_mode:
+
             total_steps = self.cfg["total_timesteps"]
 
             callback = CallbackList([
                   WandbCallback(verbose=2),
-                InfoLoggerCallback()
+                InfoLoggerCallback(self.cfg["action_dim"])
             ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback)
             self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
             return
+        
+        else:
+            # ===== TEST MODE =====
+            # Load SB3 model (path must point to the .zip file)
+            if self.load_model_path is not None:
+                self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)
+                self.agent = self.model
+
+            final_is = []
+            lob_dataframe = {}
+            actions_taken, executed_dic, index_actions = {}, {}, {}
+            mid_prices = {}
+
+            obs = self.env.reset()
+            done = False
+            ep = 0
+            ep_reward = 0.0
+            idx_actions = [self.env._env.simulator.step]  # first index
+            actions, executed = [], []
+
+            while not done:
+                action, _ = self.model.predict(obs, deterministic=True) #predict defined where ? other agents ?
+                obs, reward, done, info = self.env.step(action)
+
+                ep_reward += reward
+                actions.append(self.env._env.actions[action])       # map index -> real action if you still need it
+                executed.append(info["executed"])
+                idx_actions.append(self.env._env.simulator.step)
+
+            # end-of-episode book-keeping (single ep test; extend if multiple desired)
+            final_is.append(self.env._env.final_is)
+            lob_dataframe[ep] = self.env._env.simulator.to_dataframe()
+            mid_prices[ep] = self.env._env.simulator.p_mids[:self.env._env.simulator.step]
+            actions_taken[ep] = actions
+            executed_dic[ep] = executed
+            index_actions[ep] = idx_actions[:-1]
+
+            wandb.finish()
+
+            dic = {
+                "final_is": final_is,
+                "lob": lob_dataframe,
+                "actions": actions_taken,
+                "executed": executed_dic,
+                "index_actions": index_actions,
+            }
+            return dic, self.run_id
