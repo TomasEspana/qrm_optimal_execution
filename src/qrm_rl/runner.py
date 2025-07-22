@@ -167,14 +167,31 @@ class RLRunner:
 
                 obs, _ = self.env.reset()
                 idx_actions = [self.unwrap_env(self.env)._env.simulator.step]  # first index
+                k = 1
 
                 while not done:
-                    action, _ = self.model.predict(obs, deterministic=True)
-                    obs, reward, done, _, info = self.env.step(action)
+
+                    if isinstance(self.agent, (DQN, PPO)):
+                        action, _ = self.model.predict(obs, deterministic=True)
+                        obs, reward, done, _, info = self.env.step(action)
+
+                    else:
+
+                        self.agent.k = k
+                        if isinstance(self.agent, TWAPAgent):
+                            action = self.agent.select_action(state_vec, ep) #state_vec ? 
+                        else:
+                            action_idx = self.agent.select_action(state_vec, ep) #careful with self.agent
+                            ask_volumes = self.unwrap_env(self.env)._env.simulator.states[self.unwrap_env(self.env)._env.simulator.step - 1, self.unwrap_env(self.env)._env.simulator.K:]
+                            # why step - 1 here and not before ?
+                            best_ask_volume = next(x for x in ask_volumes if x != 0)
+                            action = round(self.unwrap_env(self.env)._env.actions[action_idx] * best_ask_volume)
+
 
                     actions.append(action)    
                     executed.append(info["executed"])
                     idx_actions.append(self.unwrap_env(self.env)._env.simulator.step)
+                    k += 1
 
                 # end-of-episode book-keeping (single ep test; extend if multiple desired)
                 final_is.append(self.unwrap_env(self.env)._env.final_is)
@@ -187,7 +204,7 @@ class RLRunner:
                 # When plotting, you may want to shift(-1) the index actions to better grasp the change in mid price after the action.
 
             wandb.finish()
-            
+
             dic = {
                 "final_is": final_is,
                 "lob": lob_dataframe,

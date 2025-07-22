@@ -9,10 +9,11 @@ class TWAPAgent:
         Time-weighted average price (TWAP) agent.
     """
 
-    def __init__(self, time_horizon, initial_inventory, trader_time_step):
+    def __init__(self, time_horizon, initial_inventory, trader_time_step, k=0):
         self.time_horizon = time_horizon
         self.initial_inventory = initial_inventory
         self.trader_time_step = trader_time_step
+        self.k = k
         ratio = int(initial_inventory / (time_horizon / trader_time_step))
         self.actions_schedule = self.distribute_ones(int(time_horizon/trader_time_step), initial_inventory, ratio)
 
@@ -30,11 +31,8 @@ class TWAPAgent:
         return arr
 
     def select_action(self, state, episode):
-        time_norm = state[1]
-        time = (time_norm + 1)*self.time_horizon / 2
-        idx = round(time / self.trader_time_step) - 1 
-        assert idx < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
-        return self.actions_schedule[idx]
+        assert self.k < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
+        return self.actions_schedule[self.k]
 
 
 class BackLoadAgent:
