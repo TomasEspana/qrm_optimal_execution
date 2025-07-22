@@ -12,6 +12,12 @@ if __name__ == "__main__":
     # runner = RLRunner(config)
     # runner.run()
 
+    # runner = RLRunner(config)
+    # obs = runner.env.reset()
+    # print(obs.shape, runner.env.action_space, runner.env.observation_space)
+
     runner = RLRunner(config)
     obs = runner.env.reset()
-    print(obs.shape, runner.env.action_space, runner.env.observation_space)
+    print("obs:", obs.shape)
+    print("action space:", runner.env.action_space)
+    print("obs space:", runner.env.observation_space)

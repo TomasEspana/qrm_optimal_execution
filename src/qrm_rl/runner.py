@@ -225,8 +225,7 @@ class RLRunner:
             if self.cfg['dynamic_batch_size'] and ep > nb_eps_greedy:
                 self.agent.batch_size = 1024
 
-            state = self.env.reset()
-            state_vec = self.env.state_to_vector(state)
+            state_vec = self.env.reset()
             idx_actions.append(self.env.simulator.step) # index of the first action in the episode
             if train_mode:
                 if not self.unif_deter_strats:
@@ -252,8 +251,10 @@ class RLRunner:
                             best_ask_volume = next(x for x in ask_volumes if x != 0)
                             action = round(self.env.actions[action_idx] * best_ask_volume)
 
-                        nxt, reward, done, exec, total_ask = self.env.step(action)
-                        nxt_vec = self.env.state_to_vector(nxt)
+                        nxt_vec, reward, done, info = self.env.step(action)
+                        nxt = info['next_state']
+                        exec = info['executed']
+                        total_ask = info['total ask volume']
                         
                         self.agent.store_transition(state_vec, action_idx, reward, nxt_vec, done)
                         wandb_dic = self.agent.learn()
@@ -301,8 +302,10 @@ class RLRunner:
                             #         self.agent.best_ask_vol = best_ask_volume
                             #     action = self.agent.select_action(state_vec, ep)
 
-                        nxt, reward, done, exec, total_ask = self.env.step(action)
-                        nxt_vec = self.env.state_to_vector(nxt)
+                        nxt_vec, reward, done, info = self.env.step(action)
+                        nxt = info['next_state']
+                        exec = info['executed']
+                        total_ask = info['total ask volume']
                         wandb_dic = {}
 
                     state_vec = nxt_vec

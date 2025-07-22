@@ -97,15 +97,13 @@ class QRMEnv(gym.Env):
             done (bool)
             info (dict)
         """
-        # Map discrete action to actual order size if needed
-        # e.g., action_size = self._env.actions[action]
-        action_val = self._env.actions[action]
 
-        next_state, reward, done, executed, total_ask = self._env.step(action_val)
+        next_state, reward, done, executed, total_ask = self._env.step(action)
         obs = self._env.state_to_vector(next_state)
 
         # You can include additional diagnostics in info
         info = {
+            "next_state": next_state,
             "executed": executed,
             "inventory": self._env.current_inventory,
             "implementation_shortfall": self._env.current_is,
