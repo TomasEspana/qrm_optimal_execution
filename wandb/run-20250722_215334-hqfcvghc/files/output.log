@@ -1,0 +1,15 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Traceback (most recent call last):
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\scripts\run_test.py", line 57, in <module>
+    dic, run_id = runner.run()
+                  ~~~~~~~~~~^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\runner.py", line 184, in run
+    action = self.agent.select_action()
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\agents\benchmark_strategies.py", line 34, in select_action
+    assert self.k < len(self.actions_schedule), "TWAP Error: Index out of bounds."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: TWAP Error: Index out of bounds.

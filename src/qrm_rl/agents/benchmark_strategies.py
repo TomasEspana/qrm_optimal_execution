@@ -31,7 +31,7 @@ class TWAPAgent:
         return arr
 
     def select_action(self):
-        assert self.k < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
+        assert self.k-1 < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
         return self.actions_schedule[self.k-1]
 
 

@@ -1,0 +1,16 @@
+{"time":"2025-07-22T21:51:39.5431593+02:00","level":"INFO","msg":"stream: starting","core version":"0.20.1","symlink path":"C:\\Users\\etoma\\OneDrive\\Documents\\GitHub\\qrm_optimal_execution\\wandb\\run-20250722_215139-7xu9xamk\\logs\\debug-core.log"}
+{"time":"2025-07-22T21:51:39.8499796+02:00","level":"INFO","msg":"stream: created new stream","id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:39.8500953+02:00","level":"INFO","msg":"stream: started","id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:39.8501107+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:39.8501107+02:00","level":"INFO","msg":"sender: started","stream_id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:39.8501734+02:00","level":"INFO","msg":"handler: started","stream_id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:40.2336606+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-07-22T21:51:41.9145361+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-07-22T21:51:41.9145361+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-07-22T21:51:42.8455038+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-07-22T21:51:42.9212222+02:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading summary, console lines 2-4","runtime_seconds":0.0757184}],"total_operations":1}}
+{"time":"2025-07-22T21:51:43.1924553+02:00","level":"INFO","msg":"stream: closing","id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:43.1924553+02:00","level":"INFO","msg":"handler: closed","stream_id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:43.1924553+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:43.1924553+02:00","level":"INFO","msg":"sender: closed","stream_id":"7xu9xamk"}
+{"time":"2025-07-22T21:51:43.1930731+02:00","level":"INFO","msg":"stream: closed","id":"7xu9xamk"}

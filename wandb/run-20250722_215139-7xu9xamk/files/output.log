@@ -1,0 +1,5 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Wrapping the env in a DummyVecEnv.
+[TEST][0/20]  Reward=-0.04
+[TEST][10/20]  Reward=-6.18

@@ -1,0 +1,24 @@
+2025-07-22 21:51:39,498 INFO    MainThread:14040 [wandb_init.py:setup_run_log_directory():703] Logging user logs to C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\wandb\run-20250722_215139-7xu9xamk\logs\debug.log
+2025-07-22 21:51:39,498 INFO    MainThread:14040 [wandb_init.py:setup_run_log_directory():704] Logging internal logs to C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\wandb\run-20250722_215139-7xu9xamk\logs\debug-internal.log
+2025-07-22 21:51:39,498 INFO    MainThread:14040 [wandb_init.py:init():831] calling init triggers
+2025-07-22 21:51:39,498 INFO    MainThread:14040 [wandb_init.py:init():836] wandb.init called with sweep_config: {}
+config: {'mode': 'test', 'seed': 42, 'episodes': 20, 'normal_prices': True, 'basic_state': True, 'len_state_lob': 3, 'action_ask_vol': True, 'safety_test': False, 'time_horizon': 10000, 'trader_time_step': 1000, 'initial_inventory': 30, 'actions': [0, 1], 'history_size': 1, 'final_penalty': 1, 'risk_aversion': 0.0, 'alpha_ramp': 15, 'exec_security_margin': 1, 'price_offset': 0.0, 'price_std': 0.3, 'vol_offset': 5, 'vol_std': 4, 'theta': 0.6, 'theta_reinit': 0.85, 'tick': 0.01, 'arrival_price': 100.005, 'epsilon_start': 1.0, 'epsilon_end': 0.0, 'epsilon_decay': 0.995, 'prop_greedy_eps': 0.25, 'prop_deter_strats': 0.0, 'unif_deter_strats': False, 'gamma': 1.0, 'learning_rate': 0.0001, 'alpha': 0.95, 'eps': 0.01, 'batch_size': 64, 'memory_capacity': 300000, 'warmup_steps': 64, 'target_update_freq': 100, 'target_update_freq_2': 100, 'dynamic_lr': False, 'dynamic_batch_size': False, 'logging_every': 10, 'folder_path_intensity_table': 'calibration_data/intensity_table/', 'folder_path_invariant': 'calibration_data/invariant_distribution/', 'total_timesteps': 200.0, 'trader_times': array([    0,  1000,  2000,  3000,  4000,  5000,  6000,  7000,  8000,
+        9000, 10000]), 'action_dim': 2, 'state_dim': 3, 'proba_0': 0.5, 'max_events_intra': 200000, 'max_events': 2200000, 'file_name': 'qrm_paper.npy', 'file_name_bid': 'qrm_paper.npy', 'file_name_ask': 'qrm_paper.npy', '_wandb': {}}
+2025-07-22 21:51:39,538 INFO    MainThread:14040 [wandb_init.py:init():872] starting backend
+2025-07-22 21:51:39,538 INFO    MainThread:14040 [wandb_init.py:init():875] sending inform_init request
+2025-07-22 21:51:39,541 INFO    MainThread:14040 [wandb_init.py:init():883] backend started and connected
+2025-07-22 21:51:39,544 INFO    MainThread:14040 [wandb_init.py:init():956] updated telemetry
+2025-07-22 21:51:39,621 INFO    MainThread:14040 [wandb_init.py:init():980] communicating run to backend with 90.0 second timeout
+2025-07-22 21:51:40,230 INFO    MainThread:14040 [wandb_init.py:init():1032] starting run threads in backend
+2025-07-22 21:51:40,368 INFO    MainThread:14040 [wandb_run.py:_console_start():2453] atexit reg
+2025-07-22 21:51:40,369 INFO    MainThread:14040 [wandb_run.py:_redirect():2301] redirect: wrap_raw
+2025-07-22 21:51:40,369 INFO    MainThread:14040 [wandb_run.py:_redirect():2370] Wrapping output streams.
+2025-07-22 21:51:40,369 INFO    MainThread:14040 [wandb_run.py:_redirect():2393] Redirects installed.
+2025-07-22 21:51:40,371 INFO    MainThread:14040 [wandb_init.py:init():1078] run started, returning control to user process
+2025-07-22 21:51:41,913 INFO    MainThread:14040 [wandb_run.py:_finish():2219] finishing run tomashimalaya-princeton-university/QRM_RL_Agent/7xu9xamk
+2025-07-22 21:51:41,913 INFO    MainThread:14040 [wandb_run.py:_atexit_cleanup():2418] got exitcode: 0
+2025-07-22 21:51:41,913 INFO    MainThread:14040 [wandb_run.py:_restore():2400] restore
+2025-07-22 21:51:41,914 INFO    MainThread:14040 [wandb_run.py:_restore():2406] restore done
+2025-07-22 21:51:43,187 INFO    MainThread:14040 [wandb_run.py:_footer_history_summary_info():4000] rendering history
+2025-07-22 21:51:43,187 INFO    MainThread:14040 [wandb_run.py:_footer_history_summary_info():4032] rendering summary
+2025-07-22 21:51:43,188 INFO    MainThread:14040 [wandb_run.py:_footer_sync_info():3961] logging synced files

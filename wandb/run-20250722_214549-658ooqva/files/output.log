@@ -1,0 +1,29 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Traceback (most recent call last):
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\scripts\run_test.py", line 35, in <module>
+    dic, run_id = runner.run()
+                  ~~~~~~~~~~^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\runner.py", line 187, in run
+    obs, reward, done, _, info = self.env.step(action)
+                                 ~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\stable_baselines3\common\monitor.py", line 94, in step
+    observation, reward, terminated, truncated, info = self.env.step(action)
+                                                       ~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\gymnasium\wrappers\common.py", line 393, in step
+    return super().step(action)
+           ~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\gymnasium\core.py", line 327, in step
+    return self.env.step(action)
+           ~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\gymnasium\wrappers\common.py", line 283, in step
+    return env_step_passive_checker(self.env, action)
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\gymnasium\utils\passive_env_checker.py", line 207, in env_step_passive_checker
+    result = env.step(action)
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\gym_env.py", line 102, in step
+    if not self._executed:
+           ^^^^^^^^^^^^^^
+AttributeError: 'QRMEnv' object has no attribute '_executed'

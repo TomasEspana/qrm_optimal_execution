@@ -164,7 +164,7 @@ class RLRunner:
             for ep in range(self.episodes):
 
                 actions, executed = [], []
-                done = False 
+                done, ep_reward = False, 0. 
 
                 obs, _ = self.env.reset()
                 idx_actions = [self.unwrap_env(self.env)._env.simulator.step]  # first index
@@ -180,8 +180,9 @@ class RLRunner:
 
                         self.agent.k = k
                         if isinstance(self.agent, TWAPAgent):
-                            action = self.agent.select_action() #CAREFUL WHEN SIMULATING STEP WITH TWAP ITS QUANTITY NOT INDEX
-                            obs, reward, done, _, info = self.env.step(action, executed=True)
+                            self.unwrap_env(self.env)._executed = True # quantity, not index
+                            action = self.agent.select_action()
+                            obs, reward, done, _, info = self.env.step(action)
                         else:
                             action = self.agent.select_action()
                             obs, reward, done, _, info = self.env.step(action)
@@ -189,7 +190,10 @@ class RLRunner:
                     actions.append(action)    
                     executed.append(info["executed"])
                     idx_actions.append(self.unwrap_env(self.env)._env.simulator.step)
+                    ep_reward += reward
                     k += 1
+
+                    # SIMULATOR - 1 OR NOT ??
 
                 # end-of-episode book-keeping (single ep test; extend if multiple desired)
                 final_is.append(self.unwrap_env(self.env)._env.final_is)
@@ -200,6 +204,9 @@ class RLRunner:
                 index_actions[ep] = idx_actions[:-1] 
                 # NOTE: that the mid price observed at index_action corresponds to the price after the action was taken.
                 # When plotting, you may want to shift(-1) the index actions to better grasp the change in mid price after the action.
+
+                if ep % self.cfg['logging_every'] == 0:
+                    print(f"[{self.mode.upper()}][{ep}/{self.episodes}]  Reward={ep_reward:.2f}")
 
             wandb.finish()
 

@@ -38,6 +38,7 @@ class QRMEnv(gym.Env):
         basic_state: bool,
         state_dim: int,
         action_dim: int,
+        _executed: bool = False,
         **kwargs
     ):
         super().__init__()
@@ -76,6 +77,8 @@ class QRMEnv(gym.Env):
             dtype=np.float32
         )
 
+        self._executed = _executed  # Whether to execute actions or just return indices
+
     def reset(self, *, seed=None, options=None):
         """
         Reset the environment to initial state.
@@ -85,8 +88,9 @@ class QRMEnv(gym.Env):
         state = self._env.reset()
         obs = self._env.state_to_vector(state).astype(np.float32)
         return obs, {}
+    
 
-    def step(self, action, executed=False):
+    def step(self, action):
         """
             Take a step in the environment.
             Args:
@@ -97,7 +101,7 @@ class QRMEnv(gym.Env):
                 done (bool)
                 info (dict)
         """        
-        if not executed:
+        if not self._executed:
             ask_volumes = self._env.simulator.states[self._env.simulator.step - 1, self._env.simulator.K:]
             best_ask_volume = next(x for x in ask_volumes if x != 0)
             action_val = round(self._env.actions[action] * best_ask_volume)
