@@ -1,0 +1,26 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Wrapping the env in a DummyVecEnv.
+ep 0
+ep 1
+ep 2
+ep 3
+ep 4
+ep 5
+ep 6
+ep 7
+ep 8
+ep 9
+ep 10
+ep 11
+ep 12
+ep 13
+ep 14
+ep 15
+ep 16
+ep 17
+ep 18
+ep 19

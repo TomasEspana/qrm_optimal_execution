@@ -1,0 +1,14 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Wrapping the env in a DummyVecEnv.
+Traceback (most recent call last):
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\scripts\run_test.py", line 49, in <module>
+    dic, run_id = runner.run()
+                  ~~~~~~~~~~^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\runner.py", line 168, in run
+    idx_actions = [self.unwrap_env(self.env)._env.simulator.step]  # first index
+                   ~~~~~~~~~~~~~~~^^^^^^^^^^
+TypeError: RLRunner.unwrap_env() takes 1 positional argument but 2 were given
