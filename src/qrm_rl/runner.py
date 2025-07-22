@@ -4,6 +4,7 @@ import torch
 from numba import njit
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent, RandomAgent, BimodalAgent, BestVolumeAgent
 from qrm_core.intensity import IntensityTable
+from torch import nn
 
 import qrm_rl.gym_env 
 import gymnasium as gym
@@ -97,7 +98,11 @@ class RLRunner:
         self.env = Monitor(self.env)
 
         # SB3 DQN model
-        policy_kwargs = dict(net_arch=[256, 256], dueling=True)
+        policy_kwargs = dict(
+            net_arch=[30, 30, 30, 30, 30], 
+            activation_fn=nn.LeakyReLU,
+            )
+        
         self.model = DQN(
             policy="MlpPolicy",
             env=self.env,
@@ -115,7 +120,7 @@ class RLRunner:
             device=self.device,
         )
         #????? CORRECT: we lost proba_0 in the agent
-
+        self.agent = self.model
 
     def run(self):
         agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
@@ -140,7 +145,7 @@ class RLRunner:
             total_steps = self.cfg["total_timesteps"]
 
             callback = CallbackList([
-                WandbCallback(model_save_path="save_model", verbose=2),
+                  WandbCallback(verbose=2),
                 InfoLoggerCallback()
             ])
 

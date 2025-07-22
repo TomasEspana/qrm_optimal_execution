@@ -10,8 +10,8 @@ class QRMEnv(gym.Env):
     """
         Gym wrapper for the Queue Reactive Model market environment.
     """
-    metadata = {"render.modes": ["human"]}
-
+    metadata = {"render_modes": ["human"]}
+    
     def __init__(
         self,
         intensity_table: IntensityTable,
@@ -76,30 +76,33 @@ class QRMEnv(gym.Env):
             dtype=np.float32
         )
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
         """
         Reset the environment to initial state.
         Returns:
             observation (np.ndarray): initial state vector
         """
         state = self._env.reset()
-        obs = self._env.state_to_vector(state)
-        return obs
+        obs = self._env.state_to_vector(state).astype(np.float32)
+        return obs, {}
 
     def step(self, action):
         """
-        Take a step in the environment.
-        Args:
-            action (int): action index from Gym agent
-        Returns:
-            obs (np.ndarray): next state vector
-            reward (float)
-            done (bool)
-            info (dict)
-        """
+            Take a step in the environment.
+            Args:
+                action (int): action index from Gym agent
+            Returns:
+                obs (np.ndarray): next state vector
+                reward (float)
+                done (bool)
+                info (dict)
+        """        
+        ask_volumes = self._env.simulator.states[self._env.simulator.step - 1, self._env.simulator.K:]
+        best_ask_volume = next(x for x in ask_volumes if x != 0)
+        action_val = round(self._env.actions[action] * best_ask_volume)
 
-        next_state, reward, done, executed, total_ask = self._env.step(action)
-        obs = self._env.state_to_vector(next_state)
+        next_state, reward, done, executed, total_ask = self._env.step(action_val)
+        obs = self._env.state_to_vector(next_state).astype(np.float32)
 
         # You can include additional diagnostics in info
         info = {
@@ -109,7 +112,7 @@ class QRMEnv(gym.Env):
             "implementation_shortfall": self._env.current_is,
             "total ask volume": total_ask
         }
-        return obs, reward, done, info
+        return obs, reward, done, False, info   
 
     def render(self, mode="human"):
         # Optional: visualize LOB or trading process

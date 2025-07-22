@@ -5,19 +5,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
 
+
 if __name__ == "__main__":
 
-    print('Loading configuration...')
     config = load_config()
-    # runner = RLRunner(config)
-    # runner.run()
-
-    # runner = RLRunner(config)
-    # obs = runner.env.reset()
-    # print(obs.shape, runner.env.action_space, runner.env.observation_space)
-
     runner = RLRunner(config)
-    obs = runner.env.reset()
-    print("obs:", obs.shape)
-    print("action space:", runner.env.action_space)
-    print("obs space:", runner.env.observation_space)
+    runner.run()

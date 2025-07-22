@@ -1,4 +1,5 @@
 import wandb
+import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
 
 class InfoLoggerCallback(BaseCallback):

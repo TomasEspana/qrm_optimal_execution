@@ -1,0 +1,114 @@
+C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\gymnasium\envs\registration.py:487: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+device runner cuda
+----------------------------------
+| rollout/            |          |
+|    ep_len_mean      | 6.5      |
+|    ep_rew_mean      | -2.51    |
+|    exploration_rate | 0.942    |
+| time/               |          |
+|    episodes         | 4        |
+|    fps              | 2        |
+|    time_elapsed     | 9        |
+|    total_timesteps  | 26       |
+----------------------------------
+----------------------------------
+| rollout/            |          |
+|    ep_len_mean      | 7.62     |
+|    ep_rew_mean      | -3.44    |
+|    exploration_rate | 0.864    |
+| time/               |          |
+|    episodes         | 8        |
+|    fps              | 5        |
+|    time_elapsed     | 10       |
+|    total_timesteps  | 61       |
+----------------------------------
+----------------------------------
+| rollout/            |          |
+|    ep_len_mean      | 8.42     |
+|    ep_rew_mean      | -5.81    |
+|    exploration_rate | 0.776    |
+| time/               |          |
+|    episodes         | 12       |
+|    fps              | 8        |
+|    time_elapsed     | 11       |
+|    total_timesteps  | 101      |
+----------------------------------
+----------------------------------
+| rollout/            |          |
+|    ep_len_mean      | 8.44     |
+|    ep_rew_mean      | -5.8     |
+|    exploration_rate | 0.7      |
+| time/               |          |
+|    episodes         | 16       |
+|    fps              | 10       |
+|    time_elapsed     | 12       |
+|    total_timesteps  | 135      |
+| train/              |          |
+|    learning_rate    | 0.0001   |
+|    loss             | 0.612    |
+|    n_updates        | 34       |
+----------------------------------
+----------------------------------
+| rollout/            |          |
+|    ep_len_mean      | 8.7      |
+|    ep_rew_mean      | -5.67    |
+|    exploration_rate | 0.613    |
+| time/               |          |
+|    episodes         | 20       |
+|    fps              | 12       |
+|    time_elapsed     | 13       |
+|    total_timesteps  | 174      |
+| train/              |          |
+|    learning_rate    | 0.0001   |
+|    loss             | 0.594    |
+|    n_updates        | 73       |
+----------------------------------
+----------------------------------
+| rollout/            |          |
+|    ep_len_mean      | 8.29     |
+|    ep_rew_mean      | -4.05    |
+|    exploration_rate | 0.558    |
+| time/               |          |
+|    episodes         | 24       |
+|    fps              | 14       |
+|    time_elapsed     | 14       |
+|    total_timesteps  | 199      |
+| train/              |          |
+|    learning_rate    | 0.0001   |
+|    loss             | 0.408    |
+|    n_updates        | 98       |
+----------------------------------
+Traceback (most recent call last):
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\scripts\run_train.py", line 23, in <module>
+    runner.run()
+    ~~~~~~~~~~^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\runner.py", line 147, in run
+    self.model.learn(total_timesteps=total_steps, callback=callback)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\stable_baselines3\dqn\dqn.py", line 267, in learn
+    return super().learn(
+           ~~~~~~~~~~~~~^
+        total_timesteps=total_timesteps,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        progress_bar=progress_bar,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\stable_baselines3\common\off_policy_algorithm.py", line 347, in learn
+    self.train(batch_size=self.batch_size, gradient_steps=gradient_steps)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\stable_baselines3\dqn\dqn.py", line 216, in train
+    self.policy.optimizer.zero_grad()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\torch\_compile.py", line 32, in inner
+    return disable_fn(*args, **kwargs)
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\torch\_dynamo\eval_frame.py", line 745, in _fn
+    return fn(*args, **kwargs)
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\.venv\Lib\site-packages\torch\optim\optimizer.py", line 975, in zero_grad
+    p.grad = None
+    ^^^^^^
+KeyboardInterrupt
