@@ -1,0 +1,47 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+price idx_actions: 0.0
+price just befoore action selection 99.99000000000001
+[TEST][0/20]  Reward=-0.64
+price idx_actions: 0.0
+price just befoore action selection 99.815
+price idx_actions: 0.0
+price just befoore action selection 100.055
+price idx_actions: 0.0
+price just befoore action selection 100.025
+price idx_actions: 0.0
+price just befoore action selection 100.055
+price idx_actions: 0.0
+price just befoore action selection 100.035
+price idx_actions: 0.0
+price just befoore action selection 100.025
+price idx_actions: 0.0
+price just befoore action selection 100.0
+price idx_actions: 0.0
+price just befoore action selection 99.83500000000001
+price idx_actions: 0.0
+price just befoore action selection 99.795
+price idx_actions: 0.0
+price just befoore action selection 100.045
+[TEST][10/20]  Reward=-1.10
+price idx_actions: 0.0
+price just befoore action selection 99.985
+price idx_actions: 0.0
+price just befoore action selection 100.025
+price idx_actions: 0.0
+price just befoore action selection 100.075
+price idx_actions: 0.0
+price just befoore action selection 99.995
+price idx_actions: 0.0
+price just befoore action selection 99.9
+price idx_actions: 0.0
+price just befoore action selection 99.885
+price idx_actions: 0.0
+price just befoore action selection 99.965
+price idx_actions: 0.0
+price just befoore action selection 99.93
+price idx_actions: 0.0
+price just befoore action selection 99.895

@@ -1,0 +1,15 @@
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+price idx_actions: 0.0
+price just befoore action selection 99.99000000000001
+Traceback (most recent call last):
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\scripts\run_test.py", line 35, in <module>
+    dic, run_id = runner.run()
+                  ~~~~~~~~~~^^
+  File "C:\Users\etoma\OneDrive\Documents\GitHub\qrm_optimal_execution\src\qrm_rl\runner.py", line 194, in run
+    idx_actions.append(self.unwrap_env(self.env)._env.simulator.step)
+    ^^^^^^^^^^^^^^^^^^
+AttributeError: 'numpy.float64' object has no attribute 'append'

@@ -9,13 +9,13 @@ from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLo
 
 if __name__ == "__main__":
 
-
+    config = load_config()
     ### Specify the run id of the trained model to test. ###
     ### ----------------------###
     train_run_id = 'glbpbi4x'
+    config['test_save_memory'] = False
     ### ----------------------###
 
-    config = load_config()
     config['mode'] = 'test'
     config['episodes'] = 20
 
@@ -28,13 +28,13 @@ if __name__ == "__main__":
     max_action = max(actions)
 
 
-    # ## === Best Volume - Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = BestVolumeAgent(fixed_action=-1, modulo=2)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/best_volume_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f) 
+    ## === Best Volume - Agent Testing === ###
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=-1, modulo=2)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/best_volume_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f) 
     
     # # ### === Front Load Agent Testing === ###
     # runner = RLRunner(config)
@@ -50,13 +50,13 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
-    ### === TWAP Agent Testing === ###
-    runner = RLRunner(config)
-    agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
-    runner.agent = agent
-    dic, run_id = runner.run()
-    with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
-        pickle.dump(dic, f)
+    # ### === TWAP Agent Testing === ###
+    # runner = RLRunner(config)
+    # agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
 
 
