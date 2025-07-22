@@ -150,6 +150,7 @@ class RLRunner:
             return
         
         else:
+            # NO WANDB HEREEEEEEEEEEEEE
             # ===== TEST MODE =====
             wandb.run.name = f"{agent_type}_test_{self.run_id}"
 
@@ -179,14 +180,11 @@ class RLRunner:
 
                         self.agent.k = k
                         if isinstance(self.agent, TWAPAgent):
-                            action = self.agent.select_action(state_vec, ep) #state_vec ? 
+                            action = self.agent.select_action() #CAREFUL WHEN SIMULATING STEP WITH TWAP ITS QUANTITY NOT INDEX
+                            obs, reward, done, _, info = self.env.step(action, executed=True)
                         else:
-                            action_idx = self.agent.select_action(state_vec, ep) #careful with self.agent
-                            ask_volumes = self.unwrap_env(self.env)._env.simulator.states[self.unwrap_env(self.env)._env.simulator.step - 1, self.unwrap_env(self.env)._env.simulator.K:]
-                            # why step - 1 here and not before ?
-                            best_ask_volume = next(x for x in ask_volumes if x != 0)
-                            action = round(self.unwrap_env(self.env)._env.actions[action_idx] * best_ask_volume)
-
+                            action = self.agent.select_action()
+                            obs, reward, done, _, info = self.env.step(action)
 
                     actions.append(action)    
                     executed.append(info["executed"])

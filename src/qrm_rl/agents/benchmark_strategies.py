@@ -30,9 +30,9 @@ class TWAPAgent:
         assert np.sum(arr) == n_0, "TWAP Error: The number of actions in the array does not match n_0."
         return arr
 
-    def select_action(self, state, episode):
+    def select_action(self):
         assert self.k < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
-        return self.actions_schedule[self.k]
+        return self.actions_schedule[self.k-1]
 
 
 class BackLoadAgent:
@@ -78,7 +78,7 @@ class FrontLoadAgent:
     def __init__(self, fixed_action):
         self.fixed_action = fixed_action
     
-    def select_action(self, state, episode):
+    def select_action(self):
         return self.fixed_action
 
 
@@ -89,7 +89,7 @@ class RandomAgent:
     def __init__(self, action_dim):
         self.action_dim = action_dim
 
-    def select_action(self, state, episode):
+    def select_action(self):
         return np.random.choice(self.action_dim)
     
 class ConstantAgent:
@@ -99,7 +99,7 @@ class ConstantAgent:
     def __init__(self, fixed_action):
         self.fixed_action = fixed_action
 
-    def select_action(self, state, episode):
+    def select_action(self):
         return self.fixed_action
     
 class BimodalAgent:
@@ -109,7 +109,7 @@ class BimodalAgent:
     def __init__(self, k=0):
         self.k = k
 
-    def select_action(self, state, episode):
+    def select_action(self):
         if self.k % 2 == 1:
             return 1
         else:
@@ -126,7 +126,7 @@ class BestVolumeAgent:
         self.modulo = modulo
 
 
-    def select_action(self, state, episode):
+    def select_action(self):
         if self.k % self.modulo == 1:
             return self.fixed_action
         else:
@@ -141,7 +141,7 @@ class InactiveAgent:
     """
         Inactive agent that does not take any action.
     """
-    def select_action(self, state, episode):
+    def select_action(self):
         return 0
 
 
@@ -153,7 +153,7 @@ class PassiveAgent:
         self.action_dim = action_dim
         self.rng = rng
 
-    def select_action(self, state, episode):
+    def select_action(self):
         probs = [0.5] + [0.5 / (self.action_dim - 1)] * (self.action_dim - 1)
         return self.rng.choice([i for i in range(self.action_dim)], p=probs)
     
