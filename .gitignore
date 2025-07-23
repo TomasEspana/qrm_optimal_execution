@@ -1,1 +1,4 @@
 .venv
+save_model
+wandb
+data_wandb
