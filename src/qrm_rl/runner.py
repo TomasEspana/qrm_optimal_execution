@@ -136,6 +136,7 @@ class RLRunner:
         train_mode = (self.mode == 'train')
         
         if train_mode:
+            # ===== TRAIN MODE =====
             wandb.run.name = f"{agent_type}_{self.run_id}"
             total_steps = self.cfg["total_timesteps"]
 
