@@ -118,9 +118,10 @@ class RLRunner:
             exploration_initial_eps=config["epsilon_start"],
             exploration_final_eps=config["epsilon_end"],
             exploration_fraction=config["prop_greedy_eps"],
-            verbose=1,
+            verbose=2,
             policy_kwargs=policy_kwargs,
             device=self.device,
+            n_steps=config["n_steps"]
         )
         self.agent = self.model
 

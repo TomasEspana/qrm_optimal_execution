@@ -1,7 +1,7 @@
 # mode + seeding
 mode: train # or test
 seed: 42
-episodes: 20 # number of episodes to run
+episodes: 900 # number of episodes to run
 normal_prices: True
 basic_state: True
 len_state_lob: 3
@@ -9,9 +9,9 @@ action_ask_vol: True
 safety_test: False # this has to be set to False if 'action_ask_vol' is True
 
 # simulation parameters
-time_horizon: 10000 # in seconds
-trader_time_step: 1000 # 6 # in seconds
-initial_inventory: 30 # 15 # initial inventory of the trader
+time_horizon: 1000 # in seconds
+trader_time_step: 100 # 6 # in seconds
+initial_inventory: 5 # 15 # initial inventory of the trader
 actions: [0, 1]
 history_size: 1 # number of past trader times to consider in the state
 final_penalty: 1 # reward -= final_penalty * current_inventory (at the end of the episode)
@@ -33,19 +33,20 @@ arrival_price: 100.005 # must be a multiple of half tick (0.005 in this case)
 
 # DQN hyperparams
 # proba_0: 0.2 # probability of sampling 0 action (do nothing) in the ε-greedy policy
+n_steps: 3
 gradient_steps: 1
 epsilon_start: 1.0
 epsilon_end: 0.0
 epsilon_decay: 0.995
-prop_greedy_eps: 0.25 # proportion of episodes where the agent is greedy
+prop_greedy_eps: 0.15 # proportion of episodes where the agent is greedy
 prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmark strategies (TWAP, Back Load, etc)
 unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
 
 gamma: 1.0
-learning_rate: 0.0001
+learning_rate: 0.001
 alpha: 0.95
 eps: 0.01
-batch_size: 64
+batch_size: 128
 memory_capacity: 300000 #
 warmup_steps: 0 # 2000 #10000 # 2000
 target_update_freq: 100 # 250 # 1500 # 250
@@ -116,4 +117,3 @@ folder_path_invariant: "calibration_data/invariant_distribution/"
 # logging_every: 10 # print reward in the terminal every `logging_every` episodes during training
 # folder_path_intensity_table: "calibration_data/intensity_table/"
 # folder_path_invariant: "calibration_data/invariant_distribution/"
-
