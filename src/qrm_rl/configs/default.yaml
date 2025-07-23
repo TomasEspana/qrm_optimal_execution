@@ -33,6 +33,7 @@ arrival_price: 100.005 # must be a multiple of half tick (0.005 in this case)
 
 # DQN hyperparams
 # proba_0: 0.2 # probability of sampling 0 action (do nothing) in the ε-greedy policy
+gradient_steps: 1
 epsilon_start: 1.0
 epsilon_end: 0.0
 epsilon_decay: 0.995

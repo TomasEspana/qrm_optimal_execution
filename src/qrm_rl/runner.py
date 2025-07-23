@@ -114,6 +114,7 @@ class RLRunner:
             gamma=config["gamma"],
             target_update_interval=config["target_update_freq"],
             train_freq=1, # update every step
+            gradient_steps=config["gradient_steps"],
             exploration_initial_eps=config["epsilon_start"],
             exploration_final_eps=config["epsilon_end"],
             exploration_fraction=config["prop_greedy_eps"],
