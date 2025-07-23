@@ -110,6 +110,7 @@ class RLRunner:
             learning_rate=config["learning_rate"],
             buffer_size=config["memory_capacity"],
             batch_size=config["batch_size"],
+            learning_starts=config["batch_size"],
             gamma=config["gamma"],
             target_update_interval=config["target_update_freq"],
             train_freq=1, # update every step
