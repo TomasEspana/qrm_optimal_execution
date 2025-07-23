@@ -85,10 +85,7 @@ class QRMEnv(gym.Env):
         Returns:
             observation (np.ndarray): initial state vector
         """
-        slope = np.random.uniform(1/5, 1/7) ##HERE
-        self._env.simulator.slope = slope   ##HERE
-
-
+        
         state = self._env.reset()
         obs = self._env.state_to_vector(state).astype(np.float32)
         return obs, {}

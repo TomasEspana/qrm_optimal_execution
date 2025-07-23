@@ -35,8 +35,6 @@ class QueueReactiveMarketSimulator:
         self.step = 0   # how many events logged so far
         self.next_trader_time_idx = 0 # index of the next trader time to process
 
-        self.slope = 1.0 ##### HERE
-
     def initialize(self):
         """
             Draw initial LOB and log it as event 0.
@@ -123,7 +121,7 @@ class QueueReactiveMarketSimulator:
             self.current_state()[0],
             self.intensity_table,
             self.tick, self.theta, self.theta_reinit,
-            next_t, self.inv_bid, self.inv_ask, self.max_events_intra, self.slope  ## HERE
+            next_t, self.inv_bid, self.inv_ask, self.max_events_intra
         )
 
         # JIT returns numeric codes for side/depth/event,
