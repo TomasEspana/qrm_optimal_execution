@@ -193,7 +193,7 @@ class RLRunner:
 
                     actions.append(action)    
                     executed.append(info["executed"])
-                    idx_actions.append(self.unwrap_env(self.env)._env.simulator.step - 1)
+                    idx_actions.append(self.unwrap_env(self.env)._env.simulator.step)
                     ep_reward += reward
                     k += 1
 
