@@ -1,7 +1,7 @@
 # mode + seeding
 mode: train # or test
 seed: 42
-episodes: 10000 # number of episodes to run
+episodes: 5000 # number of episodes to run
 normal_prices: True
 basic_state: True
 len_state_lob: 3
@@ -38,15 +38,15 @@ gradient_steps: 1
 epsilon_start: 1.0
 epsilon_end: 0.0
 epsilon_decay: 0.995
-prop_greedy_eps: 0.15 # proportion of episodes where the agent is greedy
+prop_greedy_eps: 0.3 # proportion of episodes where the agent is greedy
 prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmark strategies (TWAP, Back Load, etc)
 unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
 
 gamma: 1.0
-learning_rate: 0.0001
+learning_rate: 0.00001
 alpha: 0.95
 eps: 0.01
-batch_size: 256
+batch_size: 512
 memory_capacity: 300000 #
 warmup_steps: 0 # 2000 #10000 # 2000
 target_update_freq: 100 # 250 # 1500 # 250
