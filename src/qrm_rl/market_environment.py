@@ -251,7 +251,7 @@ class MarketEnvironment:
         self.final_is  += reward
 
         # risk aversion term
-        rat = self.risk_aversion * self.current_inventory * self.exponential_ramp(nxt, self.time_horizon, self.alpha_ramp)
+        rat = self.risk_aversion * self.current_inventory / self.initial_inventory # * self.exponential_ramp(nxt, self.time_horizon, self.alpha_ramp)
         reward -= rat
         self.risk_aversion_term = rat
 
