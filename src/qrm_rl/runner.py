@@ -171,7 +171,7 @@ class RLRunner:
                 done, ep_reward = False, 0. 
 
                 obs, _ = self.env.reset()
-                idx_actions = [self.unwrap_env(self.env)._env.simulator.step - 1]  # first index
+                idx_actions = [self.unwrap_env(self.env)._env.simulator.step]  # first index
                 k = 1
 
                 while not done:
