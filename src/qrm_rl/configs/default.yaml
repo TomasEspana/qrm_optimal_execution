@@ -1,7 +1,7 @@
 # mode + seeding
 mode: train # or test
 seed: 42
-episodes: 900 # number of episodes to run
+episodes: 10000 # number of episodes to run
 normal_prices: True
 basic_state: True
 len_state_lob: 3
@@ -9,9 +9,9 @@ action_ask_vol: True
 safety_test: False # this has to be set to False if 'action_ask_vol' is True
 
 # simulation parameters
-time_horizon: 1000 # in seconds
-trader_time_step: 100 # 6 # in seconds
-initial_inventory: 5 # 15 # initial inventory of the trader
+time_horizon: 10000 # in seconds
+trader_time_step: 1000 # 6 # in seconds
+initial_inventory: 25 # 15 # initial inventory of the trader
 actions: [0, 1]
 history_size: 1 # number of past trader times to consider in the state
 final_penalty: 1 # reward -= final_penalty * current_inventory (at the end of the episode)
@@ -43,10 +43,10 @@ prop_deter_strats: 0. # proportion of episodes where the agent uses the benchmar
 unif_deter_strats: False # whether to use uniformly distribute benchmark strategies (TWAP, ...) during training
 
 gamma: 1.0
-learning_rate: 0.001
+learning_rate: 0.0001
 alpha: 0.95
 eps: 0.01
-batch_size: 128
+batch_size: 256
 memory_capacity: 300000 #
 warmup_steps: 0 # 2000 #10000 # 2000
 target_update_freq: 100 # 250 # 1500 # 250

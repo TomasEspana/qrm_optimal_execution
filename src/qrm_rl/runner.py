@@ -41,7 +41,8 @@ class RLRunner:
             TWAPAgent: 'twap', 
             BackLoadAgent: 'back_load',
             FrontLoadAgent: 'front_load', 
-            RandomAgent: 'random'
+            RandomAgent: 'random', 
+            BestVolumeAgent: 'best_volume'
             # InactiveAgent: 'inactive',
             # PassiveAgent: 'passive',
         }
@@ -148,7 +149,7 @@ class RLRunner:
                 InfoLoggerCallback(self.cfg["action_dim"])
             ])
 
-            self.model.learn(total_timesteps=total_steps, callback=callback)
+            self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
             self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
             return
