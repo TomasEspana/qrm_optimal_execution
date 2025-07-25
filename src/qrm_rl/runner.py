@@ -30,9 +30,7 @@ class RLRunner:
         self.mode = config['mode']
         self.episodes = config['episodes']
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.unif_deter_strats = config['unif_deter_strats']
-        self.prop_greedy_eps = config['prop_greedy_eps']
-        self.prop_deter_strats = config['prop_deter_strats'] 
+        self.prop_greedy_eps = config['exploration_fraction']
         self.agent = None
         self.load_model_path = load_model_path
         self.agent_name_map = {

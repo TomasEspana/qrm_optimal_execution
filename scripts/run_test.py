@@ -10,22 +10,20 @@ from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLo
 if __name__ == "__main__":
 
     config = load_config()
-    config['seed'] = 2025
-    ### ----------------------###
-    train_run_id = 'ma1fyjnz'
-    config['test_save_memory'] = True
-    ### ----------------------###
-
     config['mode'] = 'test'
-    config['episodes'] = 5000
+    config['seed'] = 2025
+    config['test_save_memory'] = False ####HERE
+
+    ### ----------------------###
+    train_run_id = 'stats_tts_3'
+    config['episodes'] = 1
+    ### ----------------------###
 
     runner = RLRunner(config)
-
     th = runner.cfg['time_horizon']
     ii = runner.cfg['initial_inventory']
     tts = runner.cfg['trader_time_step']
     actions = runner.cfg['actions']
-    max_action = max(actions)
 
 
     # ## === Best Volume - Agent Testing === ###
@@ -64,6 +62,14 @@ if __name__ == "__main__":
     # runner.agent = agent
     # dic, run_id = runner.run()
     # with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
+
+    # ### === Constant 0 - Agent Testing === ###
+    # runner = RLRunner(config)
+    # agent = ConstantAgent(fixed_action=0)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/constant_0_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
 
