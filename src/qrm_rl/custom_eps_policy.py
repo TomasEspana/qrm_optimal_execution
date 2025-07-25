@@ -9,7 +9,7 @@ class CustomEpsMlpPolicy(DQNPolicy):
 
         if np.random.rand() < eps:
             # Custom random action distribution
-            action = np.random.choice(self.action_space.n, p=[0.8, 0.2])
+            action = np.random.choice(self.action_space.n, p=[1.0, 0.0])
         else:
             q_values = self.q_net(observation)
             action = q_values.argmax(dim=1).cpu().numpy()
