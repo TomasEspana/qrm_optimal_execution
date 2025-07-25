@@ -11,12 +11,11 @@ len_state_lob: 3
 time_horizon: 78 # 99 # in seconds
 trader_time_step: 3 # 6 # in seconds
 initial_inventory: 30 # 42
-actions: [0, 1]
+actions: [0, 1] # in terms of percentage of available best ask (buy)
 history_size: 1 # number of past trader times to consider in the state
-final_penalty: 1 # reward -= final_penalty * current_inventory (at the end of the episode)
-risk_aversion: 0. # reward -= risk_aversion * penalty (current inventory, or risk aversion term, during the episode)
+final_penalty: 1 # reward -= final_penalty * current_inventory(T)
+risk_aversion: 0. # reward -= risk_aversion * penalty
 alpha_ramp: 15 # ramping parameter for the risk aversion term
-exec_security_margin: 1 # security margin for the back-loaded execution agent
 
 # normalization parameters (for NN input)
 price_offset: 0.

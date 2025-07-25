@@ -29,7 +29,6 @@ class RLRunner:
         self.cfg = config
         self.mode = config['mode']
         self.episodes = config['episodes']
-        self.exec_security_margin = config['exec_security_margin']
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.unif_deter_strats = config['unif_deter_strats']
         self.prop_greedy_eps = config['prop_greedy_eps']
