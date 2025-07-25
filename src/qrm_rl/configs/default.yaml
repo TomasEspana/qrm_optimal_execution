@@ -1,9 +1,10 @@
 # mode + seeding
 mode: train # or test
 seed: 42
-episodes: 100 # number of episodes to run
+episodes: 20000 # number of episodes to run
 normal_prices: True
 basic_state: True
+len_basic_state: 4
 len_state_lob: 3
 action_ask_vol: True
 safety_test: False # this has to be set to False if 'action_ask_vol' is True
@@ -21,9 +22,9 @@ exec_security_margin: 1 # security margin for the back-loaded execution agent
 
 # normalization parameters (for NN input)
 price_offset: 0.
-price_std: 0.3
-vol_offset: 5
-vol_std: 4
+price_std: 0.05
+vol_offset: 8.6 # determined from runs with front load strategy
+vol_std: 6.9 # determined from runs with front load strategy
 
 # QRM parameters
 theta: 0.6

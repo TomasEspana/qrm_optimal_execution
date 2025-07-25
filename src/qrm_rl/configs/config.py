@@ -18,7 +18,7 @@ def load_config(filename="default.yaml"):
     config['trader_times'] = np.arange(0, th + st, st)
     config['action_dim'] = len(config['actions'])
     if config['basic_state']:
-        config['state_dim'] = 3 # Basic state: [inventory, time, mid_price]
+        config['state_dim'] = config['len_basic_state'] # Basic state: [inventory, time, mid_price]
     else:
         config['state_dim'] = config['len_state_lob'] * config['history_size'] + 2
     

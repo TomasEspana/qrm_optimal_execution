@@ -12,7 +12,7 @@ if __name__ == "__main__":
     config = load_config()
     ### Specify the run id of the trained model to test. ###
     ### ----------------------###
-    train_run_id = '1dxwlv3l'
+    train_run_id = 'tts_3_inv_1000'
     config['test_save_memory'] = True
     ### ----------------------###
 
