@@ -1,7 +1,7 @@
 # mode + seeding
 mode: train # or test
 seed: 42
-episodes: 20000 # number of episodes to run
+episodes: 5000 # number of episodes to run
 normal_prices: True
 basic_state: True
 len_state_lob: 3
@@ -9,9 +9,9 @@ action_ask_vol: True
 safety_test: False # this has to be set to False if 'action_ask_vol' is True
 
 # simulation parameters
-time_horizon: 99 # in seconds
+time_horizon: 78 # 99 # in seconds
 trader_time_step: 3 # 6 # in seconds
-initial_inventory: 42 # 8.6*20
+initial_inventory: 30 # 42
 actions: [0, 1]
 history_size: 1 # number of past trader times to consider in the state
 final_penalty: 1 # reward -= final_penalty * current_inventory (at the end of the episode)
@@ -49,8 +49,8 @@ eps: 0.01
 batch_size: 1024
 memory_capacity: 300000 #
 warmup_steps: 0 # 2000 #10000 # 2000
-target_update_freq: 200 # 250 # 1500 # 250
-target_update_freq_2: 200 # 75 # 450 # 75
+target_update_freq: 300 # 250 # 1500 # 250
+target_update_freq_2: 300 # 75 # 450 # 75
 dynamic_lr: False
 dynamic_batch_size: False
 
