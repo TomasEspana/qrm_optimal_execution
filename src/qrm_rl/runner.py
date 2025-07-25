@@ -107,7 +107,7 @@ class RLRunner:
             )
         
         self.model = DQN(
-            policy=CustomEpsMlpPolicy,
+            policy='MlpPolicy',
             env=self.env,
             learning_rate=config["learning_rate"],
             buffer_size=config["memory_capacity"],
