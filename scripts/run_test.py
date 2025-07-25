@@ -12,7 +12,7 @@ if __name__ == "__main__":
     config = load_config()
     ### Specify the run id of the trained model to test. ###
     ### ----------------------###
-    train_run_id = 'rhfskp10'
+    train_run_id = 'bfbhq1tl'
     config['test_save_memory'] = True
     ### ----------------------###
 
@@ -44,19 +44,19 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/best_volume_3_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
     
-    # # ### === Front Load Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = FrontLoadAgent(fixed_action=-1)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
-
-    ### === DDQN Agent Testing === ###
-    runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
+    # ### === Front Load Agent Testing === ###
+    runner = RLRunner(config)
+    agent = FrontLoadAgent(fixed_action=-1)
+    runner.agent = agent
     dic, run_id = runner.run()
-    with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
+    with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)
+
+    # ### === DDQN Agent Testing === ###
+    # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
     # ### === TWAP Agent Testing === ###
     # runner = RLRunner(config)

@@ -74,6 +74,10 @@ class QueueReactiveMarketSimulator:
             Log series of events in the LOB.
         """
         n = len(times)
+        
+        if n == 0:
+            return
+        
         i0 = self.step
         i1 = i0 + n
         if i1 > self.max_events:

@@ -1,7 +1,0 @@
-C:\Users\etoma\AppData\Local\Programs\Python\Python313\Lib\site-packages\gym\utils\passive_env_checker.py:174: UserWarning: [33mWARN: Future gym versions will require that `Env.reset` can be passed a `seed` instead of using `Env.seed` for resetting the environment random number generator.[0m
-  logger.warn(
-C:\Users\etoma\AppData\Local\Programs\Python\Python313\Lib\site-packages\gym\utils\passive_env_checker.py:187: UserWarning: [33mWARN: Future gym versions will require that `Env.reset` can be passed `options` to allow the environment initialisation to be passed additional information.[0m
-  logger.warn(
-C:\Users\etoma\AppData\Local\Programs\Python\Python313\Lib\site-packages\gym\utils\passive_env_checker.py:195: UserWarning: [33mWARN: The result returned by `env.reset()` was not a tuple of the form `(obs, info)`, where `obs` is a observation and `info` is a dictionary containing additional information. Actual type: `<class 'numpy.ndarray'>`[0m
-  logger.warn(
-(3,) Discrete(2) Box(-inf, inf, (3,), float32)
