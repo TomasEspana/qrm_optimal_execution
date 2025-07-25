@@ -28,7 +28,7 @@ def simulate_QRM_jit(time: float,
                          time_end: float,
                          inv_bid: np.ndarray,
                          inv_ask: np.ndarray, 
-                         max_events: int
+                         max_events_intra: int
                          ):
     
     K, Q_plus_1 = rate_int_all.shape[1:3]
@@ -37,14 +37,14 @@ def simulate_QRM_jit(time: float,
     p_mid_old = p_mid
     count = 0
 
-    times   = np.empty(max_events, np.float64)
-    p_mids  = np.empty(max_events, np.float64)
-    p_refs  = np.empty(max_events, np.float64)
-    sides   = np.empty(max_events, np.int8)
-    depths  = np.empty(max_events, np.int8)
-    events  = np.empty(max_events, np.int8)
-    redrawns = np.empty(max_events, np.int8)
-    states  = np.empty((max_events, 2*K), np.int8)
+    times   = np.empty(max_events_intra, np.float64)
+    p_mids  = np.empty(max_events_intra, np.float64)
+    p_refs  = np.empty(max_events_intra, np.float64)
+    sides   = np.empty(max_events_intra, np.int8)
+    depths  = np.empty(max_events_intra, np.int8)
+    events  = np.empty(max_events_intra, np.int8)
+    redrawns = np.empty(max_events_intra, np.int8)
+    states  = np.empty((max_events_intra, 2*K), np.int8)
 
     while True:
         # build rates

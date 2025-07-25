@@ -16,7 +16,7 @@ def simulate_QRM(current_LOB: pd.DataFrame,
                      time_end: float,
                      inv_dist_file_bid: str,
                      inv_dist_file_ask: str,
-                     seed: int
+                     max_events_intra: int
                      ):
     
     # unpack history
@@ -46,7 +46,7 @@ def simulate_QRM(current_LOB: pd.DataFrame,
      red2, states2) = simulate_QRM_jit(
         time, p_mid, p_ref, state,
         rate_int_all, tick, theta, theta_reinit,
-        time_end, inv_bid, inv_ask, seed
+        time_end, inv_bid, inv_ask, max_events_intra
     )
 
     df = pd.DataFrame({
