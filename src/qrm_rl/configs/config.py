@@ -17,7 +17,7 @@ def load_config(filename="default.yaml"):
     st = config['trader_time_step']
     config['trader_times'] = np.arange(0, th + st, st)
     config['action_dim'] = len(config['actions'])
-    
+
     if config['basic_state']:
         config['state_dim'] = config['len_basic_state'] # Basic state: [inventory, time, mid_price]
     else:
@@ -32,16 +32,13 @@ def load_config(filename="default.yaml"):
     config['max_events_intra'] = int(200 * config['trader_time_step'])
     config['max_events'] = int((int(config['time_horizon'] / config['trader_time_step']) + 1) * config['max_events_intra'])
 
-    if config['normal_prices']:
-        config['file_name'] = 'qrm_paper.npy'
-        config['file_name_bid'] = 'qrm_paper.npy'
-        config['file_name_ask'] = 'qrm_paper.npy'
-        # config['file_name'] = 'aapl_corrected.npy'
-        # config['file_name_bid'] = 'aapl_corrected.npy'
-        # config['file_name_ask'] = 'aapl_corrected.npy'
-    else:
-        config['file_name'] = 'aapl_price_down.npy'
-        config['file_name_bid'] = 'aapl_price_down_bid.npy'
-        config['file_name_ask'] = 'aapl_price_down_ask.npy'
+    config['file_name'] = 'qrm_paper.npy'
+    config['file_name_bid'] = 'qrm_paper.npy'
+    config['file_name_ask'] = 'qrm_paper.npy'
+    # config['file_name'] = 'aapl_corrected.npy'
+    # config['file_name_bid'] = 'aapl_corrected.npy'
+    # config['file_name_ask'] = 'aapl_corrected.npy'
+
+    config['alpha_ramp'] = 15 # deprecated
 
     return config
