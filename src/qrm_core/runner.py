@@ -41,8 +41,6 @@ def simulate_QRM(current_LOB: pd.DataFrame,
     inv_bid = np.load(inv_dist_file_bid)
     inv_ask = np.load(inv_dist_file_ask)
 
-    # all this part up to here can be removed and done only once for after in the RL environment
-
     (times2, mids2, prefs2,
      sides2, depths2, evs2,
      red2, states2) = simulate_QRM_jit(
