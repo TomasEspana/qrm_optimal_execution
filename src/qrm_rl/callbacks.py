@@ -70,3 +70,11 @@ class InfoLoggerCallback(BaseCallback):
         wandb.log(log_dict, step=self.num_timesteps)
 
         return True
+    
+
+
+class InjectEpsCallback(BaseCallback):
+    def _on_step(self) -> bool:
+        # Copy model's exploration_rate into the policy object
+        self.model.policy.exploration_rate = self.model.exploration_rate
+        return True

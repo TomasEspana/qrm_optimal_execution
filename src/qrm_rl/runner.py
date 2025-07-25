@@ -13,6 +13,7 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from wandb.integration.sb3 import WandbCallback
 from qrm_rl.callbacks import InfoLoggerCallback
+from qrm_rl.custom_eps_policy import CustomEpsMlpPolicy, InjectEpsCallback
 
 # from contextlib import nullcontext
 # from qrm_rl.agents.ddqn import DDQNAgent
@@ -106,7 +107,7 @@ class RLRunner:
             )
         
         self.model = DQN(
-            policy="MlpPolicy",
+            policy=CustomEpsMlpPolicy,
             env=self.env,
             learning_rate=config["learning_rate"],
             buffer_size=config["memory_capacity"],
@@ -146,7 +147,8 @@ class RLRunner:
 
             callback = CallbackList([
                   WandbCallback(verbose=2),
-                InfoLoggerCallback(self.cfg["action_dim"])
+                InfoLoggerCallback(self.cfg["action_dim"]), 
+                InjectEpsCallback()
             ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
