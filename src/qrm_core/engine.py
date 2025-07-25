@@ -28,8 +28,7 @@ def simulate_QRM_jit(time: float,
                          time_end: float,
                          inv_bid: np.ndarray,
                          inv_ask: np.ndarray, 
-                         max_events: int, 
-                         slope=1. 
+                         max_events: int
                          ):
     
     K, Q_plus_1 = rate_int_all.shape[1:3]
