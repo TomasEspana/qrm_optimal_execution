@@ -182,7 +182,7 @@ class MarketEnvironment:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state: 
-            return [self.current_inventory, nxt, lob_states[0], lob_states[1]] # (inv, time, ask price, ask size)
+            return [self.current_inventory, nxt, lob_states[0]] #, lob_states[1]] # (inv, time, ask price, ask size)
         else:
             return [self.current_inventory, nxt] + lob_states
         

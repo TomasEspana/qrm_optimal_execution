@@ -25,8 +25,6 @@ def load_config(filename="default.yaml"):
     
     config['proba_0'] = 1 / len(config['actions'])
 
-    config['warmup_steps'] = config['batch_size']
-
     # Size pre initialization for LOB
     config['max_events_intra'] = int(200 * config['trader_time_step'])
     config['max_events'] = int((int(config['time_horizon'] / config['trader_time_step']) + 1) * config['max_events_intra'])
