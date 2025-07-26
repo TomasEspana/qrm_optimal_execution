@@ -12,11 +12,11 @@ if __name__ == "__main__":
     config = load_config()
     config['mode'] = 'test'
     config['seed'] = 2025
-    config['test_save_memory'] = False ####HERE
+    config['test_save_memory'] = True
 
     ### ----------------------###
-    train_run_id = 'stats_tts_3'
-    config['episodes'] = 1
+    train_run_id = 'fahbzybi'
+    config['episodes'] = 20_000
     ### ----------------------###
 
     runner = RLRunner(config)
@@ -26,29 +26,29 @@ if __name__ == "__main__":
     actions = runner.cfg['actions']
 
 
-    # ## === Best Volume - Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = BestVolumeAgent(fixed_action=-1, modulo=2)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/best_volume_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    ## === Best Volume - Agent Testing === ###
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=-1, modulo=2)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/best_volume_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
-    # ## === Best Volume - Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = BestVolumeAgent(fixed_action=-1, modulo=3)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/best_volume_3_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    ## === Best Volume - Agent Testing === ###
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=-1, modulo=3)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/best_volume_3_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
     
-    # # ### === Front Load Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = FrontLoadAgent(fixed_action=-1)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    # ### === Front Load Agent Testing === ###
+    runner = RLRunner(config)
+    agent = FrontLoadAgent(fixed_action=-1)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
     # ### === DDQN Agent Testing === ###
     # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
