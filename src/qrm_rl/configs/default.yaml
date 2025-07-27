@@ -1,5 +1,5 @@
 # Training parameters
-episodes: 10000
+episodes: 80000
 
 # Simulation parameters
 time_horizon: 78 # 99
