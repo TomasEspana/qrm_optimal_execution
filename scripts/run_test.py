@@ -15,7 +15,7 @@ if __name__ == "__main__":
     config['test_save_memory'] = True
 
     ### ----------------------###
-    train_run_id = 'hboayfp4'
+    train_run_id = 'c795dbdh'
     config['episodes'] = 20_000
     ### ----------------------###
 
