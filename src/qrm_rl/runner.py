@@ -72,7 +72,8 @@ class RLRunner:
         wandb.init(
             project="QRM_RL_Agent",
             name=f"{self.mode}",
-            config=config
+            config=config, 
+            sync_tensorboard=True,
         )
 
         # Build intensity table
@@ -121,7 +122,7 @@ class RLRunner:
             )
         
         self.model = DQN(
-            policy='MlpPolicy', #'MlpPolicy', # CustomEpsMlpPolicy
+            policy='MlpPolicy', # CustomEpsMlpPolicy
             env=self.env,
             learning_rate=config["learning_rate"],
             buffer_size=config["buffer_size"],
@@ -137,7 +138,8 @@ class RLRunner:
             verbose=2,
             policy_kwargs=policy_kwargs,
             device=self.device,
-            n_steps=config["n_steps"]
+            n_steps=config["n_steps"], 
+            tensorboard_log='./sb3_tensorboard/'
         )
         self.agent = self.model
 
@@ -160,7 +162,9 @@ class RLRunner:
             total_steps = self.cfg["total_timesteps"]
 
             callback = CallbackList([
-                  WandbCallback(verbose=2),
+                  WandbCallback(verbose=2,
+                                #sync_tensorboard=True,
+                                ),
                 InfoLoggerCallback(self.cfg["action_dim"]) # InjectEpsCallback()
             ])
 

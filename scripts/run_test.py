@@ -10,7 +10,7 @@ from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLo
 if __name__ == "__main__":
 
     config = load_config()
-    config['mode'] = 'test'
+    config['mode'] = 'test' 
     config['seed'] = 2025
     config['test_save_memory'] = True
 
