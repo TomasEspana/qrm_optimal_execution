@@ -3,14 +3,12 @@ import numpy as np
 
 
 class CustomEpsMlpPolicy(DQNPolicy):
-    def _predict(self, observation, deterministic=False):
-        # Use exploration rate injected by callback
-        eps = getattr(self, "exploration_rate", 0.1)
-
+    def select_action(self, obs, deterministic=False):
+        # Use exploration_rate from model
+        eps = self.exploration_rate
         if np.random.rand() < eps:
-            # Custom random action distribution
-            action = np.random.choice(self.action_space.n, p=[1.0, 0.0])
+            # Custom distribution for exploration
+            action = np.random.choice(self.action_space.n, p=[0., 1.0])
+            return action, None
         else:
-            q_values = self.q_net(observation)
-            action = q_values.argmax(dim=1).cpu().numpy()
-        return action
+            return super().select_action(obs, deterministic)

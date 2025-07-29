@@ -23,6 +23,23 @@ from qrm_rl.custom_eps_policy import CustomEpsMlpPolicy
 
 # exploration_mode_dic = {'rl': int(0), 'front_load': int(1), 'back_load': int(2), 'twap': int(3)}
 
+
+# class CustomDQN(DQN):
+#     def _sample_action(self, learning_starts, action_noise=None, n_envs=1):
+#         """
+#         Override epsilon-greedy exploration to use custom probabilities.
+#         """
+#         # Exploration phase
+#         print('exploration_rate:', self.exploration_rate)
+#         if self.num_timesteps < learning_starts or np.random.rand() < self.exploration_rate:
+#             # Custom probability distribution
+#             actions = np.random.choice([0, 1], size=n_envs, p=[0.9, 0.1])
+#             # SB3 expects both actions and buffer_actions
+#             return actions, actions
+#         else:
+#             # Default exploitation from parent
+#             return super()._sample_action(learning_starts, action_noise, n_envs)
+
 class RLRunner:
     def __init__(self, config, load_model_path=None):
         # Unpack config
@@ -34,7 +51,7 @@ class RLRunner:
         self.agent = None
         self.load_model_path = load_model_path
         self.agent_name_map = {
-            DQN: 'ddqn',
+            DQN: 'ddqn', # CustomDQN: 'ddqn',
             PPO: 'ppo',
             TWAPAgent: 'twap', 
             BackLoadAgent: 'back_load',
@@ -104,7 +121,7 @@ class RLRunner:
             )
         
         self.model = DQN(
-            policy='MlpPolicy',
+            policy='MlpPolicy', #'MlpPolicy', # CustomEpsMlpPolicy
             env=self.env,
             learning_rate=config["learning_rate"],
             buffer_size=config["buffer_size"],
@@ -144,7 +161,7 @@ class RLRunner:
 
             callback = CallbackList([
                   WandbCallback(verbose=2),
-                InfoLoggerCallback(self.cfg["action_dim"]) # ,InjectEpsCallback()
+                InfoLoggerCallback(self.cfg["action_dim"]) # InjectEpsCallback()
             ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
