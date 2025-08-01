@@ -15,8 +15,8 @@ if __name__ == "__main__":
     config['test_save_memory'] = True
 
     ### ----------------------###
-    train_run_id = '97jj1nr2'
-    config['episodes'] = 20_000
+    train_run_id = '7o5za0od'
+    config['episodes'] = 20_000 # 20_000
     ### ----------------------###
 
     runner = RLRunner(config)
@@ -50,11 +50,11 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
-    # ### === DDQN Agent Testing === ###
-    # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    ### === DDQN Agent Testing === ###
+    runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
     # ### === TWAP Agent Testing === ###
     # runner = RLRunner(config)
