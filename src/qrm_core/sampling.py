@@ -56,6 +56,11 @@ def choose_next_event(K: int,
                       total_rate: float,
                       rates: np.ndarray,
                       state: np.ndarray):
+    """
+        The sampling of the next LOB events is done by summing the rates conditional on the current state.
+        Note that we use 'choose_next_event_bis' instead in the QRM simulator.
+        The difference is just the sampling method (summing vs. minimum), which are equivalent but we prefer to use 'choose_next_event_bis'.
+    """
     
     n = rates.shape[0]
 
@@ -115,6 +120,12 @@ def choose_next_event_bis(K: int,
                       state: np.ndarray, 
                       t: float
                       ):
+    
+    """ 
+        The sampling of the next LOB events is done by picking the minimum time among the rates conditional on the current state.
+        The sampling (summing rates or minimum) is the only difference between this function and `choose_next_event`.
+        We pick 'choose_next_event_bis'.
+    """
     
     n = rates.shape[0]
     rates_array = rates[:, 0]
@@ -180,7 +191,8 @@ def update_LOB(K: int,
                theta_reinit: float,
                tick: float,
                inv_bid: np.ndarray,
-               inv_ask: np.ndarray
+               inv_ask: np.ndarray,
+               aes: np.ndarray
                ):
     
     while True:
@@ -189,27 +201,36 @@ def update_LOB(K: int,
         new_pref  = p_ref
         redrawn   = 0
 
-        if np.random.random() < theta:
+        if np.random.random() < theta: # p_ref changes
             new_pref += tick * mid_move
             old = state.copy()
 
             if np.random.random() > theta_reinit:
-                # SHIFT
+                # Shift the queues
                 if mid_move < 0: # price went down
                     # update ask
                     new_state[K] = 0
-                    new_state[K+1:] = old[K:2*K-1]
+                    new_state[K+1:] = np.rint(
+                            old[K:2*K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
+                        ).astype(np.int8)
                     # update bid
-                    new_state[:K-1] = old[1:K]
+                    new_state[:K-1] = np.rint(
+                            old[1:K] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
+                        ).astype(np.int8)
                     depths = np.empty((1,), np.int32); depths[0] = K
                     samp = sample_stationary_lob(inv_bid, depths)
                     new_state[K - 1] = samp[0]
+
                 else: # price went up
                     # update bid
                     new_state[0] = 0
-                    new_state[1:K] = old[:K-1]
+                    new_state[1:K] = np.rint(
+                            old[:K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
+                        ).astype(np.int8)
                     # update ask
-                    new_state[K:2*K-1] = old[K+1:]
+                    new_state[K:2*K-1] = np.rint(
+                            old[K+1:] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
+                        ).astype(np.int8)
                     depths = np.empty((1,), np.int32); depths[0] = K
                     samp = sample_stationary_lob(inv_ask, depths)
                     new_state[2*K - 1] = samp[0]

@@ -16,7 +16,8 @@ class QueueReactiveMarketSimulator:
         inv_ask: np.ndarray,
         trader_times: np.ndarray,
         max_events: int, 
-        max_events_intra: int
+        max_events_intra: int, 
+        aes: np.ndarray
     ):
         # core parameters
         self.intensity_table = intensity_table
@@ -28,6 +29,7 @@ class QueueReactiveMarketSimulator:
         self.inv_ask = inv_ask
         self.trader_times = trader_times
         self.initial_price = initial_price
+        self.aes = aes
 
         # logging buffer capacity
         self.max_events = max_events # max number of events to log for one episode
@@ -125,7 +127,7 @@ class QueueReactiveMarketSimulator:
             self.current_state()[0],
             self.intensity_table,
             self.tick, self.theta, self.theta_reinit,
-            next_t, self.inv_bid, self.inv_ask, self.max_events_intra
+            next_t, self.inv_bid, self.inv_ask, self.max_events_intra, self.aes
         )
 
         # JIT returns numeric codes for side/depth/event,

@@ -33,7 +33,8 @@ class MarketEnvironment:
         max_events_intra: int, 
         history_size: int, 
         alpha_ramp: float, 
-        basic_state: bool
+        basic_state: bool, 
+        aes: list
     ):
         # — core parameters —
         self.actions = actions
@@ -50,6 +51,7 @@ class MarketEnvironment:
         self.risk_aversion     = risk_aversion
         self.history_size      = history_size
         self.alpha_ramp        = alpha_ramp
+        self.basic_state       = basic_state
 
         # load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
@@ -67,7 +69,6 @@ class MarketEnvironment:
         self.final_is   = 0.0
         self.risk_aversion_term = 0.0
         self.non_executed_liquidity_constraint = 0
-        self.basic_state = basic_state
 
         # instantiate our fast, NumPy-backed simulator
         self.simulator = QueueReactiveMarketSimulator(
@@ -80,7 +81,8 @@ class MarketEnvironment:
             inv_ask          = self.inv_ask,
             trader_times     = self.trader_times,
             max_events       = max_events,
-            max_events_intra = max_events_intra
+            max_events_intra = max_events_intra, 
+            aes              = aes
         )
 
     def reset(self):

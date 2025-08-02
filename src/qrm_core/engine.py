@@ -28,7 +28,8 @@ def simulate_QRM_jit(time: float,
                          time_end: float,
                          inv_bid: np.ndarray,
                          inv_ask: np.ndarray, 
-                         max_events_intra: int
+                         max_events_intra: int, 
+                         aes: np.ndarray
                          ):
     
     K, Q_plus_1 = rate_int_all.shape[1:3]
@@ -97,7 +98,7 @@ def simulate_QRM_jit(time: float,
             new_pmid, p_ref, state, redrawn = update_LOB(
                                 K, p_ref, state, mid_move,
                                 theta, theta_reinit, tick,
-                                inv_bid, inv_ask)
+                                inv_bid, inv_ask, aes)
 
         times[count] = t
         p_mids[count] = round(2*new_pmid/tick) * tick / 2

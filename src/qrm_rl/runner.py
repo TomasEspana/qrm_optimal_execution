@@ -108,7 +108,8 @@ class RLRunner:
             alpha_ramp=config['alpha_ramp'],
             basic_state=config['basic_state'],
             state_dim=config['state_dim'],
-            action_dim=config['action_dim']
+            action_dim=config['action_dim'], 
+            aes=np.array(config['aes'])
         )
 
         # Agent

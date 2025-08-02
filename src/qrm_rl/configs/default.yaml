@@ -48,6 +48,7 @@ tick: 0.01
 arrival_price: 100.005
 
 # Other
+aes: [836, 1068, 1069]
 mode: train
 seed: 42
 logging_every: 10
