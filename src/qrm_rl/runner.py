@@ -45,6 +45,7 @@ class RLRunner:
         # Unpack config
         self.cfg = config
         self.mode = config['mode']
+        self.test_mode = (self.mode == 'test')
         self.episodes = config['episodes']
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.prop_greedy_eps = config['exploration_fraction']
@@ -109,7 +110,8 @@ class RLRunner:
             basic_state=config['basic_state'],
             state_dim=config['state_dim'],
             action_dim=config['action_dim'], 
-            aes=np.array(config['aes'])
+            aes=np.array(config['aes']), 
+            test_mode=self.test_mode
         )
 
         # Agent

@@ -34,7 +34,8 @@ class MarketEnvironment:
         history_size: int, 
         alpha_ramp: float, 
         basic_state: bool, 
-        aes: list
+        aes: list, 
+        test_mode: bool
     ):
         # — core parameters —
         self.actions = actions
@@ -52,6 +53,8 @@ class MarketEnvironment:
         self.history_size      = history_size
         self.alpha_ramp        = alpha_ramp
         self.basic_state       = basic_state
+        self.aes               = aes
+        self.test_mode         = test_mode
 
         # load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
@@ -112,7 +115,7 @@ class MarketEnvironment:
         return self.simulator.current_ref_price()
     
     def current_state(self, hist_size=1):
-        return self.simulator.current_state(history_size=hist_size)
+        return self.simulator.current_state(hist_size)
 
     @staticmethod
     def _best_quotes(st, K, p_ref, tick):
@@ -145,7 +148,7 @@ class MarketEnvironment:
             Reads the last self.history_size LOB states snapshot and returns 
             ((bid_price, size, depth, total_bid), (ask_price, size, depth, total_ask))
         """
-        st = self.current_state(hist_size=self.history_size)[::-1]  # reverse order for most recent first
+        st = self.current_state(self.history_size) # already reversed to have the latest state first
         K  = self.simulator.K
         p_ref = self.current_ref_price()
 
@@ -271,7 +274,7 @@ class MarketEnvironment:
         else:
             p_mid, p_ref, st, redrawn = update_LOB(
                 K, p_ref, st, 1, self.theta, self.theta_reinit,
-                self.tick, self.inv_bid, self.inv_ask
+                self.tick, self.inv_bid, self.inv_ask, self.aes
             )
             self.simulator._write_batch(
                 times=[nxt],
@@ -293,5 +296,23 @@ class MarketEnvironment:
             reward -= self.final_penalty * self.current_inventory
             self.simulator.next_trader_time_idx += 1
 
+            if self.test_mode: # execute remaining inventory aggressively (test mode only)
+                q_bis = self.current_inventory
+                if q_bis > 0:
+                    st      = self.current_state()[0]
+                    p_ref   = self.current_ref_price()
+                    # walk down the ask side
+                    rem = q_bis
+                    rwd = 0.0
+                    for depth in range(K):
+                        avail = int(st[K+depth])
+                        take  = min(rem, avail)
+                        if take > 0:
+                            rem -= take
+                            rwd += (self.arrival_price - (p_ref + self.tick * (depth + 0.5))) * take
+                        if rem == 0:
+                            break
+
+                    self.final_is += rwd
 
         return self.get_state(), reward, done, q, total_ask
