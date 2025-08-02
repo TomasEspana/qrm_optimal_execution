@@ -187,7 +187,7 @@ class MarketEnvironment:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state: 
-            return [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]] #, min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
+            return [self.current_inventory, nxt, lob_states[0], min(lob_states[1], self.current_inventory)] # , lob_states[1], lob_states[2]] # # (inv, time, ask price, ask size)
         else:
             return [self.current_inventory, nxt] + lob_states
         
@@ -312,6 +312,8 @@ class MarketEnvironment:
                             rwd += (self.arrival_price - (p_ref + self.tick * (depth + 0.5))) * take
                         if rem == 0:
                             break
+                    if rem > 0:
+                        rwd += (self.arrival_price - (p_ref + self.tick * (depth + 1.5))) * rem
 
                     self.final_is += rwd
 

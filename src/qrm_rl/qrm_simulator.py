@@ -108,7 +108,7 @@ class QueueReactiveMarketSimulator:
     def current_ref_price(self):
         return self.p_refs[self.step - 1]
 
-    def current_state(self, history_size):
+    def current_state(self, history_size=1):
         return self.states[self.step - history_size:self.step].copy()[::-1]
 
     def simulate_step(self):
