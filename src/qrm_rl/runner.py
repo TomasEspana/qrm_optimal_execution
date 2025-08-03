@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg") 
 import wandb
 import numpy as np
 import torch
@@ -14,6 +16,10 @@ from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from wandb.integration.sb3 import WandbCallback
 from qrm_rl.callbacks import InfoLoggerCallback, InjectEpsCallback
 from qrm_rl.custom_eps_policy import CustomEpsMlpPolicy
+import shap
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
 
 # from contextlib import nullcontext
 # from qrm_rl.agents.ddqn import DDQNAgent
@@ -174,6 +180,112 @@ class RLRunner:
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
             self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
+
+            # Feature importance
+            buffer = self.model.replay_buffer
+            end_idx = buffer.size()
+            obs = buffer.observations[:end_idx]
+            if obs.ndim == 3 and obs.shape[-1] == 1:
+                obs = obs.squeeze(-1)
+            obs = obs.astype(np.float32)
+
+            sample_size = 10 # 3000
+            background_size = 20 # 6000
+
+            sample_start = max(0, end_idx - sample_size)
+            bg_start = max(0, sample_start - background_size)
+
+            # Slice the buffer
+            sample_states = obs[sample_start:end_idx]
+            sample_states = sample_states.reshape(sample_states.shape[0], sample_states.shape[2])
+            print("Sample states shape:", sample_states.shape)
+            background = obs[bg_start:sample_start]
+            background = background.reshape(background.shape[0], background.shape[2])
+            print("Background shape:", background.shape)
+            # Q-network prediction function
+            q_net = self.model.policy.q_net
+
+            # Wrapper
+            def model_predict(x):
+                with torch.no_grad():
+                    x_t = torch.tensor(x, dtype=torch.float32, device=self.device)
+                    return q_net(x_t).cpu().numpy()
+
+            # KernelExplainer
+            explainer = shap.KernelExplainer(model_predict, background)
+
+            # Compute SHAP values (limit to 100 states for speed)
+            shap_values = explainer.shap_values(sample_states)
+
+            print("shap_values shape:", np.array(shap_values).shape)
+
+            # Iterate over both actions
+            feature_names = ["inventory", "time", "ask_price"]
+
+            base_output_dir = "shap_plots"
+            os.makedirs(base_output_dir, exist_ok=True)
+
+            # Create a subfolder for this run
+            output_dir = os.path.join(base_output_dir, self.run_id)
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Gradient feature importance
+            states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
+            num_actions = self.cfg['action_dim']
+            
+            gradient_importances = []
+
+            for action_idx in range(num_actions):
+                q_vals = q_net(states_t)[:, action_idx].sum()
+                grads = torch.autograd.grad(q_vals, states_t, retain_graph=True)[0]  # shape (N, num_features)
+                gradient_importances.append(np.abs(grads.detach().cpu().numpy()).mean(axis=0))
+
+            gradient_importances = np.array(gradient_importances)  # shape (num_actions, num_features)
+
+
+            for action_idx in range(shap_values.shape[2]):
+                values = shap_values[:, :, action_idx]
+                shap_importance = np.abs(values).mean(0)
+                grad_importance = gradient_importances[action_idx]
+
+                df_compare = pd.DataFrame({
+                    "feature": feature_names,
+                    "SHAP": shap_importance,
+                    "Gradient": grad_importance
+                }).sort_values("SHAP", ascending=False)
+
+                print(f"\n=== Action {action_idx} Feature Importance ===")
+                print(df_compare)
+
+                # SHAP summary plot
+                shap.summary_plot(values, sample_states, feature_names=feature_names, 
+                                title=f"SHAP Values for Action {action_idx}", show=False)
+                plt.savefig(os.path.join(output_dir, f"summary_action_{action_idx}.pdf"), bbox_inches='tight')
+                plt.close()
+
+                shap_values_obj = shap.Explanation(
+                    values=values,
+                    data=sample_states,
+                    feature_names=feature_names
+                )
+                shap.plots.bar(shap_values_obj, show=False)
+                plt.savefig(os.path.join(output_dir, f"bar_action_{action_idx}.pdf"), bbox_inches='tight')
+                plt.close()
+
+                for feat in shap_values_obj.feature_names:
+                    shap.plots.scatter(shap_values_obj[:, feat], color=shap_values_obj, show=False)
+                    plt.savefig(os.path.join(output_dir, f"scatter_action_{action_idx}_{feat}.pdf"), bbox_inches='tight')
+                    plt.close()
+
+                # Gradient bar plot
+                plt.figure()
+                plt.bar(feature_names, grad_importance)
+                plt.title(f"Gradient-based Feature Importance (Action {action_idx})")
+                plt.ylabel("Mean |∂Q/∂s|")
+                plt.tight_layout()
+                plt.savefig(os.path.join(output_dir, f"grad_bar_action_{action_idx}.pdf"), bbox_inches='tight')
+                plt.close()
+
             return
         
         else:
