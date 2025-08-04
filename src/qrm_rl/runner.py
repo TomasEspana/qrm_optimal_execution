@@ -296,12 +296,12 @@ class RLRunner:
             if self.load_model_path is not None:
                 self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)
             # Logging
-            mid_prices, mid_prices_events, lob_dataframe, actions_taken, executed_dic, index_actions = {}, {}, {}, {}, {}, {}
+            mid_prices, mid_prices_events, lob_dataframe, actions_taken, executed_dic, index_actions, ba_vol_dic = {}, {}, {}, {}, {}, {}, {}
             final_is = []
 
             for ep in range(self.episodes):
 
-                actions, executed = [], []
+                actions, executed, ba_vol = [], [], []
                 done, ep_reward = False, 0. 
 
                 obs, _ = self.env.reset()
@@ -327,6 +327,7 @@ class RLRunner:
 
                     actions.append(action)    
                     executed.append(info["executed"])
+                    ba_vol.append(info["best_ask_volume"])
                     idx_actions.append(self.unwrap_env(self.env)._env.simulator.step)
                     ep_reward += reward
                     k += 1
@@ -336,6 +337,7 @@ class RLRunner:
                 final_is.append(unwrapped_env._env.final_is)
                 actions_taken[ep] = actions
                 executed_dic[ep] = executed
+                ba_vol_dic[ep] = ba_vol
                 index_actions[ep] = idx_actions[:-1]
                 mid_prices_events[ep] = unwrapped_env._env.simulator.p_mids[:unwrapped_env._env.simulator.step][idx_actions[:-1]].astype(np.float32)
 
@@ -361,7 +363,8 @@ class RLRunner:
                 "mid_prices_events": mid_prices_events,
                 "actions": actions_taken,
                 "executed": executed_dic,
-                "index_actions": index_actions
+                "index_actions": index_actions, 
+                "ba_vol": ba_vol_dic
             }
 
             return dic, self.run_id

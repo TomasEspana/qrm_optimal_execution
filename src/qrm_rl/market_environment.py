@@ -187,7 +187,7 @@ class MarketEnvironment:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state: 
-            return [self.current_inventory, nxt, lob_states[0]] #, lob_states[1], lob_states[2]] # , min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
+            return [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]] # , min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
         else:
             return [self.current_inventory, nxt] + lob_states
         
@@ -204,7 +204,7 @@ class MarketEnvironment:
         # st_n[3::2] = (st[3::2] - self.vol_offset) / self.vol_std  # volumes
 
         st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std  # prices
-        st_n[3::] = (st[3::] - self.vol_offset) / self.vol_std  # volumes
+        st_n[3::] = (np.log1p(st[3::]) - self.vol_offset) / self.vol_std  # volumes
         # st_n[4::3] = (st[4::3] - self.vol_offset) / self.vol_std  # volumes
 
         return st_n

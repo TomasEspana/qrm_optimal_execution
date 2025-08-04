@@ -106,9 +106,9 @@ class QRMEnv(gym.Env):
                 done (bool)
                 info (dict)
         """        
+        ask_volumes = self._env.simulator.states[self._env.simulator.step - 1, self._env.simulator.K:]
+        best_ask_volume = next(x for x in ask_volumes if x != 0)
         if not self._executed:
-            ask_volumes = self._env.simulator.states[self._env.simulator.step - 1, self._env.simulator.K:]
-            best_ask_volume = next(x for x in ask_volumes if x != 0)
             action_val = round(self._env.actions[action] * best_ask_volume)
         else:
             action_val = action
@@ -126,11 +126,13 @@ class QRMEnv(gym.Env):
             "total_ask_volume": total_ask, 
             "reward": reward, 
             "Risk Aversion Term in Reward": self._env.risk_aversion_term,
-            "action_idx": action,  
+            "action_idx": action,
             "mid_price": self._env.current_mid_price(), 
-            "Non Executed Liquidity Constraint": self._env.non_executed_liquidity_constraint
+            "Non Executed Liquidity Constraint": self._env.non_executed_liquidity_constraint, 
+            "best_ask_volume": best_ask_volume, 
+            "log1p_best_ask_volume": np.log1p(best_ask_volume)
         }
-        return obs, reward, done, False, info   
+        return obs, reward, done, False, info
 
     def render(self, mode="human"):
         # Optional: visualize LOB or trading process
