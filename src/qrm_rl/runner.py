@@ -147,8 +147,7 @@ class RLRunner:
             verbose=2,
             policy_kwargs=policy_kwargs,
             device=self.device,
-            n_steps=config["n_steps"], 
-            tensorboard_log='./sb3_tensorboard/'
+            n_steps=config["n_steps"]
         )
         self.agent = self.model
 
