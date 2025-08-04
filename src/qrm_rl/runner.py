@@ -189,8 +189,8 @@ class RLRunner:
                 obs = obs.squeeze(-1)
             obs = obs.astype(np.float32)
 
-            sample_size = 10 # 3000
-            background_size = 20 # 6000
+            sample_size = 10 # 200 
+            background_size = 20 # 500
 
             sample_start = max(0, end_idx - sample_size)
             bg_start = max(0, sample_start - background_size)
@@ -269,6 +269,12 @@ class RLRunner:
                     feature_names=feature_names
                 )
                 shap.plots.bar(shap_values_obj, show=False)
+                # for text in plt.gca().texts:
+                #         try:
+                #             val = float(text.get_text().replace('+', ''))
+                #             text.set_text(f"+{val:.4f}")  # change to 4 decimal places
+                #         except ValueError:
+                #             pass  # not a number, ignore
                 plt.savefig(os.path.join(output_dir, f"bar_action_{action_idx}.pdf"), bbox_inches='tight')
                 plt.close()
 
