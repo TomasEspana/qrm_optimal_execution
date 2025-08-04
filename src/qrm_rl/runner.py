@@ -187,8 +187,8 @@ class RLRunner:
             output_dir = os.path.join(base_output_dir, self.run_id)
             os.makedirs(output_dir, exist_ok=True)
 
-            sample_size = 10 # 200 
-            background_size = 20 # 500
+            sample_size = 200 # 200 
+            background_size = 500 # 500
             buffer = self.model.replay_buffer
             end_idx = buffer.size()
             obs = buffer.observations[:end_idx]
