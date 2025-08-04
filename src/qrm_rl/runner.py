@@ -181,27 +181,28 @@ class RLRunner:
             self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
 
-            # Feature importance
-            buffer = self.model.replay_buffer
-            end_idx = buffer.size()
-            obs = buffer.observations[:end_idx]
-            if obs.ndim == 3 and obs.shape[-1] == 1:
-                obs = obs.squeeze(-1)
-            obs = obs.astype(np.float32)
+            ### Feature importance
+            base_output_dir = "shap_plots"
+            os.makedirs(base_output_dir, exist_ok=True)
+            output_dir = os.path.join(base_output_dir, self.run_id)
+            os.makedirs(output_dir, exist_ok=True)
 
             sample_size = 10 # 200 
             background_size = 20 # 500
-
+            buffer = self.model.replay_buffer
+            end_idx = buffer.size()
+            obs = buffer.observations[:end_idx]
             sample_start = max(0, end_idx - sample_size)
             bg_start = max(0, sample_start - background_size)
-
-            # Slice the buffer
             sample_states = obs[sample_start:end_idx]
             sample_states = sample_states.reshape(sample_states.shape[0], sample_states.shape[2])
-            print("Sample states shape:", sample_states.shape)
             background = obs[bg_start:sample_start]
             background = background.reshape(background.shape[0], background.shape[2])
-            print("Background shape:", background.shape)
+
+            save_path = os.path.join(output_dir, "shap_data.npz")
+            np.savez_compressed(save_path, sample_states=sample_states, background=background)
+            print(f"Saved SHAP data to {save_path}")
+
             # Q-network prediction function
             q_net = self.model.policy.q_net
 
@@ -221,13 +222,6 @@ class RLRunner:
 
             # Iterate over both actions
             feature_names = ["inventory", "time", "ask_price"]
-
-            base_output_dir = "shap_plots"
-            os.makedirs(base_output_dir, exist_ok=True)
-
-            # Create a subfolder for this run
-            output_dir = os.path.join(base_output_dir, self.run_id)
-            os.makedirs(output_dir, exist_ok=True)
 
             # Gradient feature importance
             states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
@@ -258,30 +252,30 @@ class RLRunner:
                 print(df_compare)
 
                 # SHAP summary plot
+                fig = plt.figure()
                 shap.summary_plot(values, sample_states, feature_names=feature_names, 
                                 title=f"SHAP Values for Action {action_idx}", show=False)
+                fig.tight_layout()
                 plt.savefig(os.path.join(output_dir, f"summary_action_{action_idx}.pdf"), bbox_inches='tight')
-                plt.close()
+                plt.close(fig)
 
+                fig = plt.figure()
                 shap_values_obj = shap.Explanation(
                     values=values,
                     data=sample_states,
                     feature_names=feature_names
                 )
                 shap.plots.bar(shap_values_obj, show=False)
-                # for text in plt.gca().texts:
-                #         try:
-                #             val = float(text.get_text().replace('+', ''))
-                #             text.set_text(f"+{val:.4f}")  # change to 4 decimal places
-                #         except ValueError:
-                #             pass  # not a number, ignore
+                fig.tight_layout()
                 plt.savefig(os.path.join(output_dir, f"bar_action_{action_idx}.pdf"), bbox_inches='tight')
-                plt.close()
+                plt.close(fig)
 
                 for feat in shap_values_obj.feature_names:
+                    fig = plt.figure()
                     shap.plots.scatter(shap_values_obj[:, feat], color=shap_values_obj, show=False)
+                    fig.tight_layout() 
                     plt.savefig(os.path.join(output_dir, f"scatter_action_{action_idx}_{feat}.pdf"), bbox_inches='tight')
-                    plt.close()
+                    plt.close(fig)
 
                 # Gradient bar plot
                 plt.figure()
