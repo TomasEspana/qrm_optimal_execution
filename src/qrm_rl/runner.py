@@ -220,7 +220,7 @@ class RLRunner:
             print("shap_values shape:", np.array(shap_values).shape)
 
             # Iterate over both actions
-            feature_names = ["inventory", "time", "ask_price"]
+            feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
 
             # Gradient feature importance
             states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)

@@ -2,20 +2,20 @@
 episodes: 80000
 
 # Simulation parameters
-time_horizon: 78 # 78 # 99
+time_horizon: 1000 # 78 # 99
 trader_time_step: 6 # 6 # 3 # 6
-initial_inventory: 25 # 30 # 42
+initial_inventory: 10000000 # 25 # 30 # 42
 final_penalty: 1
 risk_aversion: 0.
 
 # State space
 basic_state: True
-len_basic_state: 4 # 3
+len_basic_state: 5 # 3
 len_state_lob: 3
 history_size: 1
 
 # Action space
-actions: [0, 1] # [0, 0.25, 0.5, 0.75]
+actions: [0, 1.0] # [0, 0.25, 0.5, 0.75]
 
 # Bellam parameters
 gamma: 1.0

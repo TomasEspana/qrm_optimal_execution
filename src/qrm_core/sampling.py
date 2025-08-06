@@ -211,11 +211,11 @@ def update_LOB(K: int,
                 if mid_move < 0: # price went down
                     # update ask
                     new_state[K] = 0
-                    new_state[K+1:] = np.maximum(Q, np.rint(
+                    new_state[K+1:] = np.minimum(Q, np.rint(
                             old[K:2*K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
                         )).astype(np.int8)
                     # update bid
-                    new_state[:K-1] = np.maximum(Q, np.rint(
+                    new_state[:K-1] = np.minimum(Q, np.rint(
                             old[1:K] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
                         )).astype(np.int8)
                     depths = np.empty((1,), np.int32); depths[0] = K
@@ -225,11 +225,11 @@ def update_LOB(K: int,
                 else: # price went up
                     # update bid
                     new_state[0] = 0
-                    new_state[1:K] = np.maximum(Q, np.rint(
+                    new_state[1:K] = np.minimum(Q, np.rint(
                             old[:K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
                         )).astype(np.int8)
                     # update ask
-                    new_state[K:2*K-1] = np.maximum(Q, np.rint(
+                    new_state[K:2*K-1] = np.minimum(Q, np.rint(
                             old[K+1:] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
                         )).astype(np.int8)
                     depths = np.empty((1,), np.int32); depths[0] = K
