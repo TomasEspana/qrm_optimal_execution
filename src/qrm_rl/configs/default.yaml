@@ -2,9 +2,9 @@
 episodes: 80000
 
 # Simulation parameters
-time_horizon: 1000 # 78 # 99
-trader_time_step: 6 # 6 # 3 # 6
-initial_inventory: 10000000 # 25 # 30 # 42
+time_horizon: 234 # 78 # 99
+trader_time_step: 6 # 3 # 6
+initial_inventory: 25 # 25 # 30 # 42
 final_penalty: 1
 risk_aversion: 0.
 
@@ -42,7 +42,7 @@ vol_offset: 2.133 # 8.6 # 5
 vol_std: 0.831 # 6.9 # 4
 
 # QRM parameters
-theta: 0.6
+theta: 0.7
 theta_reinit: 0.85
 tick: 0.01
 arrival_price: 100.005

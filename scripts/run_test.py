@@ -15,8 +15,8 @@ if __name__ == "__main__":
     config['test_save_memory'] = False # True
 
     ### ----------------------###
-    train_run_id = 'test'
-    config['episodes'] = 1 # 20_000
+    train_run_id = 'test_theta_25_tr_1'
+    config['episodes'] = 50 #20_000
     ### ----------------------###
 
     runner = RLRunner(config)
@@ -55,6 +55,14 @@ if __name__ == "__main__":
     # dic, run_id = runner.run()
     # with open(f'data_wandb/dictionaries/best_volume_3_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
+
+    ## === Best Volume - Agent Testing === ###
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=-1, modulo=4)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/best_volume_4_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
     # ### === TWAP Agent Testing === ###
     # runner = RLRunner(config)
