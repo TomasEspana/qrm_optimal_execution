@@ -6,16 +6,24 @@ import numpy as np
     Upload run configuration as dictionary from YAML file.
 """
 
-def load_config(filename="default.yaml"):
+def load_config(theta=None, theta_r=None, trader_times=None, filename="default.yaml"):
     config_path = os.path.join(os.path.dirname(__file__), filename)
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
+
+    if theta is not None:
+        config['theta'] = theta
+    if theta_r is not None:
+        config['theta_reinit'] = theta_r
 
     config['total_timesteps'] = config['episodes'] * config['time_horizon'] / config['trader_time_step']
     
     th = config['time_horizon']
     st = config['trader_time_step']
-    config['trader_times'] = np.arange(0, th + st, st)
+    if trader_times is not None:
+        config['trader_times'] = trader_times
+    else:
+        config['trader_times'] = np.arange(0, th + st, st)
     config['action_dim'] = len(config['actions'])
 
     if config['basic_state']:

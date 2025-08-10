@@ -1,6 +1,7 @@
 import pickle 
 import sys
 import os
+import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
 
 from qrm_rl.configs.config import load_config
@@ -12,11 +13,11 @@ if __name__ == "__main__":
     config = load_config()
     config['mode'] = 'test' 
     config['seed'] = 2025
-    config['test_save_memory'] = False # True
+    config['test_save_memory'] = True # True
 
     ### ----------------------###
-    train_run_id = 'test_theta_25_tr_1'
-    config['episodes'] = 50 #20_000
+    train_run_id = 'test'
+    config['episodes'] = 20_000 
     ### ----------------------###
 
     runner = RLRunner(config)
@@ -25,6 +26,21 @@ if __name__ == "__main__":
     tts = runner.cfg['trader_time_step']
     actions = runner.cfg['actions']
 
+    ## === Best Volume - Agent Testing === ###
+    mod = 8
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
+
+
+    # ### === DDQN Agent Testing === ###
+    # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
     # # ## === Best Volume - Agent Testing === ###
     # runner = RLRunner(config)
@@ -42,12 +58,6 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
-    # ### === DDQN Agent Testing === ###
-    # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
-
     # ## === Best Volume - Agent Testing === ###
     # runner = RLRunner(config)
     # agent = BestVolumeAgent(fixed_action=-1, modulo=3)
@@ -56,13 +66,13 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/best_volume_3_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
-    ## === Best Volume - Agent Testing === ###
-    runner = RLRunner(config)
-    agent = BestVolumeAgent(fixed_action=-1, modulo=4)
-    runner.agent = agent
-    dic, run_id = runner.run()
-    with open(f'data_wandb/dictionaries/best_volume_4_{train_run_id}.pkl', 'wb') as f:
-        pickle.dump(dic, f)
+    # ## === Best Volume - Agent Testing === ###
+    # runner = RLRunner(config)
+    # agent = BestVolumeAgent(fixed_action=-1, modulo=4)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/best_volume_4_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
     # ### === TWAP Agent Testing === ###
     # runner = RLRunner(config)
