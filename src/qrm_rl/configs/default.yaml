@@ -38,8 +38,8 @@ exploration_fraction: 0.1 # 0.1
 # Normalization parameters
 price_offset: 0.0177 # 0.025 # 0.
 price_std: 0.0217 # 0.05 # 0.3
-vol_offset: 2.133 # 8.6 # 5
-vol_std: 0.831 # 6.9 # 4
+vol_offset: 8.375 # 2.133 # 8.6 # 5
+vol_std: 6.391 # 0.831 # 6.9 # 4
 
 # QRM parameters
 theta: 0.7

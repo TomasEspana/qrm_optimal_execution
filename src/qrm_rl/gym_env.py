@@ -108,6 +108,8 @@ class QRMEnv(gym.Env):
         """        
         ask_volumes = self._env.simulator.states[self._env.simulator.step - 1, self._env.simulator.K:]
         best_ask_volume = next(x for x in ask_volumes if x != 0)
+        bid_volumes = self._env.simulator.states[self._env.simulator.step - 1, :self._env.simulator.K]
+        best_bid_volume = next(x for x in bid_volumes if x != 0)
         if not self._executed:
             action_val = round(self._env.actions[action] * best_ask_volume)
         else:
@@ -130,7 +132,7 @@ class QRMEnv(gym.Env):
             "mid_price": self._env.current_mid_price(), 
             "Non Executed Liquidity Constraint": self._env.non_executed_liquidity_constraint, 
             "best_ask_volume": best_ask_volume, 
-            "log1p_best_ask_volume": np.log1p(best_ask_volume)
+            "best_bid_volume": best_bid_volume
         }
         return obs, reward, done, False, info
 
