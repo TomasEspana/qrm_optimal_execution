@@ -39,6 +39,7 @@ class MarketEnvironment:
     ):
         # — core parameters —
         self.actions = actions
+        self.action_dim = len(actions)
         self.arrival_price = arrival_price
         self.price_offset  = price_offset
         self.price_std     = price_std
@@ -187,7 +188,8 @@ class MarketEnvironment:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state: 
-            return [self.current_inventory, nxt, lob_states[0]] #, lob_states[1], lob_states[2]] # , min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
+            state = [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]] # , min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
+            return state[:self.action_dim]
         else:
             return [self.current_inventory, nxt] + lob_states
         

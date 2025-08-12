@@ -216,15 +216,13 @@ class RLRunner:
 
             # Compute SHAP values (limit to 100 states for speed)
             shap_values = explainer.shap_values(sample_states)
-
             print("shap_values shape:", np.array(shap_values).shape)
-
-            # Iterate over both actions
-            feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
 
             # Gradient feature importance
             states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
             num_actions = self.cfg['action_dim']
+            feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
+            feature_names = feature_names[:num_actions]
             
             gradient_importances = []
 
