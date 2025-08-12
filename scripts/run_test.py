@@ -16,7 +16,7 @@ if __name__ == "__main__":
     config['test_save_memory'] = True # True
 
     ### ----------------------###
-    train_run_id = 'test'
+    train_run_id = 'test_best_ask_volume'
     config['episodes'] = 20_000 
     ### ----------------------###
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     actions = runner.cfg['actions']
 
     ## === Best Volume - Agent Testing === ###
-    mod = 8
+    mod = 3
     runner = RLRunner(config)
     agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
     runner.agent = agent

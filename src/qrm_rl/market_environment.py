@@ -204,7 +204,7 @@ class MarketEnvironment:
         # st_n[3::2] = (st[3::2] - self.vol_offset) / self.vol_std  # volumes
 
         st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std  # prices
-        st_n[3::] = (np.log1p(st[3::]) - self.vol_offset) / self.vol_std  # volumes
+        st_n[3::] = (st[3::] - self.vol_offset) / self.vol_std  # volumes
         # st_n[4::3] = (st[4::3] - self.vol_offset) / self.vol_std  # volumes
 
         return st_n

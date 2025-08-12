@@ -2,9 +2,9 @@
 episodes: 80000
 
 # Simulation parameters
-time_horizon: 21 # 156 # 78
-trader_time_step: 3 # 6
-initial_inventory: 10000 # 25 # 30 # 42
+time_horizon: 78 # 21 # 156 # 78
+trader_time_step: 6 # 3 # 6
+initial_inventory: 25 # 10000 # 25 # 30 # 42
 final_penalty: 1
 risk_aversion: 0.
 

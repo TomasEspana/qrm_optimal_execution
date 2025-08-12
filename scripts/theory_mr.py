@@ -13,8 +13,8 @@ if __name__ == "__main__":
 
     trader_times = np.array([0., 0., 3., 6., 9., 12., 15., 18., 21.])
 
-    thetas = [0.85, 1.0]
-    theta_reinits = [0.85, 1.0]
+    thetas = np.linspace(0.5, 1.0, 20)
+    theta_reinits = np.linspace(0.5, 1.0, 20)
 
     for i, theta in enumerate(thetas):
         for j, theta_r in enumerate(theta_reinits):
