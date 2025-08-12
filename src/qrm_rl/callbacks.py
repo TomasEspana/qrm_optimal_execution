@@ -65,8 +65,7 @@ class InfoLoggerCallback(BaseCallback):
             "Ask Price": info['next_state'][2],
             "Inventory Normalized": info['obs'][0], 
             "Time Normalized": info['obs'][1], 
-            "Best Ask Volume": info['best_ask_volume'], 
-            "Log1p Best Ask Volume": info['log1p_best_ask_volume']
+            "Best Ask Volume": info['best_ask_volume']
         })
 
         wandb.log(log_dict, step=self.num_timesteps)

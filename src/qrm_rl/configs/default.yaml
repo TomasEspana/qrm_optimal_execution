@@ -4,13 +4,13 @@ episodes: 80000
 # Simulation parameters
 time_horizon: 78 # 21 # 156 # 78
 trader_time_step: 6 # 3 # 6
-initial_inventory: 25 # 10000 # 25 # 30 # 42
+initial_inventory: 25 # 25 # 30 # 42
 final_penalty: 1
 risk_aversion: 0.
 
 # State space
 basic_state: True
-len_basic_state: 5 # 3
+len_basic_state: 3 # 3
 len_state_lob: 3
 history_size: 1
 
@@ -38,8 +38,8 @@ exploration_fraction: 0.1 # 0.1
 # Normalization parameters
 price_offset: 0.0177 # 0.025 # 0.
 price_std: 0.0217 # 0.05 # 0.3
-vol_offset: 8.375 # 2.133 # 8.6 # 5
-vol_std: 6.391 # 0.831 # 6.9 # 4
+vol_offset: 8.356 # 2.133 # 8.6 # 5
+vol_std: 6.446 # 0.831 # 6.9 # 4
 
 # QRM parameters
 theta: 0.7
