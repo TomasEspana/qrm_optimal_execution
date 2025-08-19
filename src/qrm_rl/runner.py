@@ -114,6 +114,7 @@ class RLRunner:
             history_size=config['history_size'],
             alpha_ramp=config['alpha_ramp'],
             basic_state=config['basic_state'],
+            len_basic_state=config['len_basic_state'],
             state_dim=config['state_dim'],
             action_dim=config['action_dim'], 
             aes=np.array(config['aes']), 
@@ -222,7 +223,7 @@ class RLRunner:
             states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
             num_actions = self.cfg['action_dim']
             feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
-            feature_names = feature_names[:num_actions]
+            feature_names = feature_names[:self.cfg['len_basic_state']]
             
             gradient_importances = []
 

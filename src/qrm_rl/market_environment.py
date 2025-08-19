@@ -34,12 +34,12 @@ class MarketEnvironment:
         history_size: int, 
         alpha_ramp: float, 
         basic_state: bool, 
+        len_basic_state: int,
         aes: list, 
         test_mode: bool
     ):
         # — core parameters —
         self.actions = actions
-        self.action_dim = len(actions)
         self.arrival_price = arrival_price
         self.price_offset  = price_offset
         self.price_std     = price_std
@@ -54,6 +54,7 @@ class MarketEnvironment:
         self.history_size      = history_size
         self.alpha_ramp        = alpha_ramp
         self.basic_state       = basic_state
+        self.len_basic_state   = len_basic_state
         self.aes               = aes
         self.test_mode         = test_mode
 
@@ -189,7 +190,7 @@ class MarketEnvironment:
         
         if self.basic_state: 
             state = [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]] # , min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
-            return state[:self.action_dim]
+            return state[:self.len_basic_state]
         else:
             return [self.current_inventory, nxt] + lob_states
         

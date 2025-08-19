@@ -36,6 +36,7 @@ class QRMEnv(gym.Env):
         history_size: int,
         alpha_ramp: float,
         basic_state: bool,
+        len_basic_state: int,
         state_dim: int,
         action_dim: int,
         aes: list,
@@ -68,6 +69,7 @@ class QRMEnv(gym.Env):
             history_size=history_size,
             alpha_ramp=alpha_ramp,
             basic_state=basic_state,
+            len_basic_state=len_basic_state,
             aes=aes,
             test_mode=test_mode
         )

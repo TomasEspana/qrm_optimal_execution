@@ -12,6 +12,7 @@ from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLo
 if __name__ == "__main__":
 
     trader_times = np.array([0., 0., 3., 6., 9., 12., 15., 18., 21.])
+    trader_times = np.array([0., 0., 1., 2., 3., 4., 5., 6., 7.])
 
     thetas = np.linspace(0.5, 1.0, 20)
     theta_reinits = np.linspace(0.5, 1.0, 20)

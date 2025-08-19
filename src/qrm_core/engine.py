@@ -78,6 +78,11 @@ def simulate_QRM_jit(time: float,
         nb, na, st2, sf, dp, ef, t = choose_next_event_bis(
             K, Q, rates, state, t)
         
+        opp_queue_empty = True
+        if (ef == 1) and ((sf == 1 and na == 0) or (sf == 2 and nb == 0)):
+            # limit order arrived at side s ({-1,1}) and Q_{-s} is not empty
+            opp_queue_empty = False
+        
         if t > time_end:
             break
         ## end new
@@ -92,7 +97,7 @@ def simulate_QRM_jit(time: float,
         new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) +
                        (p_ref - tick * (nb + 0.5)))
         redrawn = 0
-        if abs(new_pmid - p_mid_old) > 1e-6:
+        if (abs(new_pmid - p_mid_old) > 1e-6) and opp_queue_empty:
             mid_move = 1 if new_pmid > p_mid_old else -1
 
             new_pmid, p_ref, state, redrawn = update_LOB(

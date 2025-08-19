@@ -16,7 +16,7 @@ if __name__ == "__main__":
     config['test_save_memory'] = True # True
 
     ### ----------------------###
-    train_run_id = 'tr_1'
+    train_run_id = '18fs6ncz'
     config['episodes'] = 20_000 
     ### ----------------------###
 
@@ -26,14 +26,16 @@ if __name__ == "__main__":
     tts = runner.cfg['trader_time_step']
     actions = runner.cfg['actions']
 
-    ## === Best Volume - Agent Testing === ###
-    mod = 4
-    runner = RLRunner(config)
-    agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
-    runner.agent = agent
-    dic, run_id = runner.run()
-    with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
-        pickle.dump(dic, f)
+
+
+    # ## === Best Volume - Agent Testing === ###
+    # mod = 4
+    # runner = RLRunner(config)
+    # agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
 
     # ### === DDQN Agent Testing === ###
@@ -58,6 +60,14 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
+    # ### === TWAP Agent Testing === ###
+    # runner = RLRunner(config)
+    # agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
+
     # ## === Best Volume - Agent Testing === ###
     # runner = RLRunner(config)
     # agent = BestVolumeAgent(fixed_action=-1, modulo=3)
@@ -74,13 +84,6 @@ if __name__ == "__main__":
     # with open(f'data_wandb/dictionaries/best_volume_4_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 
-    # ### === TWAP Agent Testing === ###
-    # runner = RLRunner(config)
-    # agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/twap_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
 
     # ### === Constant 0 - Agent Testing === ###
     # runner = RLRunner(config)
