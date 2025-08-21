@@ -16,7 +16,7 @@ if __name__ == "__main__":
     config['test_save_memory'] = True # True
 
     ### ----------------------###
-    train_run_id = '18fs6ncz'
+    train_run_id = 'tr_25'
     config['episodes'] = 20_000 
     ### ----------------------###
 
@@ -28,14 +28,14 @@ if __name__ == "__main__":
 
 
 
-    # ## === Best Volume - Agent Testing === ###
-    # mod = 4
-    # runner = RLRunner(config)
-    # agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
-    # runner.agent = agent
-    # dic, run_id = runner.run()
-    # with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
-    #     pickle.dump(dic, f)
+    ## === Best Volume - Agent Testing === ###
+    mod = 20
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
 
     # ### === DDQN Agent Testing === ###
