@@ -71,39 +71,28 @@ def simulate_QRM_jit(time: float,
                     total += r
                     idx += 1
 
-        # dt = np.random.exponential(1.0 / total)
-        # t += dt
-        # if t > time_end:
-        #     break
-        
-        # nb, na, st2, sf, dp, ef, skip = choose_next_event(
-        #     K, Q, total, rates, state
-        # )
-
-        ## start new
         nb, na, st2, sf, dp, ef, t = choose_next_event_min(
             K, Q, rates, state, t)
         
+        # mid‐price update
+        new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) +
+                       (p_ref - tick * (nb + 0.5)))
+        Δp_mid = abs(new_pmid - p_mid_old)
+        Δp_mid_bool = (Δp_mid > tick / 10)
+        
+        # assess if a limit order arrived inside the bid-ask spread at side s ({-1,1}) and Q_{-s} is not empty
+        # if this is the case, the QRM does not allow a reference price move
         opp_queue_empty = True
-        if (ef == 1) and ((sf == 1 and na == 0) or (sf == 2 and nb == 0)):
-            # limit order arrived at side s ({-1,1}) and Q_{-s} is not empty
+        if (ef == 1) and ((sf == 1 and Δp_mid_bool and na == 0) or (sf == 2 and Δp_mid_bool and nb == 0)):
             opp_queue_empty = False
         
         if t > time_end:
             break
-        ## end new
 
-
-        # if skip:
-        #     print('CAREFUL: skip event, no change in state ////////////////')
-        #     continue
         state = st2
-
-        # mid‐price update
-        new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) +
-                       (p_ref - tick * (nb + 0.5)))
         redrawn = 0
-        if (abs(new_pmid - p_mid_old) > tick/10) and opp_queue_empty:
+        # update the reference price 
+        if Δp_mid_bool and opp_queue_empty:
             mid_move = 1 if new_pmid > p_mid_old else -1
 
             new_pmid, p_ref, state, redrawn = update_LOB(
