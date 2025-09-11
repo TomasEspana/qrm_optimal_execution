@@ -35,8 +35,7 @@ class DDQNAgent:
         
         self.optimizer = optim.Adam(
             self.policy_net.parameters(),
-            lr=self.lr
-        )
+            lr=self.lr)
         
         
         # Epsilon-greedy parameters
@@ -90,7 +89,7 @@ class DDQNAgent:
     def store_transition(self, state, action, reward, next_state, done):
         """ 
             Store transition in the replay memory.
-            `state` and `next_state` is supposed normalized by the function `state_to_vector`.
+            `state` and `next_state` are pre-normalized by the function `state_to_vector`.
         """
         self.memory.push(
             np.array(state, dtype=np.float32),
@@ -103,7 +102,7 @@ class DDQNAgent:
 
     def learn(self):
         """
-            Sample a batch of transitions from the replay memory and update the policy network.
+            Sample a batch of transitions from the replay memory and update the main network.
         """
         if len(self.memory) < self.warmup_steps:
             return {}
@@ -163,6 +162,6 @@ class DDQNAgent:
 
     def update_target_network(self):
         """
-            Update the target network with the weights of the policy network.
+            Update the target network with the weights of the main network.
         """
         self.target_net.load_state_dict(self.policy_net.state_dict())

@@ -7,7 +7,8 @@ class DQNNetwork(nn.Module):
 
     def __init__(self, state_dim, action_dim):
         super(DQNNetwork, self).__init__()
-        ### --- Macri et al. NN ---
+
+        ### --- Macri et al. (2025) ---
         self.fc = nn.Sequential(
             nn.Linear(state_dim, 30),
             nn.LeakyReLU(),
@@ -21,6 +22,7 @@ class DQNNetwork(nn.Module):
             nn.LeakyReLU(),
             nn.Linear(30, action_dim)
         )
+
         # ### --- Ning et al. NN ---
         # self.fc = nn.Sequential(
         #     nn.Linear(state_dim, 20),
@@ -55,6 +57,7 @@ class DQNNetwork(nn.Module):
         #     nn.ReLU(),
         #     nn.Linear(32, action_dim)
         # )
+    
     
     def forward(self, x):
         return self.fc(x)
