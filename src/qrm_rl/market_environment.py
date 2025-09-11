@@ -61,11 +61,11 @@ class MarketEnvironment:
         # load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
                                             (2,0,1,3)).copy()
-        self.theta      = np.float64(theta)
-        self.theta_reinit = np.float64(theta_reinit)
-        self.tick       = np.float64(tick)
-        self.inv_bid    = np.load(inv_bid_file)
-        self.inv_ask    = np.load(inv_ask_file)
+        self.theta        = theta
+        self.theta_reinit = theta_reinit
+        self.tick         = tick
+        self.inv_bid      = np.load(inv_bid_file)
+        self.inv_ask      = np.load(inv_ask_file)
         self.trader_times = trader_times
         self.step_trader_times = self.trader_times[1] - self.trader_times[0]
 

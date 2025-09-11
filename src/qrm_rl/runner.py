@@ -85,8 +85,8 @@ class RLRunner:
 
         # Build intensity table
         inten_arr = np.load(config['folder_path_intensity_table'] + config['file_name'])
-        K, Qp1, *_ = inten_arr.shape
-        inten_table = IntensityTable(max_depth=K, max_queue=Qp1-1)
+        K, Q1, *_ = inten_arr.shape
+        inten_table = IntensityTable(max_depth=K, max_queue=Q1-1)
         inten_table._data = inten_arr
 
         # Environment

@@ -3,17 +3,23 @@ from numba import njit
 from .sampling import choose_next_event, choose_next_event_bis, update_LOB
 
 """  
-    Code to simulate the QRM model using Numba.
-    All the events of the LOB are stored in arrays.
+    Simulate the QRM model using Numba. All the events are stored in arrays.
     The function returns the arrays of: 
         - times
         - mid prices
         - reference prices
-        - sides (1 for bid, 2 for ask)
-        - depths (1 to K) depth of the event (wrt to the reference price)
-        - events (1 for limit, 2 for cancel, 3 for market, 4 for trader)
-        - redrawns (boolean, True if the queues were redrawn)
-        - states (LOB state after the event, with format [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK])
+        - sides (1: bid, 2: ask)
+        - depths (1 to K) depth of the event (wrt the reference price)
+        - events (1: limit, 2: cancel, 3: market, 4: trader)
+        - redrawns (0: False, 1: True)
+        - states: volumes q_i with format [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK]
+
+    NB:
+        - rate_int_all: intensities. Shape (2, K, Q+1, 3) for (side, depth, queue size, event type). 
+        - time_end: end time of the simulation. 
+        - inv_bid, inv_ask: invariant distributions for bid and ask sides. Shape (K, Q+1). 
+        - max_events_intra: maximum number of events to simulate (preallocation). 
+        - aes: average event size (calibrated on data). Shape (K,). 
 """
 
 @njit
@@ -32,8 +38,8 @@ def simulate_QRM_jit(time: float,
                          aes: np.ndarray
                          ):
     
-    K, Q_plus_1 = rate_int_all.shape[1:3]
-    Q = Q_plus_1 - 1
+    K, Q1 = rate_int_all.shape[1:3]
+    Q = Q1 - 1
     t = time
     p_mid_old = p_mid
     count = 0
@@ -53,15 +59,15 @@ def simulate_QRM_jit(time: float,
         rates   = np.empty((n_rates, 4), np.float64)
         idx     = 0
         total   = 0.0
-        for s in range(2):
+        for side in range(2):
             for d in range(K):
-                qsz = state[s * K + d]
-                for e in range(3):
-                    r = rate_int_all[s, d, qsz, e]
+                qsz = state[side * K + d]
+                for ev_type in range(3):
+                    r = rate_int_all[side, d, qsz, ev_type]
                     rates[idx, 0] = r
-                    rates[idx, 1] = s + 1
+                    rates[idx, 1] = side + 1
                     rates[idx, 2] = d + 1
-                    rates[idx, 3] = e + 1
+                    rates[idx, 3] = ev_type + 1
                     total += r
                     idx += 1
 
@@ -97,7 +103,7 @@ def simulate_QRM_jit(time: float,
         new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) +
                        (p_ref - tick * (nb + 0.5)))
         redrawn = 0
-        if (abs(new_pmid - p_mid_old) > 1e-6) and opp_queue_empty:
+        if (abs(new_pmid - p_mid_old) > tick/10) and opp_queue_empty:
             mid_move = 1 if new_pmid > p_mid_old else -1
 
             new_pmid, p_ref, state, redrawn = update_LOB(
