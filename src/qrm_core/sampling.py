@@ -7,10 +7,10 @@ GENERAL COMMENTS:
 
     This file gathers auxiliary functions for simulating the QRM model.
         1) `sample_stationary_lob`: redraw the volumes from the invariant distribution.
-        2) `choose_next_event`: sample the next event in the LOB.
+        2) `choose_next_event_min`: sample the next event in the LOB.
         3) `update_LOB`: update the LOB after sampling an event.
 
-    `choose_next_event` and `update_LOB` are used in the `simulate_QRM_jit` (.engine.py) function.
+    `choose_next_event_min` and `update_LOB` are used in the `simulate_QRM_jit` (.engine.py) function.
 
 """
 
@@ -47,68 +47,6 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
 # -----------------------------------------------------------------------------
 # 2) Sample next event
 # -----------------------------------------------------------------------------
-@njit
-def choose_next_event(K: int,
-                      Q: int,
-                      total_rate: float,
-                      rates: np.ndarray,
-                      state: np.ndarray):
-    """
-        The sampling of the next LOB events is done by summing the rates conditional on the current state.
-        Note that we use 'choose_next_event_min' instead in the QRM simulator.
-        The difference is just the sampling method (summing vs. minimum), which are equivalent but we prefer to use 'choose_next_event_min'.
-    """
-    
-    n = rates.shape[0]
-
-    while True:
-        u = np.random.random()
-        cum = 0.0
-        idx = 0
-        for i in range(n):
-            cum += rates[i, 0]
-            if u * total_rate < cum:
-                idx = i
-                break
-
-        side_f = np.int8(rates[idx, 1])
-        depth  = np.int8(rates[idx, 2])
-        evf    = np.int8(rates[idx, 3])
-        pos    = (depth - 1) if side_f == 1 else (K + depth - 1)
-
-        new_state = state.copy()
-        skip = False
-        if evf == 1:  # limit
-            if new_state[pos] < Q:
-                new_state[pos] += 1
-            else:
-                print('FORBIDDEN: limit order exceeds max queue size \n')
-                print('DEPTH', depth, 'SIDE', side_f)
-                skip = True
-        else:         # cancel/market
-            if new_state[pos] > 0:
-                new_state[pos] -= 1
-            else:
-                print('FORBIDDEN: cancel/market order on empty queue \n')
-                print('DEPTH', depth, 'SIDE', side_f)
-                skip = True
-
-        # ensure non‐empty book
-        best_bid = -1
-        for i in range(K):
-            if new_state[i] > 0:
-                best_bid = i
-                break
-        best_ask = -1
-        for i in range(K):
-            if new_state[K + i] > 0:
-                best_ask = i
-                break
-        
-        count += 1
-        if best_bid >= 0 and best_ask >= 0:
-            return best_bid, best_ask, new_state, side_f, depth, evf, skip
-        
 
 @njit
 def choose_next_event_min(K: int,
@@ -172,10 +110,74 @@ def choose_next_event_min(K: int,
         
         if (best_bid >= 0 and best_ask >= 0) and not skip:
             return best_bid, best_ask, new_state, side_f, depth, evf, t
+        
+
+
+@njit
+def choose_next_event_deprecated(K: int,
+                      Q: int,
+                      total_rate: float,
+                      rates: np.ndarray,
+                      state: np.ndarray):
+    """
+        The sampling of the next LOB events is done by summing the rates conditional on the current state.
+        Note that we use 'choose_next_event_min' instead in the QRM simulator.
+        The difference is just the sampling method (summing vs. minimum), which are equivalent but we prefer to use 'choose_next_event_min'.
+    """
+    
+    n = rates.shape[0]
+
+    while True:
+        u = np.random.random()
+        cum = 0.0
+        idx = 0
+        for i in range(n):
+            cum += rates[i, 0]
+            if u * total_rate < cum:
+                idx = i
+                break
+
+        side_f = np.int8(rates[idx, 1])
+        depth  = np.int8(rates[idx, 2])
+        evf    = np.int8(rates[idx, 3])
+        pos    = (depth - 1) if side_f == 1 else (K + depth - 1)
+
+        new_state = state.copy()
+        skip = False
+        if evf == 1:  # limit
+            if new_state[pos] < Q:
+                new_state[pos] += 1
+            else:
+                print('FORBIDDEN: limit order exceeds max queue size \n')
+                print('DEPTH', depth, 'SIDE', side_f)
+                skip = True
+        else:         # cancel/market
+            if new_state[pos] > 0:
+                new_state[pos] -= 1
+            else:
+                print('FORBIDDEN: cancel/market order on empty queue \n')
+                print('DEPTH', depth, 'SIDE', side_f)
+                skip = True
+
+        # ensure non‐empty book
+        best_bid = -1
+        for i in range(K):
+            if new_state[i] > 0:
+                best_bid = i
+                break
+        best_ask = -1
+        for i in range(K):
+            if new_state[K + i] > 0:
+                best_ask = i
+                break
+        
+        count += 1
+        if best_bid >= 0 and best_ask >= 0:
+            return best_bid, best_ask, new_state, side_f, depth, evf, skip
 
 
 # -----------------------------------------------------------------------------
-# 3) Update LOB
+# 3) Update LOB after new event
 # -----------------------------------------------------------------------------
 @njit
 def update_LOB(K: int,

@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-from .sampling import choose_next_event, choose_next_event_min, update_LOB
+from .sampling import choose_next_event_min, update_LOB
 
 """  
     Simulate the QRM model using Numba. All the events are stored in arrays.
