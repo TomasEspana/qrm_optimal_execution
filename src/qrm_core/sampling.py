@@ -67,8 +67,8 @@ def choose_next_event_min(K: int,
         - t: time of the last LOB event
 
     Output:
-        - best_bid, best_ask: indexes of new best bid/ask after the event (0, ..., K-1)
-        - new_state: volumes [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK]
+        - best_bid, best_ask: indexes of new best bid/ask after the event (0,...,K-1)
+        - new_state: volumes [q_bid1, q_bid2,..., q_bidK, q_ask1, q_ask2,..., q_askK]
         - side_f: side of the event (1: bid, 2: ask)
         - depth: depth of the event (1 to K)
         - evf: event type (1: limit, 2: cancel, 3: market)
@@ -96,19 +96,17 @@ def choose_next_event_min(K: int,
 
         new_state = state.copy()
         skip = False
-        if evf == 1:  # limit
+        # limit order
+        if evf == 1:
             if new_state[pos] < Q:
                 new_state[pos] += 1
             else:
-                # print('FORBIDDEN: limit order exceeds max queue size \n')
-                # print('DEPTH', depth, 'SIDE', side_f)
                 skip = True
-        else:         # cancel/market
+        # cancel/market order
+        else:         
             if new_state[pos] > 0:
                 new_state[pos] -= 1
             else:
-                # print('FORBIDDEN: cancel/market order on empty queue \n')
-                # print('DEPTH', depth, 'SIDE', side_f)
                 skip = True
 
         # ensure non‐empty book
