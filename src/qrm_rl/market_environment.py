@@ -66,16 +66,14 @@ class MarketEnvironment:
         self.tick         = tick
         self.inv_bid      = np.load(inv_bid_file)
         self.inv_ask      = np.load(inv_ask_file)
+
         self.trader_times = trader_times
         self.step_trader_times = self.trader_times[1] - self.trader_times[0]
-
-        # bookkeeping for implementation shortfall
         self.current_is = 0.0
         self.final_is   = 0.0
         self.risk_aversion_term = 0.0
         self.non_executed_liquidity_constraint = 0
 
-        # instantiate our fast, NumPy-backed simulator
         self.simulator = QueueReactiveMarketSimulator(
             intensity_table  = self.intensity_table,
             theta            = self.theta,
@@ -124,21 +122,21 @@ class MarketEnvironment:
         """
             Helper function to compute best quotes from LOB state.
         """
-        # best bid: first i where st[i]>0
+        # bid
         bid_idx = next((i for i in range(K) if st[i]>0), None)
         if bid_idx is None:
             raise ValueError("No best bid")
-        size_bid = int(st[bid_idx])
-        price_bid = p_ref - tick*(bid_idx + 0.5)
-        total_bid = int(st[:K].sum())
+        size_bid = st[bid_idx]
+        price_bid = p_ref - tick * (bid_idx + 0.5)
+        total_bid = st[:K].sum()
         bid_info = (price_bid, size_bid, bid_idx+1, total_bid)
     
-        # best ask: first j where st[K+j]>0
+        # ask
         ask_idx = next((j for j in range(K) if st[K+j]>0), None)
         if ask_idx is None:
             raise ValueError("No best ask")
         size_ask = int(st[K+ask_idx])
-        price_ask = p_ref + tick*(ask_idx + 0.5)
+        price_ask = p_ref + tick * (ask_idx + 0.5)
         total_ask = int(st[K:].sum())
         ask_info = (price_ask, size_ask, ask_idx+1, total_ask)
 
@@ -150,7 +148,7 @@ class MarketEnvironment:
             Reads the last self.history_size LOB states snapshot and returns 
             ((bid_price, size, depth, total_bid), (ask_price, size, depth, total_ask))
         """
-        st = self.current_state(self.history_size) # already reversed to have the latest state first
+        st = self.current_state(self.history_size) # reversed to have the latest state first
         K  = self.simulator.K
         p_ref = self.current_ref_price()
 
@@ -171,21 +169,13 @@ class MarketEnvironment:
 
     def get_state(self):
         """ 
-            Format: [
-                current_inventory, 
-                time,
-                'best_bid_price_1',
-                'best_bid_size_1':  ask_size,
-                'best_ask_price_1':  bid_size, 
-                'best_ask_size_1': bid_price, 
-                'best_bid_price_2', etc...
-            ]
+            TBC
         """
         lob_states = self.best_quotes()
         
         if self.simulator.next_trader_time_idx < len(self.trader_times):
             nxt = self.trader_times[self.simulator.next_trader_time_idx]
-        else: # boundary case 
+        else:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state: 
@@ -208,6 +198,7 @@ class MarketEnvironment:
 
         return st_n
 
+    # deprecated
     @staticmethod
     def exponential_ramp(t, time_horizon, alpha, max_penalty_intra_ep=1):
         """
@@ -220,8 +211,7 @@ class MarketEnvironment:
 
     def step(self, action: int):
         """
-            Apply trader `action` (size to take on the ask side),
-            then simulate QRM to the next trader time, compute reward/break.
+            Apply trader action and simulate the market until the next trader time.
         """
         nxt     = self.trader_times[self.simulator.next_trader_time_idx]
         st      = self.current_state()[0]
@@ -229,7 +219,7 @@ class MarketEnvironment:
         K       = self.simulator.K
 
         # enforce not empty book and inventory
-        total_ask = int(st[K:].sum())
+        total_ask = st[K:].sum()
         q = min(action, total_ask-1, self.current_inventory)
         self.current_inventory -= q
         self.non_executed_liquidity_constraint += max(0, (action - total_ask + 1))
@@ -264,9 +254,9 @@ class MarketEnvironment:
                 times=[nxt],
                 p_mids=[self.current_mid_price()],
                 p_refs=[p_ref],
-                sides=[2],           # 2 = ask
+                sides=[2],           # 2 = ask side
                 depths=[q],
-                events=[4],          # 4 = trader
+                events=[4],          # 4 = trader action
                 redrawns=[False],
                 lob_states=[st]
             )
@@ -279,9 +269,9 @@ class MarketEnvironment:
                 times=[nxt],
                 p_mids=[p_mid],
                 p_refs=[p_ref],
-                sides=[2],           # 2 = ask
+                sides=[2],           # 2 = ask side
                 depths=[q],
-                events=[4],          # 4 = trader
+                events=[4],          # 4 = trader action
                 redrawns=[redrawn],
                 lob_states=[st]
             ) 
@@ -312,7 +302,8 @@ class MarketEnvironment:
                         if rem == 0:
                             break
                     if rem > 0:
-                        rwd += (self.arrival_price - (p_ref + self.tick * (depth + 1.5))) * rem
+                        # we suppose there is infinite liquidity at price p_ref + tick * (K + 0.5)
+                        rwd += (self.arrival_price - (p_ref + self.tick * (K + 0.5))) * rem
 
                     self.final_is += rwd
 
