@@ -141,9 +141,9 @@ def choose_next_event_bis(K: int,
         idx = np.argmin(dt_array)
         t += dt_array[idx]
 
-        side_f = np.int32(rates[idx, 1])
-        depth  = np.int32(rates[idx, 2])
-        evf    = np.int32(rates[idx, 3])
+        side_f = np.int8(rates[idx, 1])
+        depth  = np.int8(rates[idx, 2])
+        evf    = np.int8(rates[idx, 3])
         pos    = (depth - 1) if side_f == 1 else (K + depth - 1)
 
         new_state = state.copy()
@@ -218,7 +218,7 @@ def update_LOB(K: int,
                     new_state[:K-1] = np.minimum(Q, np.rint(
                             old[1:K] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
                         )).astype(np.int8)
-                    depths = np.empty((1,), np.int32); depths[0] = K
+                    depths = np.empty((1,), np.int8); depths[0] = K
                     samp = sample_stationary_lob(inv_bid, depths)
                     new_state[K - 1] = samp[0]
 
@@ -232,14 +232,14 @@ def update_LOB(K: int,
                     new_state[K:2*K-1] = np.minimum(Q, np.rint(
                             old[K+1:] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
                         )).astype(np.int8)
-                    depths = np.empty((1,), np.int32); depths[0] = K
+                    depths = np.empty((1,), np.int8); depths[0] = K
                     samp = sample_stationary_lob(inv_ask, depths)
                     new_state[2*K - 1] = samp[0]
             else:
                 # REDRAW
                 redrawn = 1
-                new_state[:K] = sample_stationary_lob(inv_bid, np.empty((0,), np.int32))
-                new_state[K:] = sample_stationary_lob(inv_ask, np.empty((0,), np.int32))
+                new_state[:K] = sample_stationary_lob(inv_bid, np.empty((0,), np.int8))
+                new_state[K:] = sample_stationary_lob(inv_ask, np.empty((0,), np.int8))
 
         # ensure non‐empty book
         best_bid = -1
