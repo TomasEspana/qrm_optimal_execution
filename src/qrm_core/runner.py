@@ -4,6 +4,7 @@ from .intensity import IntensityTable
 from .engine import simulate_QRM_jit
 
 """ 
+    FILE NOT USED 
     Simulate the QRM model in a more user-friendly way than in .engine.py.
     Returns a Pandas DataFrame with the simulation results.
 """
