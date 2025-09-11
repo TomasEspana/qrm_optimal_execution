@@ -18,32 +18,26 @@ from numba import njit
 # -----------------------------------------------------------------------------
 @njit
 def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
+    """
+        Redraw the volumes from the invariant distribution (see Section 3.1 of Huang et al. (2015)). 
+    """
     K, Q1 = inv_dist.shape
+
     # full‐LOB sampling
     if depths.size == 0:
         while True:
             state = np.empty(K, np.int8)
             for i in range(K):
-                u = np.random.random()
-                cum = 0.0
-                for q in range(Q1):
-                    cum += inv_dist[i, q]
-                    if u < cum:
-                        state[i] = q
-                        break
+                state[i] = np.random.choice(np.arange(Q1), p=inv_dist[i])
             if state.sum() > 0:
                 return state
+            
     # partial sampling
     out = np.empty(depths.size, np.int8)
-    for j in range(depths.size):
-        i = depths[j] - 1
-        u = np.random.random()
-        cum = 0.0
-        for q in range(Q1):
-            cum += inv_dist[i, q]
-            if u < cum:
-                out[j] = q
-                break
+    for depth in depths:
+        d = depth - 1
+        out[depth] = np.random.choice(np.arange(Q1), p=inv_dist[d])
+
     return out
 
 
