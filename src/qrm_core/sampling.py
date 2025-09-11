@@ -50,11 +50,11 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
 
 @njit
 def choose_next_event_min(K: int,
-                      Q: int,
-                      rates: np.ndarray,
-                      state: np.ndarray, 
-                      t: float
-                      ):
+                          Q: int,
+                          rates: np.ndarray,
+                          state: np.ndarray, 
+                          t: float
+                        ):
     
     """ 
         Generate the next LOB event.

@@ -3,7 +3,7 @@ from numba import njit
 from .sampling import choose_next_event_min, update_LOB
 
 """  
-    Simulate the QRM model using Numba. All the events are stored in arrays.
+    Simulate the QRM model on [0, time_end] using Numba. All the events are stored in arrays.
     The function returns the arrays of: 
         - times
         - mid prices
@@ -58,7 +58,6 @@ def simulate_QRM_jit(time: float,
         n_rates = 2 * K * 3
         rates   = np.empty((n_rates, 4), np.float64)
         idx     = 0
-        total   = 0.0
         for side in range(2):
             for d in range(K):
                 qsz = state[side * K + d]
@@ -68,7 +67,6 @@ def simulate_QRM_jit(time: float,
                     rates[idx, 1] = side + 1
                     rates[idx, 2] = d + 1
                     rates[idx, 3] = ev_type + 1
-                    total += r
                     idx += 1
 
         # generate next LOB event
@@ -77,13 +75,12 @@ def simulate_QRM_jit(time: float,
             break
         
         # mid‐price update
-        new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) +
-                       (p_ref - tick * (nb + 0.5)))
+        new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) + (p_ref - tick * (nb + 0.5)))
         Δp_mid = abs(new_pmid - p_mid_old)
         Δp_mid_bool = (Δp_mid > tick / 10)
         
         # assess if a limit order arrived inside the bid-ask spread at side s ({-1,1}) and Q_{-s} is not empty
-        # if this is the case, the QRM does not allow a reference price move
+        # in this case, the QRM does not allow a reference price move
         opp_queue_empty = True
         if (ef == 1) and ((sf == 1 and Δp_mid_bool and na == 0) or (sf == 2 and Δp_mid_bool and nb == 0)):
             opp_queue_empty = False
@@ -92,10 +89,10 @@ def simulate_QRM_jit(time: float,
         redrawn = 0
         # update the reference price 
         if Δp_mid_bool and opp_queue_empty:
-            mid_move = 1 if new_pmid > p_mid_old else -1
+            p_mid_move = 1 if new_pmid > p_mid_old else -1
 
             new_pmid, p_ref, state, redrawn = update_LOB(
-                                K, p_ref, state, mid_move,
+                                K, p_ref, state, p_mid_move,
                                 theta, theta_reinit, tick,
                                 inv_bid, inv_ask, aes)
 
@@ -111,7 +108,7 @@ def simulate_QRM_jit(time: float,
         p_mid_old = new_pmid
         count += 1
 
-
+    
     return (times[:count], p_mids[:count], p_refs[:count],
             sides[:count], depths[:count], events[:count],
             redrawns[:count], states[:count])
