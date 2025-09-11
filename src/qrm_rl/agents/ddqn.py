@@ -38,12 +38,6 @@ class DDQNAgent:
             lr=self.lr
         )
         
-        # self.optimizer = optim.RMSprop(
-        #     self.policy_net.parameters(),
-        #     lr=self.lr,       
-        #     alpha=self.alpha,     
-        #     eps=self.eps          
-        #     )
         
         # Epsilon-greedy parameters
         self.epsilon = epsilon_start
