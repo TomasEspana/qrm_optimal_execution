@@ -30,10 +30,10 @@ def compute_invariant_distribution(
     K, Q1, *_ = intensities.shape         
     Q = Q1 - 1                         
     type_to_index = intensity_table._type_index  
-    all_pi = np.zeros((K, Q + 1))               
+    all_pi = np.zeros((K, Q + 1)) # invariant distribution for each depth           
 
     for i in range(K):
-        # Arrival/departure ration vector $\rho_i$
+        # Arrival/departure ratio vector \rho_i
         lamL = intensities[i][:-1, type_to_index['limit']]
         lamC = intensities[i][1:, type_to_index['cancel']]
         lamM = intensities[i][1:, type_to_index['market']]
@@ -43,8 +43,8 @@ def compute_invariant_distribution(
         pi_0 = 1 / (1 + np.sum(np.cumprod(rho)))
         pi[0] = pi_0
         pi[1:] = pi_0 * np.cumprod(rho)
-        print('sum pi not normalized', np.sum(pi)) # not exactly 1 as we limit the queue size to maximum Q
-        pi /= np.sum(pi)                           # normalize
+        print('sum pi (not normalized)', np.sum(pi)) # monitor if sum is close enough to 1 for a given Q. 
+        pi /= np.sum(pi)                   
         all_pi[i] = pi
 
     folder_path = 'calibration_data/invariant_distribution/'
