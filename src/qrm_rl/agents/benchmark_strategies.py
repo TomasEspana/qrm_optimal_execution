@@ -1,7 +1,7 @@
 import numpy as np
 
 """ 
-GENERAL COMMENTS:
+GENERAL DESCRIPTION:
 
     Implementation of the benchmark trading strategies.
 """

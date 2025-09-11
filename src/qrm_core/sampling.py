@@ -3,7 +3,7 @@ from numba import njit
 
 
 """ 
-GENERAL COMMENTS:
+GENERAL DESCRIPTION:
 
     This file gathers auxiliary functions for simulating the QRM model.
         1) `sample_stationary_lob`: redraw the volumes from the invariant distribution.
