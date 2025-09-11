@@ -58,6 +58,21 @@ def choose_next_event_min(K: int,
     
     """ 
         Generate the next LOB event.
+    
+    Input:
+        - K: maximum depth of the LOB
+        - Q: maximum queue size at each level
+        - rates: array of shape (6*K, 4) with (intensity, side, depth, event type)
+        - state: current LOB state (volumes at each level)
+        - t: time of the last LOB event
+
+    Output:
+        - best_bid, best_ask: indexes of new best bid/ask after the event (0, ..., K-1)
+        - new_state: volumes [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK]
+        - side_f: side of the event (1: bid, 2: ask)
+        - depth: depth of the event (1 to K)
+        - evf: event type (1: limit, 2: cancel, 3: market)
+        - t: time of the new event
     """
     
     n = rates.shape[0]
