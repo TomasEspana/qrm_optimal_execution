@@ -1,7 +1,9 @@
 import numpy as np
 
 """ 
-    Benchmark trading strategies.
+GENERAL COMMENTS:
+
+    Implementation of the benchmark trading strategies.
 """
     
 class TWAPAgent:
@@ -20,7 +22,7 @@ class TWAPAgent:
     @staticmethod
     def distribute_ones(n, n_0, ratio):
         """
-            Uniformly distribute the n_0 TWAP actions in an array of size n.
+            Uniformly distribute the n_0 shares to execute in an array of size n.
         """
         arr = ratio * np.ones(n, dtype=int)
         new_n_0 = n_0 % n
@@ -31,47 +33,40 @@ class TWAPAgent:
         return arr
 
     def select_action(self):
+        """
+            Return the number of shares to execute at step k. 
+        """
         assert self.k-1 < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
         return self.actions_schedule[self.k-1]
+    
 
-
-class BackLoadAgent:
+class BestVolumeAgent:
     """
-        Back-loaded execution agent with a fixed per-step execution size.
-        Waits until the last possible slots, then executes `fixed_action` each
-        decision, ensuring full liquidation by the final step.
+        Take a specific action at regular time intervals.
+        E.g., if modulo=2 and fixed_action=3, the agent takes action 3 at every odd steps, 
+        and action 0 otherwise.
     """
+    def __init__(self, fixed_action=-1, k=0, modulo=2):
+        self.fixed_action = fixed_action
+        self.k = k
+        self.modulo = modulo
 
-    def __init__(
-        self,
-        time_horizon: float,
-        initial_inventory: int,
-        trader_time_step: float, 
-        fixed_action: int, 
-        actions: list,
-        security_margin: int
-    ):
-        self.time_horizon      = time_horizon
-        self.initial_inventory = initial_inventory
-        self.trader_time_step  = trader_time_step
-        self.fixed_action      = fixed_action
-        self.actions           = actions
-        self.security_margin   = security_margin # start slightly earlier to ensure full liquidation because of QRM liquidity constraints
-        self.n_steps = int(np.ceil(time_horizon / trader_time_step))
-
-
-    def select_action(self, state, episode):
-        
-        exec_steps = int(np.ceil(self.initial_inventory / self.actions[self.fixed_action]))
-
-        time_norm = state[1]
-        curr_time = (time_norm + 1) * self.time_horizon / 2 # inverse transform of state normalization
-        idx = round(curr_time / self.trader_time_step)
-
-        if idx >= self.n_steps - exec_steps - self.security_margin: # 1 time step security margin
+    def select_action(self):
+        """
+            Return the index of the action to execute at step k. 
+        """
+        if self.k % self.modulo == 1:
             return self.fixed_action
         else:
             return 0
+
+
+
+
+
+### --- Deprecated agents --- ###
+## CHECK CODE BELOW BEFORE USING THESE AGENTS ##
+
 
 
 class FrontLoadAgent:
@@ -114,28 +109,46 @@ class BimodalAgent:
             return 1
         else:
             return 0
+        
 
-
-class BestVolumeAgent:
+class BackLoadAgent:
+    """
+        Back-loaded execution agent with a fixed per-step execution size.
+        Waits until the last possible slots, then executes `fixed_action` each
+        decision, ensuring full liquidation by the final step.
     """
 
-    """
-    def __init__(self, fixed_action=-1, k=0, modulo=2):
-        self.fixed_action = fixed_action
-        self.k = k
-        self.modulo = modulo
+    def __init__(
+        self,
+        time_horizon: float,
+        initial_inventory: int,
+        trader_time_step: float, 
+        fixed_action: int, 
+        actions: list,
+        security_margin: int
+    ):
+        self.time_horizon      = time_horizon
+        self.initial_inventory = initial_inventory
+        self.trader_time_step  = trader_time_step
+        self.fixed_action      = fixed_action
+        self.actions           = actions
+        self.security_margin   = security_margin # start slightly earlier to ensure full liquidation because of QRM liquidity constraints
+        self.n_steps = int(np.ceil(time_horizon / trader_time_step))
 
 
-    def select_action(self):
-        if self.k % self.modulo == 1:
+    def select_action(self, state, episode):
+        
+        exec_steps = int(np.ceil(self.initial_inventory / self.actions[self.fixed_action]))
+
+        time_norm = state[1]
+        curr_time = (time_norm + 1) * self.time_horizon / 2 # inverse transform of state normalization
+        idx = round(curr_time / self.trader_time_step)
+
+        if idx >= self.n_steps - exec_steps - self.security_margin: # 1 time step security margin
             return self.fixed_action
         else:
             return 0
     
-
-
-### --- Deprecated agents --- ###
-## CHECK CODE BELOW BEFORE USING THESE AGENTS ##
 
 class InactiveAgent:
     """

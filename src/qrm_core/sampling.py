@@ -8,9 +8,9 @@ GENERAL COMMENTS:
     This file gathers auxiliary functions for simulating the QRM model.
         1) `sample_stationary_lob`: redraw the volumes from the invariant distribution.
         2) `choose_next_event_min`: sample the next event in the LOB.
-        3) `update_LOB`: update the LOB after sampling an event.
+        3) `update_LOB`: update the LOB after a mid-price change.
 
-    `choose_next_event_min` and `update_LOB` are used in the `simulate_QRM_jit` (.engine.py) function.
+    `choose_next_event_min` and `update_LOB` are used in the `simulate_QRM_jit` function (.engine.py).
 
 """
 
@@ -23,6 +23,12 @@ GENERAL COMMENTS:
 def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
     """
         Redraw the volumes from the invariant distribution (see Section 3.1 of Huang et al. (2015)). 
+    
+    Input:
+        - inv_dist: invariant distribution (shape: K x Q+1)
+        - depths: array of depths to sample (shape: D). If empty, sample the full LOB.
+    Output:
+        - out: sampled volumes (shape: D)
     """
     K, Q1 = inv_dist.shape
 
@@ -190,7 +196,7 @@ def choose_next_event_deprecated(K: int,
 
 
 # -----------------------------------------------------------------------------
-# 3) Update LOB after new event
+# 3) Update LOB after a mid-price change
 # -----------------------------------------------------------------------------
 @njit
 def update_LOB(K: int,
@@ -203,18 +209,36 @@ def update_LOB(K: int,
                inv_bid: np.ndarray,
                inv_ask: np.ndarray,
                aes: np.ndarray
-               ):
-    
-    Q = inv_bid.shape[1] - 1
-    while True:
+            ):
+    """
+        Update the LOB after a mid-price change. 
 
+    Input:
+        - K: maximum depth of the LOB
+        - p_ref: current reference price
+        - state: current LOB state (volumes at each level)
+        - mid_move: direction of the mid-price move (1: up, -1: down)
+        - theta: probability that p_ref changes at a mid-price move
+        - theta_reinit: probability of a full redraw after a mid-price move
+        - tick: tick size
+        - inv_bid, inv_ask: invariant distributions for bid and ask sides (shape: K x Q+1)
+        - aes: average event size (calibrated on data). Shape (K,). 
+
+    Output:
+        - p_mid: new mid-price
+        - new_pref: new reference price
+        - new_state: new LOB state (volumes at each level)
+        - redrawn: indicator of a full redraw (1: True, 0: False)
+    """
+    Q = inv_bid.shape[1] - 1
+
+    while True:
         new_state = state.copy()
         new_pref  = p_ref
         redrawn   = 0
 
         if np.random.random() < theta: # p_ref changes
             new_pref += tick * mid_move
-            old = state.copy()
 
             if np.random.random() > theta_reinit:
                 # Shift the queues
@@ -222,11 +246,11 @@ def update_LOB(K: int,
                     # update ask
                     new_state[K] = 0
                     new_state[K+1:] = np.minimum(Q, np.rint(
-                            old[K:2*K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
+                            state[K:2*K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
                         )).astype(np.int8)
                     # update bid
                     new_state[:K-1] = np.minimum(Q, np.rint(
-                            old[1:K] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
+                            state[1:K] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
                         )).astype(np.int8)
                     depths = np.empty((1,), np.int8); depths[0] = K
                     samp = sample_stationary_lob(inv_bid, depths)
@@ -236,11 +260,11 @@ def update_LOB(K: int,
                     # update bid
                     new_state[0] = 0
                     new_state[1:K] = np.minimum(Q, np.rint(
-                            old[:K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
+                            state[:K-1] * np.array([aes[i] / aes[i+1] for i in range(K-1)])
                         )).astype(np.int8)
                     # update ask
                     new_state[K:2*K-1] = np.minimum(Q, np.rint(
-                            old[K+1:] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
+                            state[K+1:] * np.array([aes[i+1] / aes[i] for i in range(K-1)])
                         )).astype(np.int8)
                     depths = np.empty((1,), np.int8); depths[0] = K
                     samp = sample_stationary_lob(inv_ask, depths)
@@ -265,5 +289,5 @@ def update_LOB(K: int,
 
         if best_bid >= 0 and best_ask >= 0:
             p_mid = 0.5 * ((new_pref + tick * (best_ask + 0.5)) +  
-                            (new_pref - tick * (best_bid + 0.5)))
+                           (new_pref - tick * (best_bid + 0.5)))
             return p_mid, new_pref, new_state, redrawn

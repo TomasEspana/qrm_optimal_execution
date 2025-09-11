@@ -10,15 +10,15 @@ from .engine import simulate_QRM_jit
 """
 
 def simulate_QRM(current_LOB: pd.DataFrame,
-                     intensity_table: IntensityTable,
-                     tick: float,
-                     theta: float,
-                     theta_reinit: float,
-                     time_end: float,
-                     inv_dist_file_bid: str,
-                     inv_dist_file_ask: str,
-                     max_events_intra: int
-                     ):
+                 intensity_table: IntensityTable,
+                 tick: float,
+                 theta: float,
+                 theta_reinit: float,
+                 time_end: float,
+                 inv_dist_file_bid: str,
+                 inv_dist_file_ask: str,
+                 max_events_intra: int
+                ):
     
     # unpack history
     time  = current_LOB['time'].to_numpy()[-1]
