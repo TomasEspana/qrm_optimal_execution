@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-from .sampling import choose_next_event, choose_next_event_bis, update_LOB
+from .sampling import choose_next_event, choose_next_event_min, update_LOB
 
 """  
     Simulate the QRM model using Numba. All the events are stored in arrays.
@@ -81,7 +81,7 @@ def simulate_QRM_jit(time: float,
         # )
 
         ## start new
-        nb, na, st2, sf, dp, ef, t = choose_next_event_bis(
+        nb, na, st2, sf, dp, ef, t = choose_next_event_min(
             K, Q, rates, state, t)
         
         opp_queue_empty = True

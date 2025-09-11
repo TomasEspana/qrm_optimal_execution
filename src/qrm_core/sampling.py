@@ -55,8 +55,8 @@ def choose_next_event(K: int,
                       state: np.ndarray):
     """
         The sampling of the next LOB events is done by summing the rates conditional on the current state.
-        Note that we use 'choose_next_event_bis' instead in the QRM simulator.
-        The difference is just the sampling method (summing vs. minimum), which are equivalent but we prefer to use 'choose_next_event_bis'.
+        Note that we use 'choose_next_event_min' instead in the QRM simulator.
+        The difference is just the sampling method (summing vs. minimum), which are equivalent but we prefer to use 'choose_next_event_min'.
     """
     
     n = rates.shape[0]
@@ -111,7 +111,7 @@ def choose_next_event(K: int,
         
 
 @njit
-def choose_next_event_bis(K: int,
+def choose_next_event_min(K: int,
                       Q: int,
                       rates: np.ndarray,
                       state: np.ndarray, 
@@ -119,9 +119,7 @@ def choose_next_event_bis(K: int,
                       ):
     
     """ 
-        The sampling of the next LOB events is done by picking the minimum time among the rates conditional on the current state.
-        The sampling (summing rates or minimum) is the only difference between this function and `choose_next_event`.
-        We pick 'choose_next_event_bis'.
+        Generate the next LOB event.
     """
     
     n = rates.shape[0]
