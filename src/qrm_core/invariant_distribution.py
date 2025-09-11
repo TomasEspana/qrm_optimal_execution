@@ -7,11 +7,13 @@ def compute_invariant_distribution(
         dump_path: str
     ):
     """
-        Precompute and store the invariant distributions $π_i(n)$ for each queue depth $i$ in an array.
+        Compute and save the invariant distributions π_i for each depth i.
         Refer to Section 2.3.3 of Huang et al. (2015).
 
     Inputs:
-        - side: 'bid', 'ask' or None. We allow bid-ask asymmetry and thus two different invariant distributions.
+        - side: 'bid', 'ask' or None.
+            We allow bid-ask asymmetry in the order flow intensities.
+            None means we assume symmetry.  
         - intensity_table: IntensityTable object with order-flow intensities.
         - dump_path: path to .npy file to save the invariant distribution.
     
@@ -25,10 +27,10 @@ def compute_invariant_distribution(
     elif side == 'ask':
         intensities = intensity_table._data[:, :, 1, :]
 
-    K, Q_plus_1, *_ = intensities.shape           # max depth, max queue size + 1, number of types
-    Q = Q_plus_1 - 1                              # max queue size (in units of AES)
-    type_to_index = intensity_table._type_index   # type -> index
-    all_pi = np.zeros((K, Q + 1))                 # invariant distribution for each depth (bid-ask symmetry)
+    K, Q1, *_ = intensities.shape         
+    Q = Q1 - 1                         
+    type_to_index = intensity_table._type_index  
+    all_pi = np.zeros((K, Q + 1))               
 
     for i in range(K):
         # Arrival/departure ration vector $\rho_i$

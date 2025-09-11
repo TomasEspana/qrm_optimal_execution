@@ -12,9 +12,9 @@ class IntensityTable:
         types = ("limit", "cancel", "market"),
     ):
         
-        self.max_depth = max_depth # also denoted by K in the paper
+        self.max_depth = max_depth # K in the paper
         self.max_queue = max_queue # max queue size of LOB (in units of AES)
-        self.types = types         # types of order flow (limit, cancel, market)
+        self.types = types         # order-flow type: (limit, cancel, market)
         self._data = np.zeros((max_depth, max_queue + 1, 2, len(types))) # (depth, queue_size, side, type)
         self._type_index = {t: i for i, t in enumerate(types)} # type -> index
         self._side_index = {side: i for i, side in enumerate(['bid', 'ask'])} # side -> index
@@ -29,7 +29,7 @@ class IntensityTable:
         value: float
     ):
         """
-            Sets intensity for given depth, queue size, side and type.
+            Set intensity for given depth, queue size, side and type.
         """
         d = min(depth, self.max_depth) - 1
         q = min(queue, self.max_queue)
@@ -44,7 +44,7 @@ class IntensityTable:
         side: float
     ):
         """
-            Returns intensities for all types at given depth, queue size and side.
+            Return intensities for all types at given depth, queue size and side.
         """
         d = min(depth, self.max_depth) - 1
         q = min(queue, self.max_queue)
