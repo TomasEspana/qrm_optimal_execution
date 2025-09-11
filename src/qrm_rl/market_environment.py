@@ -189,7 +189,7 @@ class MarketEnvironment:
             nxt = self.trader_times[-1] + self.step_trader_times
         
         if self.basic_state: 
-            state = [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]] # , min(lob_states[1], self.current_inventory)] # (inv, time, ask price, ask size)
+            state = [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]]
             return state[:self.len_basic_state]
         else:
             return [self.current_inventory, nxt] + lob_states
@@ -201,14 +201,10 @@ class MarketEnvironment:
         """
         st_n = np.empty_like(st, dtype=np.float64)
         st = np.array(st)
-        st_n[0] = 2 * st[0] / self.initial_inventory - 1  # inventory
-        st_n[1] = 2 * st[1] / self.time_horizon - 1  # time
-        # st_n[2::2] = (st[2::2] - self.arrival_price - self.price_offset) / self.price_std  # prices
-        # st_n[3::2] = (st[3::2] - self.vol_offset) / self.vol_std  # volumes
-
-        st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std  # prices
-        st_n[3::] = (st[3::] - self.vol_offset) / self.vol_std  # volumes
-        # st_n[4::3] = (st[4::3] - self.vol_offset) / self.vol_std  # volumes
+        st_n[0] = 2 * st[0] / self.initial_inventory - 1 
+        st_n[1] = 2 * st[1] / self.time_horizon - 1      
+        st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std
+        st_n[3:] = (st[3:] - self.vol_offset) / self.vol_std
 
         return st_n
 

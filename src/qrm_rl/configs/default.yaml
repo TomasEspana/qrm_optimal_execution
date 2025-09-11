@@ -42,8 +42,8 @@ vol_offset: 8.356 # 2.133 # 8.6 # 5
 vol_std: 6.446 # 0.831 # 6.9 # 4
 
 # QRM parameters
-theta: 1.0
-theta_reinit: 0.5
+theta: 0.7
+theta_reinit: 0.85
 tick: 0.01
 arrival_price: 100.005
 
