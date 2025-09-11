@@ -22,7 +22,7 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
     # full‐LOB sampling
     if depths.size == 0:
         while True:
-            state = np.empty(K, np.int32)
+            state = np.empty(K, np.int8)
             for i in range(K):
                 u = np.random.random()
                 cum = 0.0
@@ -34,7 +34,7 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
             if state.sum() > 0:
                 return state
     # partial sampling
-    out = np.empty(depths.size, np.int32)
+    out = np.empty(depths.size, np.int8)
     for j in range(depths.size):
         i = depths[j] - 1
         u = np.random.random()
@@ -74,9 +74,9 @@ def choose_next_event(K: int,
                 idx = i
                 break
 
-        side_f = np.int32(rates[idx, 1])
-        depth  = np.int32(rates[idx, 2])
-        evf    = np.int32(rates[idx, 3])
+        side_f = np.int8(rates[idx, 1])
+        depth  = np.int8(rates[idx, 2])
+        evf    = np.int8(rates[idx, 3])
         pos    = (depth - 1) if side_f == 1 else (K + depth - 1)
 
         new_state = state.copy()

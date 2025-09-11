@@ -15,7 +15,7 @@ class IntensityTable:
         self.max_depth = max_depth # also denoted by K in the paper
         self.max_queue = max_queue # max queue size of LOB (in units of AES)
         self.types = types         # types of order flow (limit, cancel, market)
-        self._data = np.zeros((max_depth, max_queue + 1, 2, len(types))) # (depth, queue_size, type)
+        self._data = np.zeros((max_depth, max_queue + 1, 2, len(types))) # (depth, queue_size, side, type)
         self._type_index = {t: i for i, t in enumerate(types)} # type -> index
         self._side_index = {side: i for i, side in enumerate(['bid', 'ask'])} # side -> index
 
