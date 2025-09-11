@@ -83,13 +83,14 @@ class QRMEnv(gym.Env):
             dtype=np.float32
         )
 
-        self._executed = _executed  # Whether to execute actions or just return indices
+        self._executed = _executed  # for the agents: either number of shares to execute or the index of the selected action
 
     def reset(self, *, seed=None, options=None):
         """
-        Reset the environment to initial state.
-        Returns:
-            observation (np.ndarray): initial state vector
+            Reset the environment to initial state.
+
+        Output:
+            - observation (np.ndarray): initial state vector
         """
         
         state = self._env.reset()
@@ -99,14 +100,16 @@ class QRMEnv(gym.Env):
 
     def step(self, action):
         """
-            Take a step in the environment.
-            Args:
-                action (int): action index from Gym agent
-            Returns:
-                obs (np.ndarray): next state vector
-                reward (float)
-                done (bool)
-                info (dict)
+            Simulate one step in the environment.
+
+        Input:
+            - action (int): action index or number of shares to execute (if _executed=True)
+
+        Outputs:
+            - obs (np.ndarray): next state vector
+            - reward (float)
+            - done (bool)
+            - info (dict)
         """        
         ask_volumes = self._env.simulator.states[self._env.simulator.step - 1, self._env.simulator.K:]
         best_ask_volume = next(x for x in ask_volumes if x != 0)
@@ -120,7 +123,6 @@ class QRMEnv(gym.Env):
         next_state, reward, done, executed, total_ask = self._env.step(action_val)
         obs = self._env.state_to_vector(next_state).astype(np.float32)
 
-        # You can include additional diagnostics in info
         info = {
             "obs": obs,
             "next_state": next_state,
