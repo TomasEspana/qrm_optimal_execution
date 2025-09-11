@@ -24,19 +24,19 @@ from .sampling import choose_next_event_min, update_LOB
 
 @njit
 def simulate_QRM_jit(time: float,
-                         p_mid: float,
-                         p_ref: float,
-                         state: np.ndarray,
-                         rate_int_all: np.ndarray,
-                         tick: float,
-                         theta: float,
-                         theta_reinit: float,
-                         time_end: float,
-                         inv_bid: np.ndarray,
-                         inv_ask: np.ndarray, 
-                         max_events_intra: int, 
-                         aes: np.ndarray
-                         ):
+                     p_mid: float,
+                     p_ref: float,
+                     state: np.ndarray,
+                     rate_int_all: np.ndarray,
+                     tick: float,
+                     theta: float,
+                     theta_reinit: float,
+                     time_end: float,
+                     inv_bid: np.ndarray,
+                     inv_ask: np.ndarray, 
+                     max_events_intra: int, 
+                     aes: np.ndarray
+                    ):
     
     K, Q1 = rate_int_all.shape[1:3]
     Q = Q1 - 1
@@ -71,8 +71,10 @@ def simulate_QRM_jit(time: float,
                     total += r
                     idx += 1
 
-        nb, na, st2, sf, dp, ef, t = choose_next_event_min(
-            K, Q, rates, state, t)
+        # generate next LOB event
+        nb, na, st2, sf, dp, ef, t = choose_next_event_min(K, Q, rates, state, t)
+        if t > time_end:
+            break
         
         # mid‐price update
         new_pmid = 0.5 * ((p_ref + tick * (na + 0.5)) +
@@ -85,9 +87,6 @@ def simulate_QRM_jit(time: float,
         opp_queue_empty = True
         if (ef == 1) and ((sf == 1 and Δp_mid_bool and na == 0) or (sf == 2 and Δp_mid_bool and nb == 0)):
             opp_queue_empty = False
-        
-        if t > time_end:
-            break
 
         state = st2
         redrawn = 0
