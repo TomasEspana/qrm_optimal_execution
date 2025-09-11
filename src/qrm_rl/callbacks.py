@@ -1,11 +1,9 @@
 import wandb
-import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
 
 class InfoLoggerCallback(BaseCallback):
     """
         Pulls info dicts from the env and logs custom metrics to wandb.
-        Works with VecEnv; infos is a list (one per env).
     """
 
     def __init__(self, action_dim, verbose=0):
@@ -72,10 +70,3 @@ class InfoLoggerCallback(BaseCallback):
 
         return True
     
-
-
-class InjectEpsCallback(BaseCallback):
-    def _on_step(self) -> bool:
-        # Copy model's exploration_rate into the policy object
-        self.model.policy.exploration_rate = self.model.exploration_rate
-        return True
