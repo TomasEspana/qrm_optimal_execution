@@ -30,10 +30,11 @@ class QueueReactiveMarketSimulator:
         self.initial_price = initial_price
         self.aes = aes
 
-        # logging buffer capacity
-        self.max_events = max_events # max number of events to log for one episode
-        self.max_events_intra = max_events_intra # max number of events per intra-trader step 
-        self.step = 0   # how many events logged so far
+        # logging buffer capacity (pre-allocation)
+        self.max_events = max_events             # max number of LOB events to log for one episode
+        self.max_events_intra = max_events_intra # max number of events between two trader times
+        
+        self.step = 0                 # current number of logged events
         self.next_trader_time_idx = 0 # index of the next trader time to process
 
     def initialize(self):

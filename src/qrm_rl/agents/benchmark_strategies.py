@@ -61,20 +61,16 @@ class BestVolumeAgent:
             return 0
 
 
-
-
-
-### --- Deprecated agents --- ###
-## CHECK CODE BELOW BEFORE USING THESE AGENTS ##
-
-
-
 class FrontLoadAgent:
     def __init__(self, fixed_action):
         self.fixed_action = fixed_action
     
     def select_action(self):
         return self.fixed_action
+
+
+### --- Deprecated agents --- ###
+## CHECK CODE BELOW BEFORE USING THESE AGENTS ##
 
 
 class RandomAgent:
