@@ -8,6 +8,7 @@ from numba import njit
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, FrontLoadAgent, BestVolumeAgent
 from qrm_core.intensity import IntensityTable
 from torch import nn
+import qrm_rl.gym_env
 import gymnasium as gym
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.monitor import Monitor

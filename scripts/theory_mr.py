@@ -68,9 +68,9 @@ os.environ.setdefault("WANDB_SILENT", "true")
 
 from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
-from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent, RandomAgent, ConstantAgent, BimodalAgent, BestVolumeAgent
+from qrm_rl.agents.benchmark_strategies import BestVolumeAgent
 
-def run_one(i, j, theta, theta_r, trader_times, episodes=20_000, mod=4, seed=2025):
+def run_one(i, j, theta, theta_r, trader_times, episodes=20_000, mod=8, seed=2025):
     """
     Single job: build config, run RL, and dump results.
     Kept self-contained so it works in a separate process.
@@ -108,8 +108,9 @@ if __name__ == "__main__":
 
 
     trader_times = np.array([0., 0., 3., 6., 9., 12., 15., 18., 21.]) # mod = 8
+    trader_times = np.array([0., 0., 3.]) # mod = 8
     # trader_times = np.array([0., 0., 1., 2., 3., 4., 5., 6., 7.]) # mod = 8
-    trader_times = np.array([0., 0., 1.0, 30.0, 100.0])
+    # trader_times = np.array([0., 0., 1.0, 30.0, 100.0])
 
     thetas = np.linspace(0.5, 1.0, 20)
     theta_reinits = np.linspace(0.5, 1.0, 20)
