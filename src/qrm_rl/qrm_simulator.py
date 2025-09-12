@@ -80,10 +80,10 @@ class QueueReactiveMarketSimulator:
         
         i0 = self.step
         i1 = i0 + n
+        self.step = i1
         if i1 > self.max_events:
             raise ValueError(f"Exceeded max_events={self.max_events}")
 
-        # slice-assign each column
         self.times  [i0:i1] = times
         self.p_mids [i0:i1] = p_mids
         self.p_refs [i0:i1] = p_refs
@@ -91,10 +91,7 @@ class QueueReactiveMarketSimulator:
         self.depths [i0:i1] = depths
         self.events [i0:i1] = events
         self.redrawn[i0:i1] = redrawns
-
-        # stack the 1D lob_states into an (n,2K) block
         self.states[i0:i1, :] = np.vstack(lob_states)
-        self.step = i1
 
     def current_time(self):
         return self.times[self.step - 1]
@@ -127,8 +124,6 @@ class QueueReactiveMarketSimulator:
             next_t, self.inv_bid, self.inv_ask, self.max_events_intra, self.aes
         )
 
-        # JIT returns numeric codes for side/depth/event,
-        # so we can write them directly
         self._write_batch(
             times, p_mids, p_refs,
             sides, depths, events,
@@ -138,8 +133,7 @@ class QueueReactiveMarketSimulator:
 
     def to_dataframe(self):
         """
-            Convert the logged simulation into a Pandas DataFrame.
-            Only used for debugging and visualization.
+            Convert the LOB to a Pandas DataFrame.
         """
         import pandas as pd
 
