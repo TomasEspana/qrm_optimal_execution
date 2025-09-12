@@ -5,7 +5,7 @@ import wandb
 import numpy as np
 import torch
 from numba import njit
-from qrm_rl.agents.benchmark_strategies import TWAPAgent, BackLoadAgent, FrontLoadAgent, RandomAgent, BimodalAgent, BestVolumeAgent
+from qrm_rl.agents.benchmark_strategies import TWAPAgent, FrontLoadAgent, BestVolumeAgent
 from qrm_core.intensity import IntensityTable
 from torch import nn
 import gymnasium as gym
@@ -32,17 +32,12 @@ class RLRunner:
         self.load_model_path = load_model_path
         self.agent_name_map = {
             DQN: 'ddqn',
-            PPO: 'ppo',
             TWAPAgent: 'twap', 
-            BackLoadAgent: 'back_load',
             FrontLoadAgent: 'front_load', 
-            RandomAgent: 'random', 
             BestVolumeAgent: 'best_volume'
-            # InactiveAgent: 'inactive',
-            # PassiveAgent: 'passive',
         }
 
-        # Seeds
+        # seeds
         np.random.seed(config['seed'])
         @njit
         def _init_numba(seed): np.random.seed(seed)
@@ -94,8 +89,6 @@ class RLRunner:
             test_mode=self.test_mode
         )
 
-        # Agent
-        # Wrap in Monitor for SB3 episode logging
         self.env = Monitor(self.env)
 
         # SB3 DQN model
@@ -105,7 +98,7 @@ class RLRunner:
             )
         
         self.model = DQN(
-            policy='MlpPolicy', # CustomEpsMlpPolicy
+            policy='MlpPolicy',
             env=self.env,
             learning_rate=config["learning_rate"],
             buffer_size=config["buffer_size"],
@@ -126,9 +119,7 @@ class RLRunner:
         self.agent = self.model
 
     def unwrap_env(self, env):
-        """
-        Recursively unwrap Gym wrappers to reach your custom QRMEnv.
-        """
+
         while hasattr(env, "env"):
             env = env.env
         return env
@@ -138,37 +129,36 @@ class RLRunner:
         self.run_id = wandb.run.id
         train_mode = (self.mode == 'train')
         
-        if train_mode:
             # ===== TRAIN MODE =====
+        if train_mode:
             wandb.run.name = f"{agent_type}_{self.run_id}"
             total_steps = self.cfg["total_timesteps"]
 
             callback = CallbackList([
-                  WandbCallback(verbose=2,
-                                #sync_tensorboard=True,
-                                ),
-                InfoLoggerCallback(self.cfg["action_dim"]) # InjectEpsCallback()
-            ])
+                  WandbCallback(verbose=2,),
+                  InfoLoggerCallback(self.cfg["action_dim"])
+                 ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
             self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
 
             ### Feature importance
+            ## a) SHAP values
             base_output_dir = "shap_plots"
             os.makedirs(base_output_dir, exist_ok=True)
             output_dir = os.path.join(base_output_dir, self.run_id)
             os.makedirs(output_dir, exist_ok=True)
 
-            sample_size = 200 # 200 
-            background_size = 500 # 500
+            sample_size = 200 
+            background_size = 500
             buffer = self.model.replay_buffer
             end_idx = buffer.size()
             obs = buffer.observations[:end_idx]
             sample_start = max(0, end_idx - sample_size)
-            bg_start = max(0, sample_start - background_size)
             sample_states = obs[sample_start:end_idx]
             sample_states = sample_states.reshape(sample_states.shape[0], sample_states.shape[2])
+            bg_start = max(0, sample_start - background_size)
             background = obs[bg_start:sample_start]
             background = background.reshape(background.shape[0], background.shape[2])
 
@@ -178,28 +168,22 @@ class RLRunner:
 
             # Q-network prediction function
             q_net = self.model.policy.q_net
-
-            # Wrapper
             def model_predict(x):
                 with torch.no_grad():
                     x_t = torch.tensor(x, dtype=torch.float32, device=self.device)
                     return q_net(x_t).cpu().numpy()
 
-            # KernelExplainer
+            # Compute SHAP values with KernelExplainer
             explainer = shap.KernelExplainer(model_predict, background)
+            shap_values = explainer.shap_values(sample_states) # shape (sample_size, num_features, num_actions)
 
-            # Compute SHAP values (limit to 100 states for speed)
-            shap_values = explainer.shap_values(sample_states)
-            print("shap_values shape:", np.array(shap_values).shape)
-
-            # Gradient feature importance
+            ## b) Input-gradient analysis
             states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
             num_actions = self.cfg['action_dim']
             feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
             feature_names = feature_names[:self.cfg['len_basic_state']]
             
             gradient_importances = []
-
             for action_idx in range(num_actions):
                 q_vals = q_net(states_t)[:, action_idx].sum()
                 grads = torch.autograd.grad(q_vals, states_t, retain_graph=True)[0]  # shape (N, num_features)
@@ -259,8 +243,8 @@ class RLRunner:
 
             return
         
-        else:
             # ===== TEST MODE =====
+        else:
             wandb.run.name = f"{agent_type}_test_{self.run_id}"
 
             # Load SB3 model
