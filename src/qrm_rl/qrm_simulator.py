@@ -75,7 +75,6 @@ class QueueReactiveMarketSimulator:
             Log series of events in the LOB.
         """
         n = len(times)
-        
         if n == 0:
             return
         
@@ -95,7 +94,6 @@ class QueueReactiveMarketSimulator:
 
         # stack the 1D lob_states into an (n,2K) block
         self.states[i0:i1, :] = np.vstack(lob_states)
-
         self.step = i1
 
     def current_time(self):
