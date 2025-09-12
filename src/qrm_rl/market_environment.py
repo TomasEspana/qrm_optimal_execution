@@ -90,7 +90,7 @@ class MarketEnvironment:
 
     def reset(self):
         """
-            Start a fresh episode.
+            Reset to start a fresh episode.
         """
         # reset trader
         self.current_inventory = self.initial_inventory
@@ -120,7 +120,7 @@ class MarketEnvironment:
     @staticmethod
     def _best_quotes(st, K, p_ref, tick):
         """
-            Helper function to compute best quotes from LOB state.
+            Helper function to extract information from the LOB.
         """
         # bid
         bid_idx = next((i for i in range(K) if st[i]>0), None)
@@ -145,8 +145,7 @@ class MarketEnvironment:
 
     def best_quotes(self):
         """
-            Reads the last self.history_size LOB states snapshot and returns 
-            ((bid_price, size, depth, total_bid), (ask_price, size, depth, total_ask))
+            Extract best bid/ask info. 
         """
         st = self.current_state(self.history_size) # reversed to have the latest state first
         K  = self.simulator.K
@@ -169,7 +168,7 @@ class MarketEnvironment:
 
     def get_state(self):
         """ 
-            TBC
+            Current state.
         """
         lob_states = self.best_quotes()
         
@@ -249,6 +248,7 @@ class MarketEnvironment:
         reward -= rat
         self.risk_aversion_term = rat
 
+        # add event to the LOB
         if not trade_through:
             self.simulator._write_batch(
                 times=[nxt],
@@ -285,7 +285,8 @@ class MarketEnvironment:
             reward -= self.final_penalty * self.current_inventory
             self.simulator.next_trader_time_idx += 1
 
-            if self.test_mode: # execute remaining inventory aggressively (test mode only)
+            if self.test_mode: 
+                # execute remaining inventory aggressively (test mode only)
                 q_bis = self.current_inventory
                 if q_bis > 0:
                     st      = self.current_state()[0]

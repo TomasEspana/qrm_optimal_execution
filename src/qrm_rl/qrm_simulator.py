@@ -19,7 +19,6 @@ class QueueReactiveMarketSimulator:
         max_events_intra: int, 
         aes: np.ndarray
     ):
-        # core parameters
         self.intensity_table = intensity_table
         self.K = intensity_table.shape[1]
         self.theta = theta
@@ -47,11 +46,11 @@ class QueueReactiveMarketSimulator:
         self.times   = np.empty(self.max_events, np.float64)
         self.p_mids  = np.empty(self.max_events, np.float64)
         self.p_refs  = np.empty(self.max_events, np.float64)
-        self.sides   = np.zeros(self.max_events, np.int8) # 1 = bid, 2 = ask
-        self.depths  = np.zeros(self.max_events, np.int8) # depth of the event (nb of executed shares when trader action)
-        self.events  = np.zeros(self.max_events, np.int8) # 1 = limit, 2 = cancel, 3 = order, 4 = trader
-        self.redrawn = np.zeros(self.max_events, np.int8) # 0 = not redrawn, 1 = redrawn
-        self.states  = np.empty((self.max_events, 2*self.K), np.int8) # [q_bid1, ..., q_bidK, q_ask1, ..., q_askK] format
+        self.sides   = np.zeros(self.max_events, np.int8)
+        self.depths  = np.zeros(self.max_events, np.int8)
+        self.events  = np.zeros(self.max_events, np.int8)
+        self.redrawn = np.zeros(self.max_events, np.int8) 
+        self.states  = np.empty((self.max_events, 2*self.K), np.int8)
 
         # sample from invariant distribution
         lob0 = np.empty(2*self.K, np.int8)
