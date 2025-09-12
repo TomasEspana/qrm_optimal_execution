@@ -250,6 +250,7 @@ class RLRunner:
             # Load SB3 model
             if self.load_model_path is not None:
                 self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)
+            
             # Logging
             mid_prices, mid_prices_events, lob_dataframe, actions_taken, executed_dic, index_actions, ba_vol_dic, bb_vol_dic = {}, {}, {}, {}, {}, {}, {}, {}
             final_is = []
@@ -260,7 +261,7 @@ class RLRunner:
                 done, ep_reward = False, 0. 
 
                 obs, _ = self.env.reset()
-                idx_actions = [self.unwrap_env(self.env)._env.simulator.step]  # first index
+                idx_actions = [self.unwrap_env(self.env)._env.simulator.step]
                 k = 1
 
                 while not done:
@@ -270,10 +271,9 @@ class RLRunner:
                         obs, reward, done, _, info = self.env.step(action)
 
                     else:
-
                         self.agent.k = k
                         if isinstance(self.agent, TWAPAgent):
-                            self.unwrap_env(self.env)._executed = True # quantity, not index
+                            self.unwrap_env(self.env)._executed = True
                             action = self.agent.select_action()
                             obs, reward, done, _, info = self.env.step(action)
                         else:
@@ -288,7 +288,7 @@ class RLRunner:
                     ep_reward += reward
                     k += 1
 
-                # end-of-episode book-keeping (single ep test; extend if multiple desired)
+                # end-of-episode book-keeping
                 unwrapped_env = self.unwrap_env(self.env)
                 final_is.append(unwrapped_env._env.final_is)
                 actions_taken[ep] = actions
@@ -305,7 +305,7 @@ class RLRunner:
                     lob['p_ref'] = lob['p_ref'].astype(np.float32)
                     lob_dataframe[ep] = lob
                     mid_prices[ep] = unwrapped_env._env.simulator.p_mids[:unwrapped_env._env.simulator.step].astype(np.float32)
-                # NOTE: that the mid price observed at index_action corresponds to the price after the action was taken.
+                # NB: the mid price observed at index_action corresponds to the price after the action was taken.
                 # When plotting, you may want to shift(-1) the index actions to better grasp the change in mid price after the action.
 
                 if ep % self.cfg['logging_every'] == 0:
