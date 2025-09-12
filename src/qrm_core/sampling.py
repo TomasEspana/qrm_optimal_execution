@@ -37,7 +37,13 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
         while True:
             state = np.empty(K, np.int8)
             for i in range(K):
-                state[i] = np.random.choice(np.arange(Q1), p=inv_dist[i])
+                u = np.random.random()
+                cum = 0.0
+                for q in range(Q1):
+                    cum += inv_dist[i, q]
+                    if u < cum:
+                        state[i] = q
+                        break
             if state.sum() > 0:
                 return state
             
@@ -45,7 +51,13 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
     out = np.empty(depths.size, np.int8)
     for depth in depths:
         d = depth - 1
-        out[depth] = np.random.choice(np.arange(Q1), p=inv_dist[d])
+        u = np.random.random()
+        cum = 0.0
+        for q in range(Q1):
+            cum += inv_dist[d, q]
+            if u < cum:
+                out[d] = q
+                break
 
     return out
 
