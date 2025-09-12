@@ -121,7 +121,7 @@ if __name__ == "__main__":
             for j, theta_r in enumerate(theta_reinits)]
 
     # Sensible default: use (num_cores - 1) workers, at least 1
-    max_workers = 4
+    max_workers = 1
 
     results = []
     with ProcessPoolExecutor(max_workers=max_workers) as ex:
