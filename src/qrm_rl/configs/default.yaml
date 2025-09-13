@@ -1,8 +1,8 @@
 # Training parameters
-episodes: 80000
+episodes: 50
 
 # Simulation parameters
-time_horizon: 1 # 78 # 21 # 156 # 78
+time_horizon: 18 # 78 # 21 # 156 # 78
 trader_time_step: 3 # 6
 initial_inventory: 1000000 # 25 # 30 # 42
 final_penalty: 1
@@ -26,9 +26,9 @@ n_steps: 5 # 13
 train_freq: 1
 gradient_steps: 1
 batch_size: 1024
+learning_starts: 1024
 buffer_size: 300000
 target_update_interval: 350 # 500 # 800
-learning_starts: 1024
 
 # Epsilon greedy
 exploration_initial_eps: 1.0
@@ -48,9 +48,11 @@ tick: 0.01
 arrival_price: 100.005
 
 # Other
+max_events_per_second: 30
 aes: [836, 1068, 1069]
 mode: train
 seed: 42
-logging_every: 10
+logging: True
+logging_every: 100
 folder_path_intensity_table: "calibration_data/intensity_table/"
 folder_path_invariant: "calibration_data/invariant_distribution/"

@@ -23,7 +23,7 @@ def load_config(theta=None, theta_r=None, trader_times=None, filename="default.y
 
     # Derived parameters
     config['action_dim'] = len(config['actions'])
-    config['total_timesteps'] = config['episodes'] * config['time_horizon'] / config['trader_time_step']
+    config['total_timesteps'] = config['episodes'] * (config['time_horizon'] // config['trader_time_step'])
     
     # Trader times
     th = config['time_horizon']
@@ -40,7 +40,7 @@ def load_config(theta=None, theta_r=None, trader_times=None, filename="default.y
         config['state_dim'] = config['len_state_lob'] * config['history_size'] + 2
     
     # Pre-allocation for LOB events
-    config['max_events_intra'] = int(200 * config['trader_time_step'])
+    config['max_events_intra'] = int(config['max_events_per_second'] * config['trader_time_step'])
     config['max_events'] = int((int(config['time_horizon'] / config['trader_time_step']) + 1) * config['max_events_intra'])
     
     # Data files for intensities and invariant distributions

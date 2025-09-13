@@ -6,16 +6,19 @@ class InfoLoggerCallback(BaseCallback):
         Pulls info dicts from the env and logs custom metrics to wandb.
     """
 
-    def __init__(self, action_dim, verbose=0):
+    def __init__(self, action_dim, rl_model, verbose=0):
 
         super().__init__(verbose)
 
         self.action_dim = action_dim
         self.episode = 0
+        self.rl_model = rl_model
         self.episode_reward = 0.
         self.episode_is = 0.
         self.episode_length = 0
         self.actions = []
+        self.loss_sum = 0.
+
 
     def _on_step(self) -> bool:
 
@@ -27,12 +30,14 @@ class InfoLoggerCallback(BaseCallback):
         self.episode_reward += reward
         self.episode_is += info["implementation_shortfall"]
         self.actions.append(info['action_idx'])
+        self.loss_sum += self.model.logger.name_to_value['train/loss']
 
         # Log episode metrics
         if done:
             self.episode += 1
             log_dict = {
                 "Episode": self.episode,
+                'Mean TD Loss': self.loss_sum / self.episode_length if self.episode_length > 0 else 0.,
                 "Final Reward": self.episode_reward,
                 "Final Implementation Shortfall": self.episode_is, 
                 "Final Inventory": info['inventory'], 
@@ -41,16 +46,17 @@ class InfoLoggerCallback(BaseCallback):
                 **{f"Action_{a}_count": self.actions.count(a) for a in range(self.action_dim)}
             }
 
-            # Reset episode metrics
+            # Reset EPISODE metrics
             self.episode_length = 0
             self.episode_reward = 0.
             self.episode_is = 0.
             self.actions = []
+            self.loss_sum = 0.
         
         else:
             log_dict = {}
         
-        # Log additional info
+        # Log STEP metrics
         log_dict.update({
             "Implementation Shortfall": info["implementation_shortfall"],
             "Inventory": info['inventory'],

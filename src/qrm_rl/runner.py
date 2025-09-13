@@ -137,7 +137,7 @@ class RLRunner:
 
             callback = CallbackList([
                   WandbCallback(verbose=2,),
-                  InfoLoggerCallback(self.cfg["action_dim"])
+                  InfoLoggerCallback(self.cfg["action_dim"], self.model)
                  ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
@@ -309,7 +309,7 @@ class RLRunner:
                 # NB: the mid price observed at index_action corresponds to the price after the action was taken.
                 # When plotting, you may want to shift(-1) the index actions to better grasp the change in mid price after the action.
 
-                if ep % self.cfg['logging_every'] == 0:
+                if self.cfg['logging'] and (ep % self.cfg['logging_every'] == 0):
                     print(f"[{self.mode.upper()}][{ep}/{self.episodes}]  Reward={ep_reward:.2f}")
 
             wandb.finish()
