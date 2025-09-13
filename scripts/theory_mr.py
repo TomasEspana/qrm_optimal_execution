@@ -108,32 +108,57 @@ if __name__ == "__main__":
 
 
     trader_times = np.array([0., 0., 3., 6., 9., 12., 15., 18., 21.]) # mod = 8
-    trader_times = np.array([0., 0., 3.]) # mod = 8
+    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0]) # mod = 8
     # trader_times = np.array([0., 0., 1., 2., 3., 4., 5., 6., 7.]) # mod = 8
     # trader_times = np.array([0., 0., 1.0, 30.0, 100.0])
 
-    thetas = np.linspace(0.5, 1.0, 20)
-    theta_reinits = np.linspace(0.5, 1.0, 20)
+    nb_grid = 20
+    thetas = np.linspace(0.5, 1.0, nb_grid)
+    theta_reinits = np.linspace(0.5, 1.0, nb_grid)
 
-    # Build all jobs
+    results = []
     jobs = [(i, j, theta, theta_r, trader_times)
             for i, theta in enumerate(thetas)
             for j, theta_r in enumerate(theta_reinits)]
 
-    # Sensible default: use (num_cores - 1) workers, at least 1
-    max_workers = 1
+    for args in jobs:
+        try:
+            i, j, path = run_one(*args)
+            print(f"✓ Finished (i={i}, j={j}) → {path}")
+            results.append((i, j, path))
+        except Exception as e:
+            # Don't crash the whole loop: report and continue
+            print(f"✗ Job failed (i={args[0]}, j={args[1]}): {e}")
 
-    results = []
-    with ProcessPoolExecutor(max_workers=max_workers) as ex:
-        futures = [ex.submit(run_one, *args) for args in jobs]
-        for fut in as_completed(futures):
-            try:
-                i, j, path = fut.result()
-                print(f"✓ Finished (i={i}, j={j}) → {path}")
-                results.append((i, j, path))
-            except Exception as e:
-                # Don't crash the whole pool: report and continue
-                print(f"✗ Job failed: {e}")
-
-    # 'results' contains all (i, j, output_path)
     print(f"Done. {len(results)}/{len(jobs)} jobs completed.")
+
+
+
+    # # MULTIPROCESSING VERSION
+
+
+    # thetas = np.linspace(0.5, 1.0, 20)
+    # theta_reinits = np.linspace(0.5, 1.0, 20)
+
+    # # Build all jobs
+    # jobs = [(i, j, theta, theta_r, trader_times)
+    #         for i, theta in enumerate(thetas)
+    #         for j, theta_r in enumerate(theta_reinits)]
+
+    # # Sensible default: use (num_cores - 1) workers, at least 1
+    # max_workers = 1
+
+    # results = []
+    # with ProcessPoolExecutor(max_workers=max_workers) as ex:
+    #     futures = [ex.submit(run_one, *args) for args in jobs]
+    #     for fut in as_completed(futures):
+    #         try:
+    #             i, j, path = fut.result()
+    #             print(f"✓ Finished (i={i}, j={j}) → {path}")
+    #             results.append((i, j, path))
+    #         except Exception as e:
+    #             # Don't crash the whole pool: report and continue
+    #             print(f"✗ Job failed: {e}")
+
+    # # 'results' contains all (i, j, output_path)
+    # print(f"Done. {len(results)}/{len(jobs)} jobs completed.")

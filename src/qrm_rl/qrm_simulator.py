@@ -55,14 +55,35 @@ class QueueReactiveMarketSimulator:
 
         # sample from invariant distribution
         lob0 = np.empty(2*self.K, np.int8)
-        lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
-        lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
+        one_spread = True
+        
+        if one_spread:
+            while True:
+                lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
+                lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
+                bid_idx = next((i for i in range(self.K) if lob0[i]>0), None)
+                ask_idx = next((i for i in range(self.K, 2*self.K) if lob0[i]>0), None)
+                if bid_idx is not None and ask_idx is not None and (ask_idx - bid_idx) == self.K:
+                    break
+        
+        else:
+            lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
+            lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
+
+        # identify best bid and ask
+        bid_idx = next((i for i in range(self.K) if lob0[i]>0), None)
+        ask_idx = next((i for i in range(self.K, 2*self.K) if lob0[i]>0), None)
+        if bid_idx is None or ask_idx is None:
+            raise ValueError("Sampled empty LOB")
+        p_mid = 0.5 * ((self.initial_price + self.tick * (ask_idx - self.K + 0.5)) +
+                          (self.initial_price - self.tick * (bid_idx + 0.5)))
+        p_ref = self.initial_price
 
         # log the initial state to the LOB
         self._write_batch(
             times=[0.0],
-            p_mids=[self.initial_price],
-            p_refs=[self.initial_price],
+            p_mids=[p_mid],
+            p_refs=[p_ref],
             sides=[0],
             depths=[0],
             events=[0],
