@@ -8,18 +8,12 @@ GENERAL DESCRIPTION:
     Set the parameters of a run.
 """
 
-def load_config(theta=None, theta_r=None, trader_times=None, filename="default.yaml"):
+def load_config(filename="default.yaml"):
 
     # Load base configuration from YAML file
     config_path = os.path.join(os.path.dirname(__file__), filename)
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
-
-    # Override parameters if provided
-    if theta is not None:
-        config['theta'] = theta
-    if theta_r is not None:
-        config['theta_reinit'] = theta_r
 
     # Derived parameters
     config['action_dim'] = len(config['actions'])
@@ -28,10 +22,7 @@ def load_config(theta=None, theta_r=None, trader_times=None, filename="default.y
     # Trader times
     th = config['time_horizon']
     st = config['trader_time_step']
-    if trader_times is not None:
-        config['trader_times'] = trader_times
-    else:
-        config['trader_times'] = np.arange(0, th + st, st)
+    config['trader_times'] = np.arange(0, th + st, st)
 
     # State dimension
     if config['basic_state']:

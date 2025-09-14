@@ -1,10 +1,10 @@
 # Training parameters
-episodes: 50
+episodes: 1
 
 # Simulation parameters
-time_horizon: 18 # 78 # 21 # 156 # 78
-trader_time_step: 3 # 6
-initial_inventory: 1000000 # 25 # 30 # 42
+time_horizon: 600000 # 78 # 21 # 156 # 78
+trader_time_step: 6 # 6
+initial_inventory: 100000000000 # 25 # 30 # 42
 final_penalty: 1
 risk_aversion: 0.
 

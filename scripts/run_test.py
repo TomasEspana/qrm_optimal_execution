@@ -13,11 +13,11 @@ if __name__ == "__main__":
     config = load_config()
     config['mode'] = 'test' 
     config['seed'] = 2025
-    config['test_save_memory'] = True # True
+    config['test_save_memory'] = True
 
     ### ----------------------###
-    train_run_id = 'tr_25'
-    config['episodes'] = 20_000 
+    train_run_id = 'volumes'
+    config['episodes'] = 1 
     ### ----------------------###
 
     runner = RLRunner(config)
@@ -26,16 +26,23 @@ if __name__ == "__main__":
     tts = runner.cfg['trader_time_step']
     actions = runner.cfg['actions']
 
-
-
-    ## === Best Volume - Agent Testing === ###
-    mod = 20
+    # ### === Front Load Agent Testing === ###
     runner = RLRunner(config)
-    agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
+    agent = FrontLoadAgent(fixed_action=-1)
     runner.agent = agent
     dic, run_id = runner.run()
-    with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
+    with open(f'data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)
+
+
+    # ## === Best Volume - Agent Testing === ###
+    # mod = 1
+    # runner = RLRunner(config)
+    # agent = BestVolumeAgent(fixed_action=-1, modulo=mod)
+    # runner.agent = agent
+    # dic, run_id = runner.run()
+    # with open(f'data_wandb/dictionaries/best_volume_{mod}_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
 
     # ### === DDQN Agent Testing === ###

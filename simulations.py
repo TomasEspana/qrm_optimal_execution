@@ -75,7 +75,7 @@ if __name__ == "__main__":
     tick = 0.01
     theta = 0.7
     theta_reinit = 0.85
-    time_end = 100
+    time_end = 10000
     max_events_intra = 30 * int(time_end) 
 
     # warm-up: (compiles the JIT) simulate only 0.5 seconds
