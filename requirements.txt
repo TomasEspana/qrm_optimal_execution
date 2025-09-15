@@ -5,9 +5,8 @@ wandb
 numba
 matplotlib
 scipy
-# gym==0.26.2
 gymnasium==1.1.1
-stable-baselines3==2.7.0
+stable-baselines3
 shap
 notebook 
 jupyterlab 

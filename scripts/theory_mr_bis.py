@@ -76,8 +76,8 @@ def main():
     time_horizon = np.max(trader_times)
     nb_steps = len(trader_times) - 1
     # ----------------------------
-    nb_grid = 2
-    thetas = np.linspace(0.6, 1.0, nb_grid, dtype=float)
+    nb_grid = 40
+    thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
 
     jobs = [(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_steps)
@@ -95,7 +95,7 @@ def main():
     # Run jobs sequentially on one GPU
     # ----------------------------
     for k, args in enumerate(jobs, start=1):
-        i, j, theta, theta_r, _ = args
+        i, j, theta, theta_r, *_ = args
         try:
             ii, jj, path = run_one(*args, logging=False, episodes=10_000, mod=8, seed=2025)
             done += 1

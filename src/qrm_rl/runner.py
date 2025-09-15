@@ -45,12 +45,13 @@ class RLRunner:
         _init_numba(config['seed'])
 
         # WandB init
-        wandb.init(
-            project="QRM_RL_Agent",
-            name=f"{self.mode}",
-            config=config, 
-            sync_tensorboard=True,
-        )
+        if self.cfg['mode'] == 'train':
+            wandb.init(
+                project="QRM_RL_Agent",
+                name=f"{self.mode}",
+                config=config, 
+                sync_tensorboard=True,
+            )
 
         # Build intensity table
         inten_arr = np.load(config['folder_path_intensity_table'] + config['file_name'])
@@ -127,7 +128,8 @@ class RLRunner:
 
     def run(self):
         agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
-        self.run_id = wandb.run.id
+        if self.cfg['mode'] == 'train':
+            self.run_id = wandb.run.id
         train_mode = (self.mode == 'train')
         
             # ===== TRAIN MODE =====
@@ -246,7 +248,7 @@ class RLRunner:
         
             # ===== TEST MODE =====
         else:
-            wandb.run.name = f"{agent_type}_test_{self.run_id}"
+            # wandb.run.name = f"{agent_type}_test_{self.run_id}"
 
             # Load SB3 model
             if self.load_model_path is not None:
@@ -312,7 +314,7 @@ class RLRunner:
                 if self.cfg['logging'] and (ep % self.cfg['logging_every'] == 0):
                     print(f"[{self.mode.upper()}][{ep}/{self.episodes}]  Reward={ep_reward:.2f}")
 
-            wandb.finish()
+            # wandb.finish()
 
             dic = {
                 "final_is": final_is,
@@ -326,4 +328,4 @@ class RLRunner:
                 "bb_vol": bb_vol_dic
             }
 
-            return dic, self.run_id
+            return dic, 0
