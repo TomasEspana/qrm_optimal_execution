@@ -73,7 +73,7 @@ def main():
             torch.set_num_threads(1)
 
     # ----------------------------
-    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0])
+    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0, 10., 30.])
     diff = np.diff(trader_times)
     longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
     time_horizon = np.max(trader_times)
