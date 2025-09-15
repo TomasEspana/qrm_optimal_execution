@@ -20,7 +20,7 @@ except Exception:
 
 
 def run_one(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_steps,
-            logging=False, episodes=10_000, mod=8, seed=2025):
+            logging=False, episodes=20_000, mod=8, seed=2025):
     """
     Single job: build config, run RL, and dump results.
     Returns (i, j, out_path) on success.
@@ -44,15 +44,18 @@ def run_one(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_s
 
     # --- Run ---
     dic, run_id = runner.run()
+    dic = dic['mid_prices_events']
+    arr_prices = np.empty((len(dic), len(trader_times)-1))
+    for k in range(len(dic)):
+        arr_prices[k,:] = dic[k]
 
-    # --- Persist ---
+    # --- Folder Path ---
     train_run_id = f"heatmap_t_{i}_tr_{j}"
-    out_dir = Path("data_wandb/dictionaries")
+    out_dir = Path("/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"best_volume_{mod}_{train_run_id}.pkl"
+    out_path = out_dir / f"best_volume_{mod}_{train_run_id}.npy"
 
-    with open(out_path, "wb") as f:
-        pickle.dump(dic, f)
+    np.save(out_path, arr_prices)
 
     return (i, j, str(out_path))
 
@@ -75,8 +78,9 @@ def main():
     longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
     time_horizon = np.max(trader_times)
     nb_steps = len(trader_times) - 1
+    mod = len(trader_times) + 2
     # ----------------------------
-    nb_grid = 40
+    nb_grid = 2
     thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
 
@@ -97,7 +101,7 @@ def main():
     for k, args in enumerate(jobs, start=1):
         i, j, theta, theta_r, *_ = args
         try:
-            ii, jj, path = run_one(*args, logging=False, episodes=10_000, mod=8, seed=2025)
+            ii, jj, path = run_one(*args, logging=False, episodes=20_000, mod=mod, seed=2025)
             done += 1
             print(f"✓ [{k}/{total}] Finished (i={ii}, j={jj}, θ={theta:.4f}, θ_r={theta_r:.4f}) → {path}")
         except Exception as e:
@@ -116,7 +120,6 @@ def main():
     elapsed = end_time - start_time
     print(f"\nDone. {done}/{total} ({done/total*100:.2f}%) completed, {failures} failed.")
     print(f"Started: {start_time} | Ended: {end_time} | Elapsed: {elapsed}")
-
 
 
 
