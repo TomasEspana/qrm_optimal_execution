@@ -195,7 +195,6 @@ class QueueReactiveMarketSimulator:
             if hasattr(self, attr):
                 try:
                     setattr(self, attr, None)
-                    print('Freed ', attr)
                 except Exception:
                     pass
 

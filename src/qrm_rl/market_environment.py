@@ -113,7 +113,6 @@ class MarketEnvironment:
         if sim is not None and hasattr(sim, "close"):
             try:
                 sim.close()
-                print('Closed simulator')
             except Exception:
                 pass
 
@@ -121,23 +120,13 @@ class MarketEnvironment:
             if hasattr(self, attr):
                 try:
                     setattr(self, attr, None)
-                    print('Freed ', attr)
                 except Exception:
                     pass
 
         try:
             self.simulator = None
-            print('Freed simulator')
         except Exception:
             pass
-        
-        for attr in ("_cached_state", "_last_state", "_last_obs"):
-            if hasattr(self, attr):
-                try:
-                    setattr(self, attr, None)
-                    print('Freed ', attr)
-                except Exception:
-                    pass
 
         gc.collect()
 

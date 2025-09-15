@@ -5,57 +5,15 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import gc, torch
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
 
 from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
 from qrm_rl.agents.benchmark_strategies import BestVolumeAgent
 
-
-def main():
-    # ----------------------------
-    # GPU / runtime housekeeping
-    # ----------------------------
-
-    # Pin to GPU:0 by default (change if needed)
-    if torch.cuda.is_available():
-        os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
-        torch.cuda.set_device(0)
-        # torch.set_num_threads(1) # Keep CPU libs from oversubscribing
-
-    # ----------------------------
-    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0, 10.])
-    diff = np.diff(trader_times)
-    longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
-    time_horizon = np.max(trader_times)
-    nb_steps = len(trader_times) - 1
-    mod = len(trader_times) + 2
-    # ----------------------------
-    episodes = 1_000
-    nb_grid = 5
-    thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
-    theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
-
-    jobs = [(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_steps)
-            for i, theta in enumerate(thetas)
-            for j, theta_r in enumerate(theta_reinits)]
-
-    total = len(jobs)
-    done = 0
-    failures = 0
-
-    start_time = datetime.now()
-    print(f"Starting sweep over {total} jobs at {start_time}.\n")
-
-    arr_all_runs = np.empty((nb_grid, nb_grid, episodes, len(trader_times)-1), dtype=float)
-
-    ######################################""
-    def run_one(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_steps,
+def build_runner(theta, theta_r, time_horizon, trader_times, longest_step, nb_steps,
             logging=False, episodes=20_000, mod=8, seed=2025):
-        """
-        Single job: build config, run RL, and dump results.
-        Returns (i, j) on success.
-        """
         # --- Build config ---
         # be careful: parameters may need to be overwritten before load_config if they affect derived params
         config = load_config(time_horizon=time_horizon, longest_step=longest_step, nb_steps=nb_steps)
@@ -73,26 +31,47 @@ def main():
         agent  = BestVolumeAgent(fixed_action=-1, modulo=mod)
         runner.agent = agent
 
-        # --- Run ---
-        dic, run_id = runner.run()
-        dic = dic['mid_prices_events']
-        arr_prices = np.empty((len(dic), len(trader_times)-1))
-        for k in range(len(dic)):
-            arr_prices[k,:] = dic[k]
-        arr_all_runs[i,j,:,:] = arr_prices
+        return runner
 
-        return (i, j)
-    #######################################
 
+def main():
     # ----------------------------
-    # Run jobs sequentially on one GPU
+    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0, 10.])
+    diff = np.diff(trader_times)
+    longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
+    time_horizon = np.max(trader_times)
+    nb_steps = len(trader_times) - 1
+    mod = len(trader_times) + 2
     # ----------------------------
+    episodes = 1_000
+    nb_grid = 2
+    thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
+    theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
+    arr_all_runs = np.empty((nb_grid, nb_grid, episodes, len(trader_times)-1), dtype=float)
+
+    jobs = [(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_steps)
+            for i, theta in enumerate(thetas)
+            for j, theta_r in enumerate(theta_reinits)]
+
+    total = len(jobs)
+    done = 0
+    failures = 0
+    start_time = datetime.now()
+    print(f"Starting sweep over {total} jobs at {start_time}.\n")
+
+
     for k, args in enumerate(jobs, start=1):
-        i, j, theta, theta_r, *_ = args
+        i, j, *rest = args
+        theta, theta_r, trader_times = rest[0], rest[1], rest[3]
         try:
-            ii, jj = run_one(*args, logging=False, episodes=episodes, mod=mod, seed=2025)
+            runner = build_runner(*rest, logging=False, episodes=episodes, mod=mod, seed=2025)
+            dic, _ = runner.run()
+            dic = dic['mid_prices_events']
+            for l in range(len(dic)):
+                arr_all_runs[i,j,l,:] = dic[l]
+
             done += 1
-            print(f"✓ [{k}/{total}] Finished (i={ii}, j={jj}, θ={theta:.4f}, θ_r={theta_r:.4f})", flush=True)
+            print(f"✓ [{k}/{total}] Finished (i={i}, j={j}, θ={theta:.4f}, θ_r={theta_r:.4f})", flush=True)
         except Exception as e:
             failures += 1
             print(f"✗ [{k}/{total}] Job failed (i={i}, j={j}, θ={theta:.4f}, θ_r={theta_r:.4f}): {e}", flush=True)
