@@ -53,9 +53,9 @@ def run_one(i, j, theta, theta_r, time_horizon, trader_times, longest_step, nb_s
     train_run_id = f"heatmap_t_{i}_tr_{j}"
     out_dir = Path("/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"best_volume_{mod}_{train_run_id}.npy"
+    out_path = out_dir / f"{episodes}_runs_{train_run_id}.npz"
 
-    np.save(out_path, arr_prices)
+    np.savez_compressed(out_path, arr=arr_prices)
 
     return (i, j, str(out_path))
 
@@ -73,7 +73,7 @@ def main():
             torch.set_num_threads(1)
 
     # ----------------------------
-    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0, 10., 30.])
+    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0, 10.])
     diff = np.diff(trader_times)
     longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
     time_horizon = np.max(trader_times)
@@ -93,7 +93,7 @@ def main():
     failures = 0
 
     start_time = datetime.now()
-    print(f"Starting single-GPU sweep over {total} jobs at {start_time}.\n")
+    print(f"Starting sweep over {total} jobs at {start_time}.\n")
 
     # ----------------------------
     # Run jobs sequentially on one GPU
@@ -101,7 +101,7 @@ def main():
     for k, args in enumerate(jobs, start=1):
         i, j, theta, theta_r, *_ = args
         try:
-            ii, jj, path = run_one(*args, logging=False, episodes=20_000, mod=mod, seed=2025)
+            ii, jj, path = run_one(*args, logging=False, episodes=1_000, mod=mod, seed=2025)
             done += 1
             print(f"✓ [{k}/{total}] Finished (i={ii}, j={jj}, θ={theta:.4f}, θ_r={theta_r:.4f}) → {path}")
         except Exception as e:
