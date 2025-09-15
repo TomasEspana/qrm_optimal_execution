@@ -1,4 +1,5 @@
 import numpy as np
+
 from .qrm_simulator import QueueReactiveMarketSimulator
 from qrm_core.intensity import IntensityTable
 from qrm_core.sampling import update_LOB
@@ -104,6 +105,41 @@ class MarketEnvironment:
         self.simulator.simulate_step()
 
         return self.get_state()
+    
+    def close(self):
+        import gc
+
+        sim = getattr(self, "simulator", None)
+        if sim is not None and hasattr(sim, "close"):
+            try:
+                sim.close()
+                print('Closed simulator')
+            except Exception:
+                pass
+
+        for attr in ("intensity_table", "inv_bid", "inv_ask", "trader_times"):
+            if hasattr(self, attr):
+                try:
+                    setattr(self, attr, None)
+                    print('Freed ', attr)
+                except Exception:
+                    pass
+
+        try:
+            self.simulator = None
+            print('Freed simulator')
+        except Exception:
+            pass
+        
+        for attr in ("_cached_state", "_last_state", "_last_obs"):
+            if hasattr(self, attr):
+                try:
+                    setattr(self, attr, None)
+                    print('Freed ', attr)
+                except Exception:
+                    pass
+
+        gc.collect()
 
     def current_time(self):
         return self.simulator.current_time()

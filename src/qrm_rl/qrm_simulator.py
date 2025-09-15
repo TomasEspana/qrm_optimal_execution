@@ -183,3 +183,20 @@ class QueueReactiveMarketSimulator:
                 df[name] = block[:, j]
 
         return df
+    
+
+    def close(self):
+        import gc
+
+        for attr in ("times", "p_mids", "p_refs",
+                     "sides", "depths", "events",
+                     "redrawn", "states",
+                     "intensity_table", "inv_bid", "inv_ask", "trader_times"):
+            if hasattr(self, attr):
+                try:
+                    setattr(self, attr, None)
+                    print('Freed ', attr)
+                except Exception:
+                    pass
+
+        gc.collect()

@@ -140,13 +140,12 @@ class QRMEnv(gym.Env):
         }
         return obs, reward, done, False, info
 
-    def render(self, mode="human"):
-        # Optional: visualize LOB or trading process
-        pass
-
     def close(self):
-        # Clean up resources
-        pass
+        """
+            Close the environment and free resources.
+        """
+        self._env.close()
+        self._env = None
 
 
 # Register the QRMEnv with Gym

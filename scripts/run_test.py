@@ -48,6 +48,7 @@ if __name__ == "__main__":
     # ### === DDQN Agent Testing === ###
     # runner = RLRunner(config, load_model_path=f'save_model/ddqn_{train_run_id}.zip')
     # dic, run_id = runner.run()
+    # runner.agent = 'DQN'
     # with open(f'data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
 

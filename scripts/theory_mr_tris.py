@@ -4,30 +4,24 @@ import os
 import numpy as np 
 from pathlib import Path
 from datetime import datetime
+import gc, torch
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
 
 from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
 from qrm_rl.agents.benchmark_strategies import BestVolumeAgent
 
-# try:
-#     import torch
-#     TORCH_AVAILABLE = True
-# except Exception:
-#     TORCH_AVAILABLE = False
-
 
 def main():
     # ----------------------------
     # GPU / runtime housekeeping
     # ----------------------------
-    # if TORCH_AVAILABLE:
-    #     # Pin to GPU:0 by default (change if needed)
-    #     if torch.cuda.is_available():
-    #         os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
-    #         torch.cuda.set_device(0)
-    #         # Keep CPU libs from oversubscribing
-    #         torch.set_num_threads(1)
+
+    # Pin to GPU:0 by default (change if needed)
+    if torch.cuda.is_available():
+        os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
+        torch.cuda.set_device(0)
+        # torch.set_num_threads(1) # Keep CPU libs from oversubscribing
 
     # ----------------------------
     trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0, 10.])
@@ -38,7 +32,7 @@ def main():
     mod = len(trader_times) + 2
     # ----------------------------
     episodes = 1_000
-    nb_grid = 30
+    nb_grid = 5
     thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
 
@@ -98,18 +92,30 @@ def main():
         try:
             ii, jj = run_one(*args, logging=False, episodes=episodes, mod=mod, seed=2025)
             done += 1
-            print(f"✓ [{k}/{total}] Finished (i={ii}, j={jj}, θ={theta:.4f}, θ_r={theta_r:.4f})")
+            print(f"✓ [{k}/{total}] Finished (i={ii}, j={jj}, θ={theta:.4f}, θ_r={theta_r:.4f})", flush=True)
         except Exception as e:
             failures += 1
-            print(f"✗ [{k}/{total}] Job failed (i={i}, j={j}, θ={theta:.4f}, θ_r={theta_r:.4f}): {e}")
-        # finally:
-            # # Free GPU memory between runs
-            # if TORCH_AVAILABLE and torch.cuda.is_available():
-            #     torch.cuda.empty_cache()
+            print(f"✗ [{k}/{total}] Job failed (i={i}, j={j}, θ={theta:.4f}, θ_r={theta_r:.4f}): {e}", flush=True)
+        finally:
+            # Aggressive cleanup to avoid CUDA/BLAS fragmentation
+            try:
+                del runner
+            except Exception:
+                pass
+            try:
+                del agent
+            except Exception:
+                pass
+            gc.collect()
+            if torch.cuda.is_available():
+                try:
+                    torch.cuda.empty_cache()
+                except Exception:
+                    pass
 
-        if k % 10 == 0 or k == total:
+        if k % 50 == 0 or k == total:
             pct = done / total * 100.0
-            print(f"Progress: {done}/{total} ({pct:.2f}%) | Failures: {failures}")
+            print(f"Progress: {done}/{total} ({pct:.2f}%) | Failures: {failures}", flush=True)
     
     # --- Save file ---
     out_dir = Path("/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries")

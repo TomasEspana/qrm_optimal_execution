@@ -31,12 +31,7 @@ class RLRunner:
         self.prop_greedy_eps = config['exploration_fraction']
         self.agent = None
         self.load_model_path = load_model_path
-        self.agent_name_map = {
-            DQN: 'ddqn',
-            TWAPAgent: 'twap', 
-            FrontLoadAgent: 'front_load', 
-            BestVolumeAgent: 'best_volume'
-        }
+        self.model = None
 
         # seeds
         np.random.seed(config['seed'])
@@ -92,8 +87,18 @@ class RLRunner:
         )
 
         self.env = Monitor(self.env)
+        self.agent_name_map = {
+            DQN: 'ddqn',
+            TWAPAgent: 'twap', 
+            FrontLoadAgent: 'front_load', 
+            BestVolumeAgent: 'best_volume'
+        }
 
-        # SB3 DQN model
+
+    def _build_dqn(self):
+        if self.model is not None:
+            return
+
         policy_kwargs = dict(
             net_arch=[30, 30, 30, 30, 30], 
             activation_fn=nn.LeakyReLU,
@@ -102,21 +107,21 @@ class RLRunner:
         self.model = DQN(
             policy='MlpPolicy',
             env=self.env,
-            learning_rate=config["learning_rate"],
-            buffer_size=config["buffer_size"],
-            batch_size=config["batch_size"],
-            learning_starts=config["learning_starts"],
-            gamma=config["gamma"],
-            target_update_interval=config["target_update_interval"],
-            train_freq=config['train_freq'],
-            gradient_steps=config["gradient_steps"],
-            exploration_initial_eps=config["exploration_initial_eps"],
-            exploration_final_eps=config["exploration_final_eps"],
-            exploration_fraction=config["exploration_fraction"],
+            learning_rate=self.cfg["learning_rate"],
+            buffer_size=self.cfg["buffer_size"],
+            batch_size=self.cfg["batch_size"],
+            learning_starts=self.cfg["learning_starts"],
+            gamma=self.cfg["gamma"],
+            target_update_interval=self.cfg["target_update_interval"],
+            train_freq=self.cfg['train_freq'],
+            gradient_steps=self.cfg["gradient_steps"],
+            exploration_initial_eps=self.cfg["exploration_initial_eps"],
+            exploration_final_eps=self.cfg["exploration_final_eps"],
+            exploration_fraction=self.cfg["exploration_fraction"],
             verbose=2,
             policy_kwargs=policy_kwargs,
             device=self.device,
-            n_steps=config["n_steps"]
+            n_steps=self.cfg["n_steps"]
         )
         self.agent = self.model
 
@@ -127,13 +132,12 @@ class RLRunner:
         return env
 
     def run(self):
+
         agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
-        if self.cfg['mode'] == 'train':
-            self.run_id = wandb.run.id
-        train_mode = (self.mode == 'train')
         
             # ===== TRAIN MODE =====
-        if train_mode:
+        if self.mode == 'train':
+            self.run_id = wandb.run.id
             wandb.run.name = f"{agent_type}_{self.run_id}"
             total_steps = self.cfg["total_timesteps"]
 
@@ -142,6 +146,7 @@ class RLRunner:
                   InfoLoggerCallback(self.cfg["action_dim"], self.model)
                  ])
 
+            self._build_dqn()
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
             self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
@@ -244,15 +249,19 @@ class RLRunner:
                 plt.savefig(os.path.join(output_dir, f"grad_bar_action_{action_idx}.pdf"), bbox_inches='tight')
                 plt.close()
 
+            self.env.close()
             return
         
             # ===== TEST MODE =====
         else:
-            # wandb.run.name = f"{agent_type}_test_{self.run_id}"
-
-            # Load SB3 model
-            if self.load_model_path is not None:
-                self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)
+            
+            if self.agent in ['DQN', 'PPO']:
+                self._build_dqn()
+                if self.load_model_path is not None:
+                    self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)
+                else:
+                    raise ValueError("In test mode with an RL agent, load_model_path must be provided.")
+                self.agent = self.model
             
             # Logging
             mid_prices, mid_prices_events, lob_dataframe, actions_taken, executed_dic, index_actions, ba_vol_dic, bb_vol_dic = {}, {}, {}, {}, {}, {}, {}, {}
@@ -314,8 +323,6 @@ class RLRunner:
                 if self.cfg['logging'] and (ep % self.cfg['logging_every'] == 0):
                     print(f"[{self.mode.upper()}][{ep}/{self.episodes}]  Reward={ep_reward:.2f}")
 
-            # wandb.finish()
-
             dic = {
                 "final_is": final_is,
                 "lob": lob_dataframe,
@@ -327,5 +334,7 @@ class RLRunner:
                 "ba_vol": ba_vol_dic, 
                 "bb_vol": bb_vol_dic
             }
+
+            self.env.close()
 
             return dic, 0
