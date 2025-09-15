@@ -44,7 +44,7 @@ def main():
     mod = len(trader_times) + 2
     # ----------------------------
     episodes = 1_000
-    nb_grid = 2
+    nb_grid = 10
     thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     arr_all_runs = np.empty((nb_grid, nb_grid, episodes, len(trader_times)-1), dtype=float)
