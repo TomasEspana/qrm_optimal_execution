@@ -48,15 +48,17 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
                 return state
             
     # partial sampling
-    out = np.empty(depths.size, np.int8)
-    for depth in depths:
-        d = depth - 1
+    elif depths.size > 1:
+        raise NotImplementedError("Partial sampling with multiple depths is not implemented.")
+    
+    else:
+        d = depths[0] - 1
         u = np.random.random()
         cum = 0.0
         for q in range(Q1):
             cum += inv_dist[d, q]
             if u < cum:
-                out[d] = q
+                out = np.array([q])
                 break
 
     return out
