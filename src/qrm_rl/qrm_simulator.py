@@ -54,7 +54,7 @@ class QueueReactiveMarketSimulator:
 
         # sample from invariant distribution
         lob0 = np.empty(2*self.K, np.int8)
-        one_spread = True
+        one_spread = False
         
         if one_spread:
             while True:
