@@ -38,14 +38,15 @@ def build_runner(theta, theta_r, time_horizon, trader_times, longest_step, nb_st
 def main():
     # ----------------------------
     trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0])#, 10.])
+    trader_times = np.array([0., 0., 1.0, 3.0])#, 10.])
     diff = np.diff(trader_times)
     longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
     time_horizon = np.max(trader_times)
     nb_steps = len(trader_times) - 1
     mod = len(trader_times) + 2
     # ----------------------------
-    episodes = 1_000
-    nb_grid = 40
+    episodes = 10_000
+    nb_grid = 3
     thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
     arr_all_runs = np.empty((nb_grid, nb_grid, episodes, len(trader_times)-1), dtype=float)
