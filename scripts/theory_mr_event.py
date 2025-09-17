@@ -17,6 +17,22 @@ from qrm_core.engine import simulate_QRM_jit
 from qrm_core.intensity import IntensityTable
 
 
+""" 
+GENERAL DESCRIPTION:
+    File used to generate the heatmap of mean reversion after buying the best ask
+    for different values of theta and theta_reinit in EVENT TIME. 
+    This is very quick to run (much quicker than in physical time).
+    The main parameters to set are: 
+        - max_nb_events: number of events to log after buying the best ask
+        - episodes: number of repetitions for each (theta, theta_reinit) pair
+        - nb_grid: number of points in the grid for theta and theta_reinit (total jobs = nb_grid^2)
+        - one_spread: if True, force the initial LOB to have one spread
+    BE CAREFUL: 
+        - with the path to save the results (make sure the directory exists and you have write permission)
+"""
+
+
+
 def main():
     # ----------------------------
     max_nb_events = 75

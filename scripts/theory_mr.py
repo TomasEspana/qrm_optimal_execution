@@ -13,6 +13,23 @@ from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
 from qrm_rl.agents.benchmark_strategies import BestVolumeAgent
 
+
+
+""" 
+GENERAL DESCRIPTION:
+    File used to generate the heatmap of mean reversion after buying the best ask
+    for different values of theta and theta_reinit in PHYSICAL TIME. 
+    This is quite slow to run (much slower than in event time).
+    The main parameters to set are: 
+        - trader_times ([0., 0., 1.0, etc], the two zeros at the beginning to force immediate buy)
+        - episodes: number of repetitions for each (theta, theta_reinit) pair
+        - nb_grid: number of points in the grid for theta and theta_reinit (total jobs = nb_grid^2)
+        - out_path to save the results
+    BE CAREFUL: 
+        - with the path to save the results (make sure the directory exists and you have write permission)
+"""
+
+
 def build_runner(theta, theta_r, time_horizon, trader_times, longest_step, nb_steps,
             logging=False, episodes=20_000, mod=8, seed=2025):
         # --- Build config ---
@@ -37,8 +54,7 @@ def build_runner(theta, theta_r, time_horizon, trader_times, longest_step, nb_st
 
 def main():
     # ----------------------------
-    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0])#, 10.])
-    trader_times = np.array([0., 0., 1.0, 3.0])#, 10.])
+    trader_times = np.array([0., 0., 0.25, 0.5, 0.75, 1.0, 3.0])
     diff = np.diff(trader_times)
     longest_step = np.max(diff) if len(diff) > 0 else trader_times[0]
     time_horizon = np.max(trader_times)

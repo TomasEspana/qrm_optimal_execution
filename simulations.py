@@ -8,6 +8,19 @@ from src.qrm_core.engine import simulate_QRM_jit
 from src.qrm_core.sampling import sample_stationary_lob
 from src.qrm_core.intensity import IntensityTable
 
+""" 
+GENERAL DESCRIPTION:
+    File used to simulate and log a long trajectory of the QRM model in event time 
+    (e.g. to fit the propagator model). Saved as a parquet file.
+    The main parameters to set are: 
+        - theta, theta_reinit
+        - time_end: total time to simulate
+        - max_nb_events: if not NaN, maximum number of events to log (overrides time_end)
+        - one_spread: if True, force the initial LOB to have one spread
+    BE CAREFUL: 
+        - with the path to save the results (make sure the directory exists and you have write permission)
+"""
+
 
 def to_dataframe(times, p_mids, p_refs, sides, depths, events, redrawn, states, K):
     # Labels → categoricals (cheap)
@@ -115,7 +128,7 @@ if __name__ == "__main__":
     theta = 0.9
     theta_reinit = 0.6
     time_end = 100
-    max_nb_events = 1000
+    max_nb_events = np.nan
     
     if isnan(max_nb_events):
         max_events_intra = 12 * int(time_end)
