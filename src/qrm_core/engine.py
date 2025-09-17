@@ -1,5 +1,7 @@
 import numpy as np
 from numba import njit
+from math import isnan
+
 from .sampling import choose_next_event_min, update_LOB
 
 """  
@@ -35,7 +37,8 @@ def simulate_QRM_jit(time: float,
                      inv_bid: np.ndarray,
                      inv_ask: np.ndarray, 
                      max_events_intra: int, 
-                     aes: np.ndarray
+                     aes: np.ndarray, 
+                     max_nb_events=np.nan
                     ):
     
     K, Q1 = rate_int_all.shape[1:3]
@@ -71,7 +74,9 @@ def simulate_QRM_jit(time: float,
 
         # generate next LOB event
         nb, na, st2, sf, dp, ef, t = choose_next_event_min(K, Q, rates, state, t)
-        if t > time_end:
+        if (isnan(max_nb_events)) and (t > time_end):
+            break
+        elif (not isnan(max_nb_events)) and (count >= 1*max_nb_events):
             break
         
         # mid‐price update

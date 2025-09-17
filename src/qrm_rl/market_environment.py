@@ -37,7 +37,8 @@ class MarketEnvironment:
         basic_state: bool, 
         len_basic_state: int,
         aes: list, 
-        test_mode: bool
+        test_mode: bool, 
+        event_time: bool
     ):
         # — core parameters —
         self.actions = actions
@@ -58,6 +59,7 @@ class MarketEnvironment:
         self.len_basic_state   = len_basic_state
         self.aes               = aes
         self.test_mode         = test_mode
+        self.event_time        = event_time
 
         # load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
@@ -86,7 +88,8 @@ class MarketEnvironment:
             trader_times     = self.trader_times,
             max_events       = max_events,
             max_events_intra = max_events_intra, 
-            aes              = aes
+            aes              = aes, 
+            event_time       = event_time
         )
 
     def reset(self):

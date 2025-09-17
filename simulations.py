@@ -2,6 +2,7 @@ import numpy as np
 import time
 from numba import njit
 import pandas as pd
+from math import isnan
 
 from src.qrm_core.engine import simulate_QRM_jit
 from src.qrm_core.sampling import sample_stationary_lob
@@ -114,7 +115,12 @@ if __name__ == "__main__":
     theta = 0.9
     theta_reinit = 0.6
     time_end = 100
-    max_events_intra = 12 * int(time_end)
+    max_nb_events = 1000
+    
+    if isnan(max_nb_events):
+        max_events_intra = 12 * int(time_end)
+    else:
+        max_events_intra = max_nb_events
 
     # warm-up: (compiles the JIT) simulate only 0.5 seconds
     simulate_QRM_jit(t0,p_mid, p_ref,state,rate_int_all, tick, theta, theta_reinit, 1., inv_bid, inv_ask,  30,  aes)
@@ -133,7 +139,8 @@ if __name__ == "__main__":
                                                                                         inv_bid,
                                                                                         inv_ask, 
                                                                                         max_events_intra, 
-                                                                                        aes
+                                                                                        aes, 
+                                                                                        max_nb_events=max_nb_events
                                                                                         )
     
     end = time.time()

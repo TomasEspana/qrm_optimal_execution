@@ -5,10 +5,7 @@ import wandb
 import numpy as np
 import torch
 from numba import njit
-from qrm_rl.agents.benchmark_strategies import TWAPAgent, FrontLoadAgent, BestVolumeAgent
-from qrm_core.intensity import IntensityTable
 from torch import nn
-import qrm_rl.gym_env
 import gymnasium as gym
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.monitor import Monitor
@@ -19,8 +16,12 @@ import shap
 import pandas as pd
 import os
 
+import qrm_rl.gym_env
+from qrm_rl.agents.benchmark_strategies import TWAPAgent, FrontLoadAgent, BestVolumeAgent
+from qrm_core.intensity import IntensityTable
+
 class RLRunner:
-    def __init__(self, config, load_model_path=None):
+    def __init__(self, config, load_model_path=None, event_time=np.nan):
 
         # Unpack config
         self.cfg = config
@@ -32,6 +33,7 @@ class RLRunner:
         self.agent = None
         self.load_model_path = load_model_path
         self.model = None
+        self.event_time = event_time
 
         # seeds
         np.random.seed(config['seed'])
@@ -83,7 +85,8 @@ class RLRunner:
             state_dim=config['state_dim'],
             action_dim=config['action_dim'], 
             aes=np.array(config['aes']), 
-            test_mode=self.test_mode
+            test_mode=self.test_mode, 
+            event_time=self.event_time
         )
 
         self.env = Monitor(self.env)

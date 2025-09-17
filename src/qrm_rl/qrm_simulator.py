@@ -16,7 +16,8 @@ class QueueReactiveMarketSimulator:
         trader_times: np.ndarray,
         max_events: int, 
         max_events_intra: int, 
-        aes: np.ndarray
+        aes: np.ndarray, 
+        event_time: bool,
     ):
         self.intensity_table = intensity_table
         self.K = intensity_table.shape[1]
@@ -28,6 +29,7 @@ class QueueReactiveMarketSimulator:
         self.trader_times = trader_times
         self.initial_price = initial_price
         self.aes = aes
+        self.event_time = event_time
 
         # logging buffer capacity (pre-allocation)
         self.max_events = max_events             # max number of LOB events to log for one episode
@@ -56,7 +58,7 @@ class QueueReactiveMarketSimulator:
         lob0 = np.empty(2*self.K, np.int8)
         one_spread = False
         
-        if one_spread:
+        if one_spread: # force one spread
             while True:
                 lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
                 lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
@@ -142,7 +144,8 @@ class QueueReactiveMarketSimulator:
             self.current_state()[0],
             self.intensity_table,
             self.tick, self.theta, self.theta_reinit,
-            next_t, self.inv_bid, self.inv_ask, self.max_events_intra, self.aes
+            next_t, self.inv_bid, self.inv_ask, self.max_events_intra, self.aes, 
+            self.event_time*next_t
         )
 
         self._write_batch(

@@ -41,6 +41,7 @@ class QRMEnv(gym.Env):
         action_dim: int,
         aes: list,
         test_mode: bool,
+        event_time: bool,
         _executed: bool = False,
         **kwargs
     ):
@@ -71,7 +72,8 @@ class QRMEnv(gym.Env):
             basic_state=basic_state,
             len_basic_state=len_basic_state,
             aes=aes,
-            test_mode=test_mode
+            test_mode=test_mode, 
+            event_time=event_time
         )
 
         # Define action and observation spaces
