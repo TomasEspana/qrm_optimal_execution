@@ -16,8 +16,9 @@ class TWAPAgent:
         self.initial_inventory = initial_inventory
         self.trader_time_step = trader_time_step
         self.k = k
-        ratio = int(initial_inventory / (time_horizon / trader_time_step))
-        self.actions_schedule = self.distribute_ones(int(time_horizon/trader_time_step), initial_inventory, ratio)
+        ratio = int(initial_inventory / (1 + time_horizon / trader_time_step))
+        n = 1 + int(time_horizon/trader_time_step)
+        self.actions_schedule = self.distribute_ones(n, initial_inventory, ratio)
 
     @staticmethod
     def distribute_ones(n, n_0, ratio):

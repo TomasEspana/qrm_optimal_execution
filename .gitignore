@@ -6,4 +6,3 @@ shap_plots
 test_pole.py
 sb3_tensorboard
 plots
-spectrum_gcc.py

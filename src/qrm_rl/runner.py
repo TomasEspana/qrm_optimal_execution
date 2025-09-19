@@ -47,7 +47,7 @@ class RLRunner:
                 project="QRM_RL_Agent",
                 name=f"{self.mode}",
                 config=config, 
-                sync_tensorboard=True,
+                sync_tensorboard=False,
             )
 
         # Build intensity table
@@ -134,12 +134,15 @@ class RLRunner:
             env = env.env
         return env
 
-    def run(self):
+    def run(self, agent_info=None):
 
-        agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
+        print('RUNNING ON DEVICE:', self.device)
         
             # ===== TRAIN MODE =====
         if self.mode == 'train':
+
+            self._build_dqn()
+            agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
             self.run_id = wandb.run.id
             wandb.run.name = f"{agent_type}_{self.run_id}"
             total_steps = self.cfg["total_timesteps"]
@@ -149,14 +152,13 @@ class RLRunner:
                   InfoLoggerCallback(self.cfg["action_dim"], self.model)
                  ])
 
-            self._build_dqn()
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
-            self.model.save(f"save_model/{agent_type}_{self.run_id}.zip")
+            self.model.save(f"/scratch/network/te6653/qrm_optimal_execution/save_model/{agent_type}_{self.run_id}.zip")
             wandb.finish()
 
             ### Feature importance
             ## a) SHAP values
-            base_output_dir = "shap_plots"
+            base_output_dir = "/scratch/network/te6653/qrm_optimal_execution/shap_plots"
             os.makedirs(base_output_dir, exist_ok=True)
             output_dir = os.path.join(base_output_dir, self.run_id)
             os.makedirs(output_dir, exist_ok=True)
@@ -257,8 +259,9 @@ class RLRunner:
         
             # ===== TEST MODE =====
         else:
-            
-            if self.agent in ['DQN', 'PPO']:
+            agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
+
+            if agent_info in ['DQN', 'PPO']:
                 self._build_dqn()
                 if self.load_model_path is not None:
                     self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)

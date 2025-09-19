@@ -26,7 +26,7 @@ def load_config(time_horizon=None, longest_step=None, nb_steps=None, filename="d
     # Trader times
     th = config['time_horizon']
     st = config['trader_time_step']
-    config['trader_times'] = np.arange(0, th + st, st)
+    config['trader_times'] = np.concatenate(([0], np.arange(0, th + st, st)))
 
     # State dimension
     if config['basic_state']:
@@ -42,7 +42,7 @@ def load_config(time_horizon=None, longest_step=None, nb_steps=None, filename="d
     if nb_steps is not None:
         config['max_events'] = int(nb_steps * config['max_events_intra']) + 1
     else:
-        config['max_events'] = int((int(config['time_horizon'] / config['trader_time_step']) + 1) * config['max_events_intra'])
+        config['max_events'] = int((2 + config['time_horizon'] // config['trader_time_step']) * config['max_events_intra'])
     
     # Data files for intensities and invariant distributions
     config['file_name'] = 'qrm_paper.npy'     # 'aapl_corrected.npy'

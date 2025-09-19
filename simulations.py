@@ -89,10 +89,11 @@ def to_dataframe_short(times, p_mids, sides, events, states, K):
 
 if __name__ == "__main__":
 
-    np.random.seed(42)
+    seed = 2030-5
+    np.random.seed(seed)
     @njit
     def _init_numba(seed): np.random.seed(seed)
-    _init_numba(42)
+    _init_numba(seed)
 
     aes = [836, 1068, 1069]
     t0 = 0.
@@ -125,9 +126,9 @@ if __name__ == "__main__":
         state[K:] = sample_stationary_lob(inv_ask, np.empty((0,), np.int8))
 
     tick = 0.01
-    theta = 0.9
-    theta_reinit = 0.6
-    time_end = 100
+    theta = 0.7
+    theta_reinit = 0.85
+    time_end = 2*624
     max_nb_events = np.nan
     
     if isnan(max_nb_events):
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     print('3')
 
     df.to_parquet(
-        "simulations/lob_permanent.parquet",
+        "simulations/t1_4.parquet",
         engine="pyarrow",
         compression="zstd",    
         index=False

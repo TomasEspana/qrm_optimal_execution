@@ -43,7 +43,8 @@ class InfoLoggerCallback(BaseCallback):
                 "Final Inventory": info['inventory'], 
                 "Episode Length": self.episode_length, 
                 "Non Executed Liquidity Constraint": info["Non Executed Liquidity Constraint"], 
-                **{f"Action_{a}_count": self.actions.count(a) for a in range(self.action_dim)}
+                **{f"Action_{a}_count": self.actions.count(a) for a in range(self.action_dim)}, 
+                "Final Penalty": info['final_penalty_coeff'] * info['inventory'],
             }
 
             # Reset EPISODE metrics

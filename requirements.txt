@@ -6,7 +6,7 @@ numba
 matplotlib
 scipy
 gymnasium==1.1.1
-stable-baselines3
+stable-baselines3[extra]
 shap
 notebook 
 jupyterlab 
@@ -15,6 +15,7 @@ ipywidgets
 seaborn
 plotly
 pyarrow
+tensorboard
 
 # numpy==1.23.5
 # pandas==2.2.3

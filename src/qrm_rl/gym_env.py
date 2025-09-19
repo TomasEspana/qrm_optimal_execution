@@ -138,7 +138,9 @@ class QRMEnv(gym.Env):
             "mid_price": self._env.current_mid_price(), 
             "Non Executed Liquidity Constraint": self._env.non_executed_liquidity_constraint, 
             "best_ask_volume": best_ask_volume, 
-            "best_bid_volume": best_bid_volume
+            "best_bid_volume": best_bid_volume, 
+            "initial_inventory": self._env.initial_inventory,
+            "final_penalty_coeff": self._env.final_penalty
         }
         return obs, reward, done, False, info
 
