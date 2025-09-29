@@ -18,6 +18,7 @@ class InfoLoggerCallback(BaseCallback):
         self.episode_length = 0
         self.actions = []
         self.loss_sum = 0.
+        self.metrics_buffer = {}
 
 
     def _on_step(self) -> bool:
@@ -30,7 +31,9 @@ class InfoLoggerCallback(BaseCallback):
         self.episode_reward += reward
         self.episode_is += info["implementation_shortfall"]
         self.actions.append(info['action_idx'])
-        self.loss_sum += self.model.logger.name_to_value['train/loss']
+        name_to_val = getattr(self.model.logger, "name_to_value", {})
+        if "train/loss" in name_to_val:
+            self.loss_sum += float(name_to_val["train/loss"])
 
         # Log episode metrics
         if done:
@@ -73,7 +76,25 @@ class InfoLoggerCallback(BaseCallback):
             "Best Ask Volume": info['best_ask_volume']
         })
 
+        keys = [
+            "train/value_loss",
+            "train/loss",
+            "train/policy_gradient_loss",
+            "train/value_loss",
+            "train/entropy_loss",
+            "train/approx_kl",
+            "train/clip_fraction",
+            "train/learning_rate",
+            "train/explained_variance",
+        ]
+        payload = {k: float(v) for k, v in name_to_val.items() if k in keys}
+
+        # DQN TD loss may also appear here (aggregate over last update)
+        if "train/loss" in name_to_val:
+            payload["train/td_loss"] = float(name_to_val["train/loss"])
+        if payload:
+            wandb.log(payload, step=self.num_timesteps)
+
         wandb.log(log_dict, step=self.num_timesteps)
 
         return True
-    

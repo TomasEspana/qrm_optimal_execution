@@ -25,6 +25,7 @@ class RLRunner:
 
         # Unpack config
         self.cfg = config
+        self.agent_type = config['agent_type'].lower()
         self.mode = config['mode']
         self.test_mode = (self.mode == 'test')
         self.episodes = config['episodes']
@@ -92,6 +93,7 @@ class RLRunner:
         self.env = Monitor(self.env)
         self.agent_name_map = {
             DQN: 'ddqn',
+            PPO: 'ppo',
             TWAPAgent: 'twap', 
             FrontLoadAgent: 'front_load', 
             BestVolumeAgent: 'best_volume'
@@ -106,11 +108,17 @@ class RLRunner:
             net_arch=[30, 30, 30, 30, 30], 
             activation_fn=nn.LeakyReLU,
             )
+
+        def exp_decay_schedule(lr_start: float, lr_end: float):
+            ratio = lr_end / lr_start
+            def lr_fn(progress_remaining: float) -> float:
+                return lr_start * (ratio ** (1.0 - progress_remaining))
+            return lr_fn
         
         self.model = DQN(
             policy='MlpPolicy',
             env=self.env,
-            learning_rate=self.cfg["learning_rate"],
+            learning_rate=self.cfg["learning_rate"], #exp_decay_schedule(lr_start=1e-4, lr_end=5e-7),
             buffer_size=self.cfg["buffer_size"],
             batch_size=self.cfg["batch_size"],
             learning_starts=self.cfg["learning_starts"],
@@ -128,6 +136,57 @@ class RLRunner:
         )
         self.agent = self.model
 
+
+    def _build_ppo(self):
+        if self.model is not None:
+            return
+
+        policy_kwargs = dict(
+            net_arch=[30, 30, 30, 30, 30], 
+            activation_fn=nn.LeakyReLU,
+            ortho_init=True
+            )
+
+        def linear_with_floor(start=3e-4, end=3e-6):
+            def lr_fn(progress_remaining: float):
+                return max(end, progress_remaining * (start - end) + end)
+            return lr_fn
+        learning_rate = linear_with_floor(3e-4, 3e-6)
+
+        def clip_linear(start=0.2, end=0.1):
+            def cr_fn(progress_remaining: float):
+                return progress_remaining * (start - end) + end
+            return cr_fn
+        clip_range = clip_linear(0.2, 0.1)
+        
+
+        self.model = PPO(
+            policy="MlpPolicy",
+            env=self.env,
+
+            # --- kept / analogous ---
+            learning_rate=learning_rate,                 # callable schedule supported
+            n_steps=768,                                 # 256 rollout length per env 
+            batch_size=self.cfg.get("batch_size", 128),  # minibatch size for SGD
+            gamma=self.cfg.get("gamma", 0.99),
+
+            # --- new (PPO-specific) ---
+            gae_lambda=self.cfg.get("gae_lambda", 0.95), # bias/variance trade-off in GAE
+            n_epochs=self.cfg.get("n_epochs", 10),       # SGD passes over each batch
+            clip_range=clip_range,                       # policy ratio clip
+            ent_coef=self.cfg.get("ent_coef", 0.03),    # entropy bonus (↑ early exploration)
+            vf_coef=self.cfg.get("vf_coef", 0.5),        # value loss weight
+            max_grad_norm=self.cfg.get("max_grad_norm", 0.5),
+            target_kl=self.cfg.get("target_kl", 0.025),   # e.g., 0.02 to early-stop updates
+
+            # --- misc ---
+            policy_kwargs=policy_kwargs,
+            device=self.device,
+            verbose=2,
+        )
+
+        self.agent = self.model
+
     def unwrap_env(self, env):
 
         while hasattr(env, "env"):
@@ -141,10 +200,15 @@ class RLRunner:
             # ===== TRAIN MODE =====
         if self.mode == 'train':
 
-            self._build_dqn()
-            agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
+            if self.agent_type == 'dqn':
+                self._build_dqn()
+            elif self.agent_type == 'ppo':
+                self._build_ppo()
+            else:
+                raise ValueError(f"Unknown agent type {self.agent_type} for training.")
+            
             self.run_id = wandb.run.id
-            wandb.run.name = f"{agent_type}_{self.run_id}"
+            wandb.run.name = f"{self.agent_type}_{self.run_id}"
             total_steps = self.cfg["total_timesteps"]
 
             callback = CallbackList([
@@ -153,113 +217,114 @@ class RLRunner:
                  ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
-            self.model.save(f"/scratch/network/te6653/qrm_optimal_execution/save_model/{agent_type}_{self.run_id}.zip")
+            self.model.save(f"/scratch/network/te6653/qrm_optimal_execution/save_model/{self.agent_type}_{self.run_id}.zip")
             wandb.finish()
 
-            ### Feature importance
-            ## a) SHAP values
-            base_output_dir = "/scratch/network/te6653/qrm_optimal_execution/shap_plots"
-            os.makedirs(base_output_dir, exist_ok=True)
-            output_dir = os.path.join(base_output_dir, self.run_id)
-            os.makedirs(output_dir, exist_ok=True)
+            if self.agent_type == 'dqn':
 
-            sample_size = 200 
-            background_size = 500
-            buffer = self.model.replay_buffer
-            end_idx = buffer.size()
-            obs = buffer.observations[:end_idx]
-            sample_start = max(0, end_idx - sample_size)
-            sample_states = obs[sample_start:end_idx]
-            sample_states = sample_states.reshape(sample_states.shape[0], sample_states.shape[2])
-            bg_start = max(0, sample_start - background_size)
-            background = obs[bg_start:sample_start]
-            background = background.reshape(background.shape[0], background.shape[2])
+                ### Feature importance
+                ## a) SHAP values
+                base_output_dir = "/scratch/network/te6653/qrm_optimal_execution/shap_plots"
+                os.makedirs(base_output_dir, exist_ok=True)
+                output_dir = os.path.join(base_output_dir, self.run_id)
+                os.makedirs(output_dir, exist_ok=True)
 
-            save_path = os.path.join(output_dir, "shap_data.npz")
-            np.savez_compressed(save_path, sample_states=sample_states, background=background)
-            print(f"Saved SHAP data to {save_path}")
+                sample_size = 200 
+                background_size = 500
+                buffer = self.model.replay_buffer
+                end_idx = buffer.size()
+                obs = buffer.observations[:end_idx]
+                sample_start = max(0, end_idx - sample_size)
+                sample_states = obs[sample_start:end_idx]
+                sample_states = sample_states.reshape(sample_states.shape[0], sample_states.shape[2])
+                bg_start = max(0, sample_start - background_size)
+                background = obs[bg_start:sample_start]
+                background = background.reshape(background.shape[0], background.shape[2])
 
-            # Q-network prediction function
-            q_net = self.model.policy.q_net
-            def model_predict(x):
-                with torch.no_grad():
-                    x_t = torch.tensor(x, dtype=torch.float32, device=self.device)
-                    return q_net(x_t).cpu().numpy()
+                save_path = os.path.join(output_dir, "shap_data.npz")
+                np.savez_compressed(save_path, sample_states=sample_states, background=background)
+                print(f"Saved SHAP data to {save_path}")
 
-            # Compute SHAP values with KernelExplainer
-            explainer = shap.KernelExplainer(model_predict, background)
-            shap_values = explainer.shap_values(sample_states) # shape (sample_size, num_features, num_actions)
+                # Q-network prediction function
+                q_net = self.model.policy.q_net
+                def model_predict(x):
+                    with torch.no_grad():
+                        x_t = torch.tensor(x, dtype=torch.float32, device=self.device)
+                        return q_net(x_t).cpu().numpy()
 
-            ## b) Input-gradient analysis
-            states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
-            num_actions = self.cfg['action_dim']
-            feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
-            feature_names = feature_names[:self.cfg['len_basic_state']]
-            
-            gradient_importances = []
-            for action_idx in range(num_actions):
-                q_vals = q_net(states_t)[:, action_idx].sum()
-                grads = torch.autograd.grad(q_vals, states_t, retain_graph=True)[0]  # shape (N, num_features)
-                gradient_importances.append(np.abs(grads.detach().cpu().numpy()).mean(axis=0))
+                # Compute SHAP values with KernelExplainer
+                explainer = shap.KernelExplainer(model_predict, background)
+                shap_values = explainer.shap_values(sample_states) # shape (sample_size, num_features, num_actions)
 
-            gradient_importances = np.array(gradient_importances)  # shape (num_actions, num_features)
+                ## b) Input-gradient analysis
+                states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
+                num_actions = self.cfg['action_dim']
+                feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
+                feature_names = feature_names[:self.cfg['len_basic_state']]
+                
+                gradient_importances = []
+                for action_idx in range(num_actions):
+                    q_vals = q_net(states_t)[:, action_idx].sum()
+                    grads = torch.autograd.grad(q_vals, states_t, retain_graph=True)[0]  # shape (N, num_features)
+                    gradient_importances.append(np.abs(grads.detach().cpu().numpy()).mean(axis=0))
+
+                gradient_importances = np.array(gradient_importances)  # shape (num_actions, num_features)
 
 
-            for action_idx in range(shap_values.shape[2]):
-                values = shap_values[:, :, action_idx]
-                shap_importance = np.abs(values).mean(0)
-                grad_importance = gradient_importances[action_idx]
+                for action_idx in range(shap_values.shape[2]):
+                    values = shap_values[:, :, action_idx]
+                    shap_importance = np.abs(values).mean(0)
+                    grad_importance = gradient_importances[action_idx]
 
-                df_compare = pd.DataFrame({
-                    "feature": feature_names,
-                    "SHAP": shap_importance,
-                    "Gradient": grad_importance
-                }).sort_values("SHAP", ascending=False)
+                    df_compare = pd.DataFrame({
+                        "feature": feature_names,
+                        "SHAP": shap_importance,
+                        "Gradient": grad_importance
+                    }).sort_values("SHAP", ascending=False)
 
-                print(f"\n=== Action {action_idx} Feature Importance ===")
-                print(df_compare)
+                    print(f"\n=== Action {action_idx} Feature Importance ===")
+                    print(df_compare)
 
-                # SHAP summary plot
-                fig = plt.figure()
-                shap.summary_plot(values, sample_states, feature_names=feature_names, 
-                                title=f"SHAP Values for Action {action_idx}", show=False)
-                fig.tight_layout()
-                plt.savefig(os.path.join(output_dir, f"summary_action_{action_idx}.pdf"), bbox_inches='tight')
-                plt.close(fig)
-
-                fig = plt.figure()
-                shap_values_obj = shap.Explanation(
-                    values=values,
-                    data=sample_states,
-                    feature_names=feature_names
-                )
-                shap.plots.bar(shap_values_obj, show=False)
-                fig.tight_layout()
-                plt.savefig(os.path.join(output_dir, f"bar_action_{action_idx}.pdf"), bbox_inches='tight')
-                plt.close(fig)
-
-                for feat in shap_values_obj.feature_names:
+                    # SHAP summary plot
                     fig = plt.figure()
-                    shap.plots.scatter(shap_values_obj[:, feat], color=shap_values_obj, show=False)
-                    fig.tight_layout() 
-                    plt.savefig(os.path.join(output_dir, f"scatter_action_{action_idx}_{feat}.pdf"), bbox_inches='tight')
+                    shap.summary_plot(values, sample_states, feature_names=feature_names, 
+                                    title=f"SHAP Values for Action {action_idx}", show=False)
+                    fig.tight_layout()
+                    plt.savefig(os.path.join(output_dir, f"summary_action_{action_idx}.pdf"), bbox_inches='tight')
                     plt.close(fig)
 
-                # Gradient bar plot
-                plt.figure()
-                plt.bar(feature_names, grad_importance)
-                plt.title(f"Gradient-based Feature Importance (Action {action_idx})")
-                plt.ylabel("Mean |∂Q/∂s|")
-                plt.tight_layout()
-                plt.savefig(os.path.join(output_dir, f"grad_bar_action_{action_idx}.pdf"), bbox_inches='tight')
-                plt.close()
+                    fig = plt.figure()
+                    shap_values_obj = shap.Explanation(
+                        values=values,
+                        data=sample_states,
+                        feature_names=feature_names
+                    )
+                    shap.plots.bar(shap_values_obj, show=False)
+                    fig.tight_layout()
+                    plt.savefig(os.path.join(output_dir, f"bar_action_{action_idx}.pdf"), bbox_inches='tight')
+                    plt.close(fig)
 
-            self.env.close()
+                    for feat in shap_values_obj.feature_names:
+                        fig = plt.figure()
+                        shap.plots.scatter(shap_values_obj[:, feat], color=shap_values_obj, show=False)
+                        fig.tight_layout() 
+                        plt.savefig(os.path.join(output_dir, f"scatter_action_{action_idx}_{feat}.pdf"), bbox_inches='tight')
+                        plt.close(fig)
+
+                    # Gradient bar plot
+                    plt.figure()
+                    plt.bar(feature_names, grad_importance)
+                    plt.title(f"Gradient-based Feature Importance (Action {action_idx})")
+                    plt.ylabel("Mean |∂Q/∂s|")
+                    plt.tight_layout()
+                    plt.savefig(os.path.join(output_dir, f"grad_bar_action_{action_idx}.pdf"), bbox_inches='tight')
+                    plt.close()
+
+                self.env.close()
             return
         
             # ===== TEST MODE =====
         else:
-            agent_type = self.agent_name_map.get(type(self.agent), 'Unknown')
 
             if agent_info in ['DQN', 'PPO']:
                 self._build_dqn()
