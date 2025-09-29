@@ -1,6 +1,6 @@
 # Training parameters
 agent_type: "DQN" # "PPO"
-episodes: 100 # 260000 #80000
+episodes: 260000 #80000
 
 # Simulation parameters
 time_horizon: 600 # 78 # 21 # 156 # 78

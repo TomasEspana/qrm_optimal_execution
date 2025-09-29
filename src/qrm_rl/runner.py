@@ -129,7 +129,7 @@ class RLRunner:
             exploration_initial_eps=self.cfg["exploration_initial_eps"],
             exploration_final_eps=self.cfg["exploration_final_eps"],
             exploration_fraction=self.cfg["exploration_fraction"],
-            verbose=2,
+            verbose=0,
             policy_kwargs=policy_kwargs,
             device=self.device,
             n_steps=self.cfg["n_steps"]
@@ -182,7 +182,7 @@ class RLRunner:
             # --- misc ---
             policy_kwargs=policy_kwargs,
             device=self.device,
-            verbose=2,
+            verbose=0,
         )
 
         self.agent = self.model
