@@ -11,7 +11,7 @@ from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import CallbackList
 from wandb.integration.sb3 import WandbCallback
-from qrm_rl.callbacks import InfoLoggerCallback
+from qrm_rl.callbacks import InfoLoggerCallback, StopAfterEpisodes
 import shap
 import pandas as pd
 import os
@@ -25,6 +25,7 @@ class RLRunner:
 
         # Unpack config
         self.cfg = config
+        self.max_episodes = config['max_episodes']
         self.agent_type = config['agent_type'].lower()
         self.mode = config['mode']
         self.test_mode = (self.mode == 'test')
@@ -200,7 +201,7 @@ class RLRunner:
             # ===== TRAIN MODE =====
         if self.mode == 'train':
 
-            if self.agent_type == 'dqn':
+            if self.agent_type == 'ddqn':
                 self._build_dqn()
             elif self.agent_type == 'ppo':
                 self._build_ppo()
@@ -213,14 +214,15 @@ class RLRunner:
 
             callback = CallbackList([
                   WandbCallback(verbose=2,),
-                  InfoLoggerCallback(self.cfg["action_dim"], self.model)
+                  InfoLoggerCallback(self.cfg["action_dim"], self.model),
+                  StopAfterEpisodes(max_episodes=self.max_episodes, verbose=1)
                  ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
             self.model.save(f"/scratch/network/te6653/qrm_optimal_execution/save_model/{self.agent_type}_{self.run_id}.zip")
             wandb.finish()
 
-            if self.agent_type == 'dqn':
+            if self.agent_type == 'ddqn':
 
                 ### Feature importance
                 ## a) SHAP values

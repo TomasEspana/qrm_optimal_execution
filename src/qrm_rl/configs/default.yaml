@@ -1,6 +1,7 @@
 # Training parameters
-agent_type: "DQN" # "PPO"
+agent_type: "DDQN" # "PPO"
 episodes: 260000 #80000
+max_episodes: 425708
 
 # Simulation parameters
 time_horizon: 600 # 78 # 21 # 156 # 78
@@ -19,22 +20,22 @@ history_size: 1
 actions: [0, 1.0] # [0, 0.25, 0.5, 0.75]
 
 # Parameters
-gamma: 1.0
+gamma: 0.995 # 1.0
 learning_rate: 0.0001
-n_steps: 5 # 13
+n_steps: 1 # 13
 
 # DQN parameters
-train_freq: 1
+train_freq: 250 # 1
 gradient_steps: 1
-batch_size: 1024
-learning_starts: 1024
-buffer_size: 300000
+batch_size: 1024 # 256
+learning_starts: 40000 #1024
+buffer_size: 1000000 #300000
 target_update_interval: 5000 # 350
 
 # Epsilon greedy
 exploration_initial_eps: 1.0
-exploration_final_eps: 0.01 # 0.0
-exploration_fraction: 0.03 # 0.1
+exploration_final_eps: 0.01 # 0.08 # 0.0
+exploration_fraction: 0.03 #0.4 #0.03
 
 # Normalization parameters
 price_offset: 0.0177 # 0.025 # 0.
