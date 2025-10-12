@@ -8,16 +8,20 @@ GENERAL DESCRIPTION:
     Set the parameters of a run.
 """
 
-def load_config(time_horizon=None, longest_step=None, nb_steps=None, filename="default.yaml"):
+def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, nb_steps=None, filename="default.yaml"):
 
     # Load base configuration from YAML file
     config_path = os.path.join(os.path.dirname(__file__), filename)
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    # Override time_horizon if provided
+    # Override
     if time_horizon is not None:
         config['time_horizon'] = time_horizon
+    if theta is not None:
+        config['theta'] = theta
+    if theta_r is not None:
+        config['theta_reinit'] = theta_r
 
     # Derived parameters
     config['action_dim'] = len(config['actions'])

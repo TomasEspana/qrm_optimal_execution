@@ -1,4 +1,3 @@
-import pickle 
 import sys
 import os
 import numpy as np 
@@ -20,6 +19,7 @@ GENERAL DESCRIPTION:
     File used to generate the heatmap of mean reversion after buying the best ask
     for different values of theta and theta_reinit in PHYSICAL TIME. 
     This is quite slow to run (much slower than in event time).
+
     The main parameters to set are: 
         - trader_times ([0., 0., 1.0, etc], the two zeros at the beginning to force immediate buy)
         - episodes: number of repetitions for each (theta, theta_reinit) pair

@@ -1,7 +1,7 @@
 # Training parameters
 agent_type: "DDQN" # "PPO"
 episodes: 260000 #80000
-max_episodes: 425708
+max_episodes: 1000000
 
 # Simulation parameters
 time_horizon: 600 # 78 # 21 # 156 # 78
@@ -26,11 +26,11 @@ n_steps: 1 # 13
 
 # DQN parameters
 train_freq: 250 # 1
-gradient_steps: 1
+gradient_steps: 1 # 100
 batch_size: 1024 # 256
 learning_starts: 40000 #1024
 buffer_size: 1000000 #300000
-target_update_interval: 5000 # 350
+target_update_interval: 1000 # 350
 
 # Epsilon greedy
 exploration_initial_eps: 1.0

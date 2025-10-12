@@ -1,11 +1,8 @@
-import pickle 
 import sys
 import os
 import numpy as np 
 from pathlib import Path
 from datetime import datetime
-import gc
-import psutil
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
 
@@ -19,11 +16,13 @@ from qrm_core.intensity import IntensityTable
 
 """ 
 GENERAL DESCRIPTION:
-    File used to generate the heatmap of mean reversion after buying the best ask
+    File used to generate mid price evolution for ONE tuple after buying the best ask
     for different values of theta and theta_reinit in EVENT TIME. 
+    Similar to theory_mr_event_heatmap.py but for ONE SINGLE (theta, theta_reinit).
     This is very quick to run (much quicker than in physical time).
+
     The main parameters to set are: 
-        - max_nb_events: number of events to log after buying the best ask
+        - max_nb_events: number of events to log AFTER buying the best ask
         - episodes: number of repetitions for each (theta, theta_reinit) pair
         - nb_grid: number of points in the grid for theta and theta_reinit (total jobs = nb_grid^2)
         - one_spread: if True, force the initial LOB to have one spread
@@ -35,8 +34,9 @@ GENERAL DESCRIPTION:
 
 def main():
     # ----------------------------
-    max_nb_events = 75
-    episodes = 10000
+
+    max_nb_events = 150
+    episodes = 100000
     nb_grid = 60
     one_spread = False
     thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
@@ -131,7 +131,7 @@ def main():
     # --- Save file ---
     out_dir = Path("/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{episodes}_runs_event_time_long.npz"
+    out_path = out_dir / f"{len_type}_term_market_impact_heatmap.npz"
     np.savez_compressed(out_path, arr=arr_all_runs)
 
     end_time = datetime.now()

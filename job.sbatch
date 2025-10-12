@@ -3,9 +3,9 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=32G
-#SBATCH -t 4:00:00
+#SBATCH -t 12:00:00
 #SBATCH --gres=gpu:1
-#SBATCH --output=logs_rl_runs/8h_30N/log_5_dim_custom_9.txt
+#SBATCH --output=logs_rl_runs/8h_30N/k3631p6d_5_dim_3_actions.txt
 
 module purge
 module load anaconda3/2025.6
