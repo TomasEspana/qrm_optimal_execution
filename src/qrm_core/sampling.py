@@ -99,6 +99,7 @@ def choose_next_event_min(K: int,
     n = rates.shape[0]
     rates_array = rates[:, 0]
     dt_array = np.empty(n)
+    kk = 0
 
     while True:
         # sample dt
@@ -144,6 +145,10 @@ def choose_next_event_min(K: int,
         
         if (best_bid >= 0 and best_ask >= 0) and not skip:
             return best_bid, best_ask, new_state, side_f, depth, evf, t
+        
+        kk += 1
+        if kk > 10:
+            raise ValueError("Unable to sample next event: too many rejections.")
         
 
 
@@ -208,6 +213,7 @@ def choose_next_event_deprecated(K: int,
         count += 1
         if best_bid >= 0 and best_ask >= 0:
             return best_bid, best_ask, new_state, side_f, depth, evf, skip
+    
 
 
 # -----------------------------------------------------------------------------
@@ -246,6 +252,7 @@ def update_LOB(K: int,
         - redrawn: indicator of a full redraw (1: True, 0: False)
     """
     Q = inv_bid.shape[1] - 1
+    kk = 0
 
     while True:
         new_state = state.copy()
@@ -306,3 +313,7 @@ def update_LOB(K: int,
             p_mid = 0.5 * ((new_pref + tick * (best_ask + 0.5)) +  
                            (new_pref - tick * (best_bid + 0.5)))
             return p_mid, new_pref, new_state, redrawn
+        
+        kk += 1
+        if kk > 10:
+            raise ValueError("Unable to update LOB: sampled empty book too many times.")

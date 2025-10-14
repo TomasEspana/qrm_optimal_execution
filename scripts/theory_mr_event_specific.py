@@ -3,6 +3,7 @@ import os
 import numpy as np 
 from pathlib import Path
 from datetime import datetime
+from numba import njit
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
 
@@ -16,8 +17,13 @@ from qrm_core.intensity import IntensityTable
 
 """ 
 GENERAL DESCRIPTION:
-    File used to generate the heatmap of mean reversion after buying the best ask
+
+    HERE WE TRY TO UNDERSTAND WHY PRICES ALWAYS MEAN REVERT ON THE LONG TERM 
+    We anayze how mid price evolves in the middle leaf of Fig. 1
+
+    File used to generate mid price evolution for ONE tuple after buying the best ask
     for different values of theta and theta_reinit in EVENT TIME. 
+    Similar to theory_mr_event_heatmap.py but for ONE SINGLE (theta, theta_reinit).
     This is very quick to run (much quicker than in physical time).
 
     The main parameters to set are: 
@@ -34,22 +40,42 @@ GENERAL DESCRIPTION:
 def main():
     # ----------------------------
 
-    len_type = "short"  # "short" or "long"
-    
-    if len_type == "short":
-        max_nb_events = 1
-        episodes = 20000
-    elif len_type == "long":
-        max_nb_events = 75
-        episodes = 10000
-    else:
-        raise ValueError("len_type must be 'short' or 'long'")
+    leaf = 'middle_leaf' # 'middle_leaf' or 'right_leaf' or 'left_leaf'
+    qrm_type = 'ergodic'  # 'qrm_paper' or 'permanent' or 'test' or 'ergodic'
 
-    nb_grid = 60
-    one_spread = False
-    thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
-    theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
-    arr_all_runs = np.empty((nb_grid, nb_grid, episodes, max_nb_events), dtype=float)
+    if qrm_type == 'qrm_paper':
+        theta = 0.7
+        theta_r = 0.85
+    elif qrm_type == 'permanent':
+        theta = 0.9
+        theta_r = 0.6
+    elif qrm_type == 'ergodic':
+        theta = 0.
+        theta_r = 0.5
+    elif qrm_type == 'test':
+        theta = 0.5
+        theta_r = 0.5
+    else:
+        raise ValueError("qrm_type must be 'qrm_paper' or 'permanent' or 'test' or 'ergodic'")
+    
+    file_prefix = f"{leaf}_{qrm_type}"
+
+    if leaf == 'middle_leaf':
+        theta_first = 1
+        theta_r_first = 0
+    elif leaf == 'right_leaf':
+        theta_first = 0.
+        theta_r_first = 0.5 # anything works
+    elif leaf == 'left_leaf':
+        theta_first = 1.
+        theta_r_first = 1.
+    else:
+        raise ValueError("leaf must be 'middle_leaf' or 'right_leaf' or 'left_leaf'")
+
+    max_nb_events = 1000
+    episodes = 1000000
+    one_spread = True
+    arr_all_runs = np.empty((episodes, max_nb_events), dtype=float)
 
     K = 3
     t0 = 0.
@@ -64,9 +90,7 @@ def main():
     inten_table._data = inten_arr
     rate_int_all = np.transpose(inten_table._data, (2,0,1,3)).copy()
 
-    jobs = [(i, j, theta, theta_r)
-            for i, theta in enumerate(thetas)
-            for j, theta_r in enumerate(theta_reinits)]
+    jobs = [(0, 0, theta, theta_r)]
 
     total = len(jobs)
     done = 0
@@ -104,8 +128,9 @@ def main():
                 if ask_idx is None:
                     raise ValueError("Sampled empty LOB")
                 lob0[ask_idx] = 0 # buy best ask
+                # middle leaf corresponds to theta=1 and theta_r=0
                 new_pmid, new_pref, state, redrawn = update_LOB( K, p_ref, lob0, 1,
-                                                              theta, theta_r, tick,
+                                                              theta_first, theta_r_first, tick,
                                                               inv_bid, inv_ask, aes)
                 
                     
@@ -125,7 +150,7 @@ def main():
                                                                                             max_nb_events=max_nb_events
                                                                                             )
 
-                arr_all_runs[i,j,l,:] = p_mids
+                arr_all_runs[l,:] = p_mids
 
             done += 1
             print(f"✓ [{k}/{total}] Finished (i={i}, j={j}, θ={theta:.4f}, θ_r={theta_r:.4f})", flush=True)
@@ -139,9 +164,11 @@ def main():
             print(f"Progress: {done}/{total} ({pct:.2f}%) | Failures: {failures}", flush=True)
     
     # --- Save file ---
+    # Average across episodes
+    arr_all_runs = np.mean(arr_all_runs, axis=0)
     out_dir = Path("/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{len_type}_term_market_impact_heatmap.npz"
+    out_path = out_dir / f"{file_prefix}_market_impact.npz"
     np.savez_compressed(out_path, arr=arr_all_runs)
 
     end_time = datetime.now()
@@ -152,4 +179,9 @@ def main():
 
 
 if __name__ == "__main__":
+    np.random.seed(2025)
+    @njit
+    def _init_numba(seed): np.random.seed(seed)
+    _init_numba(2025)
+
     main()

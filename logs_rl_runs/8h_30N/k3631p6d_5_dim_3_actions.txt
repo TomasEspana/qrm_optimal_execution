@@ -1,0 +1,71 @@
+START Sun Oct 12 11:19:01 PM EDT 2025 on adroit-h11g3
+SLURM_JOBID=2669976 NODES=1 TASKS=1
+wandb: Tracking run with wandb version 0.21.4
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /scratch/network/te6653/qrm_optimal_execution/wandb_runs/2669976/wandb/offline-run-20251012_231908-lap51s8c
+RUNNING ON DEVICE: cuda
+ 100% ━━━━━━━━━━━━━━━━━━━━ 6,240,000/6,240,000  [ 2:38:27 < 0:00:00 , 653 it/s ]
+wandb: 
+wandb: Run history:
+wandb:                   Action Index ██▁█▁█▅▅▁▁▁▁▁▁█▁▁██▁▁█▅▁█▁▅▅▅▅▁▁▁▁█▁▁▁▁▅
+wandb:                 Action_0_count █▁▃▃▃▄▄▄▅▄▂▄▃▂▃▃▃▂▂▄▃▄▃▆▆▅▆▃▆▇▆▄▃▆▄▅▄▂▄▅
+wandb:                 Action_1_count ▃▁▃▁▂██▂▃▁▂▂▆▅▁▅▂▃▁▂▂▂▂▂▁▂▃▁▆▅▁▅▅▂▃▂▃▁▁▁
+wandb:                 Action_2_count ▃▂▂█▁▂▂▄▆▄▃▂▂▄▂▂▅▃▅▅▄▃▃▅▄▁▃▄▁▄▂▃▃▃▄▂▂▅▂▄
+wandb:                      Ask Price ▆█▅▃▄▄▄▄▆▃▂▅▅▂▄▆▂▆▄▆▄▂▄▄▄▄▂▄▃▃▃▃▂▄▂▄▃▆▁▂
+wandb:                Best Ask Volume ▃▁▃▃▅▂▃▁▅▄▇▁▅▁▄▅▇▂▃▃▃▁▁▇▃▅▅▂▅▁▅▂█▂▇▂▁▂▁▅
+wandb:                        Episode ▁▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▃▃▃▄▄▄▄▄▅▅▆▆▆▇▇▇▇▇█████
+wandb:                 Episode Length ▁▄█▁▃▅▁▄▃▄▃▄▆▄▃▃▁▅▂▆▃▂▄▄▄▆▆▅▅▇▄▃▇▄▃▃▄▃▄█
+wandb:                       Executed ▇▁▅▅█▁▁▂█▆▁▁▂▁▄▅▁▁▁▁▁▆▁▁▁▄▁▆▁▁▂▁▁▁▁▅▁▁▁▁
+wandb: Final Implementation Shortfall ▅▇▆▆▆█▆▅▃▇▅▁▅▅▆▆▃▅▆▄█▆▇▅▆▇▆█▄▇▃▇█▅▄▅▆▆█▆
+wandb:                            +16 ...
+wandb: 
+wandb: Run summary:
+wandb:                   Action Index 0
+wandb:                 Action_0_count 15
+wandb:                 Action_1_count 2
+wandb:                 Action_2_count 3
+wandb:                      Ask Price 100.07
+wandb:                Best Ask Volume 15
+wandb:                        Episode 420812
+wandb:                 Episode Length 20
+wandb:                       Executed 0
+wandb: Final Implementation Shortfall -0.305
+wandb:                            +16 ...
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /scratch/network/te6653/qrm_optimal_execution/wandb_runs/2669976/wandb/offline-run-20251012_231908-lap51s8c
+wandb: Find logs at: /scratch/network/te6653/qrm_optimal_execution/wandb_runs/2669976/wandb/offline-run-20251012_231908-lap51s8c/logs
+Using 500 background data samples could cause slower run times. Consider using shap.sample(data, K) or shap.kmeans(data, K) to summarize the background as K samples.
+Saved SHAP data to /scratch/network/te6653/qrm_optimal_execution/shap_plots/lap51s8c/shap_data.npz
+  0%|          | 0/200 [00:00<?, ?it/s]  8%|▊         | 17/200 [00:00<00:01, 162.60it/s] 17%|█▋        | 34/200 [00:00<00:01, 164.67it/s] 26%|██▌       | 51/200 [00:00<00:00, 165.86it/s] 34%|███▍      | 68/200 [00:00<00:00, 166.42it/s] 42%|████▎     | 85/200 [00:00<00:00, 167.05it/s] 51%|█████     | 102/200 [00:00<00:00, 167.44it/s] 60%|█████▉    | 119/200 [00:00<00:00, 167.77it/s] 68%|██████▊   | 136/200 [00:00<00:00, 167.50it/s] 76%|███████▋  | 153/200 [00:00<00:00, 167.47it/s] 85%|████████▌ | 170/200 [00:01<00:00, 167.15it/s] 94%|█████████▎| 187/200 [00:01<00:00, 166.96it/s]100%|██████████| 200/200 [00:01<00:00, 166.83it/s]
+/home/te6653/research/qrm_optimal_execution/src/qrm_rl/runner.py:292: FutureWarning: The NumPy global RNG was seeded by calling `np.random.seed`. In a future version this function will no longer use the global RNG. Pass `rng` explicitly to opt-in to the new behaviour and silence this warning.
+  shap.summary_plot(values, sample_states, feature_names=feature_names,
+/home/te6653/research/qrm_optimal_execution/src/qrm_rl/runner.py:292: FutureWarning: The NumPy global RNG was seeded by calling `np.random.seed`. In a future version this function will no longer use the global RNG. Pass `rng` explicitly to opt-in to the new behaviour and silence this warning.
+  shap.summary_plot(values, sample_states, feature_names=feature_names,
+/home/te6653/research/qrm_optimal_execution/src/qrm_rl/runner.py:292: FutureWarning: The NumPy global RNG was seeded by calling `np.random.seed`. In a future version this function will no longer use the global RNG. Pass `rng` explicitly to opt-in to the new behaviour and silence this warning.
+  shap.summary_plot(values, sample_states, feature_names=feature_names,
+
+=== Action 0 Feature Importance ===
+      feature      SHAP  Gradient
+2   ask price  0.263733  0.336246
+0   inventory  0.211218  0.399459
+3  ask volume  0.038821  0.073108
+1        time  0.027787  0.101905
+4  bid volume  0.026499  0.060266
+
+=== Action 1 Feature Importance ===
+      feature      SHAP  Gradient
+2   ask price  0.270528  0.344247
+0   inventory  0.192374  0.373934
+3  ask volume  0.039383  0.074540
+4  bid volume  0.020368  0.050648
+1        time  0.015763  0.074384
+
+=== Action 2 Feature Importance ===
+      feature      SHAP  Gradient
+2   ask price  0.271148  0.345071
+0   inventory  0.213256  0.407262
+3  ask volume  0.036352  0.069475
+4  bid volume  0.011162  0.035126
+1        time  0.009567  0.062135
+END Mon Oct 13 01:57:51 AM EDT 2025

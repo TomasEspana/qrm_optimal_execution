@@ -35,13 +35,24 @@ GENERAL DESCRIPTION:
 def main():
     # ----------------------------
 
-    max_nb_events = 150
-    episodes = 100000
-    nb_grid = 60
-    one_spread = False
-    thetas = np.linspace(0.5, 1.0, nb_grid, dtype=float)
-    theta_reinits = np.linspace(0.5, 1.0, nb_grid, dtype=float)
-    arr_all_runs = np.empty((nb_grid, nb_grid, episodes, max_nb_events), dtype=float)
+    file_prefix = 'test' # 'qrm_paper' or 'permanent'
+
+    if file_prefix == 'qrm_paper':
+        theta = 0.7
+        theta_r = 0.85
+    elif file_prefix == 'permanent':
+        theta = 0.9
+        theta_r = 0.6
+    elif file_prefix == 'test':
+        theta = 0.7
+        theta_r = 0.85
+    else:
+        raise ValueError("file_prefix must be 'qrm_paper' or 'permanent'")
+
+    max_nb_events = 1000
+    episodes = 1000000
+    one_spread = True
+    arr_all_runs = np.empty((episodes, max_nb_events), dtype=float)
 
     K = 3
     t0 = 0.
@@ -56,9 +67,7 @@ def main():
     inten_table._data = inten_arr
     rate_int_all = np.transpose(inten_table._data, (2,0,1,3)).copy()
 
-    jobs = [(i, j, theta, theta_r)
-            for i, theta in enumerate(thetas)
-            for j, theta_r in enumerate(theta_reinits)]
+    jobs = [(0, 0, theta, theta_r)]
 
     total = len(jobs)
     done = 0
@@ -81,8 +90,10 @@ def main():
                         lob0[:K]   = sample_stationary_lob(inv_bid, np.empty((0,), np.int8))
                         lob0[K:] = sample_stationary_lob(inv_ask, np.empty((0,), np.int8))
                         bid_idx = next((i for i in range(K) if lob0[i]>0), None)
-                        ask_idx = next((i for i in range(K, 2*K) if lob0[i]>0), None)
-                        if bid_idx is not None and ask_idx is not None and (ask_idx - bid_idx) == K:
+                        nz = np.flatnonzero(lob0[K:])
+                        ask_idx = K + nz[0] if len(nz) > 0 else None
+                        ask_idx_second = K + nz[1] if len(nz) > 1 else None
+                        if bid_idx == 0 and ask_idx == K and ask_idx_second == (K+1):
                             break
                 
                 else:
@@ -94,6 +105,7 @@ def main():
                 if ask_idx is None:
                     raise ValueError("Sampled empty LOB")
                 lob0[ask_idx] = 0 # buy best ask
+                # middle leaf corresponds to theta=1 and theta_r=0
                 new_pmid, new_pref, state, redrawn = update_LOB( K, p_ref, lob0, 1,
                                                               theta, theta_r, tick,
                                                               inv_bid, inv_ask, aes)
@@ -115,7 +127,7 @@ def main():
                                                                                             max_nb_events=max_nb_events
                                                                                             )
 
-                arr_all_runs[i,j,l,:] = p_mids
+                arr_all_runs[l,:] = p_mids
 
             done += 1
             print(f"✓ [{k}/{total}] Finished (i={i}, j={j}, θ={theta:.4f}, θ_r={theta_r:.4f})", flush=True)
@@ -129,9 +141,11 @@ def main():
             print(f"Progress: {done}/{total} ({pct:.2f}%) | Failures: {failures}", flush=True)
     
     # --- Save file ---
+    # Average across episodes
+    arr_all_runs = np.mean(arr_all_runs, axis=0)
     out_dir = Path("/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{len_type}_term_market_impact_heatmap.npz"
+    out_path = out_dir / f"{file_prefix}_market_impact.npz"
     np.savez_compressed(out_path, arr=arr_all_runs)
 
     end_time = datetime.now()

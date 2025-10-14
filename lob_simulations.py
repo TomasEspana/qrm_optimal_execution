@@ -135,8 +135,10 @@ if __name__ == "__main__":
                 state[:K]   = sample_stationary_lob(inv_bid, np.empty((0,), np.int8))
                 state[K:] = sample_stationary_lob(inv_ask, np.empty((0,), np.int8))
                 bid_idx = next((i for i in range(K) if state[i]>0), None)
-                ask_idx = next((i for i in range(K, 2*K) if state[i]>0), None)
-                if bid_idx is not None and ask_idx is not None and (ask_idx - bid_idx) == K:
+                nz = np.flatnonzero(state[K:])
+                ask_idx = K + nz[0] if len(nz) > 0 else None
+                ask_idx_second = K + nz[1] if len(nz) > 1 else None
+                if bid_idx == 0 and ask_idx == K and ask_idx_second == (K+1):
                     break
 
         else:

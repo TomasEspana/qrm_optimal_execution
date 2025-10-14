@@ -63,8 +63,10 @@ class QueueReactiveMarketSimulator:
                 lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
                 lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
                 bid_idx = next((i for i in range(self.K) if lob0[i]>0), None)
-                ask_idx = next((i for i in range(self.K, 2*self.K) if lob0[i]>0), None)
-                if bid_idx is not None and ask_idx is not None and (ask_idx - bid_idx) == self.K:
+                nz = np.flatnonzero(lob0[self.K:])
+                ask_idx = self.K + nz[0] if len(nz) > 0 else None
+                ask_idx_second = self.K + nz[1] if len(nz) > 1 else None
+                if bid_idx == 0 and ask_idx == self.K and ask_idx_second == (self.K+1):
                     break
         
         else:
