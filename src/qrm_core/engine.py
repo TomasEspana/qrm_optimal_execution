@@ -41,6 +41,7 @@ def simulate_QRM_jit(time: float,
                      max_nb_events=np.nan
                     ):
     
+
     K, Q1 = rate_int_all.shape[1:3]
     Q = Q1 - 1
     t = time
@@ -112,6 +113,7 @@ def simulate_QRM_jit(time: float,
 
         p_mid_old = new_pmid
         count += 1
+
 
     
     return (times[:count], p_mids[:count], p_refs[:count],

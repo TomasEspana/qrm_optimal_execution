@@ -16,7 +16,7 @@ if __name__ == "__main__":
     config['test_save_memory'] = True
 
     ### ----------------------###
-    train_run_id = 'ag9nxmfw'
+    train_run_id = 'lap51s8c'
     config['episodes'] = 20_000
     ### ----------------------###
 
@@ -27,11 +27,11 @@ if __name__ == "__main__":
     actions = runner.cfg['actions']
 
 
-    ### === DDQN Agent Testing === ###
-    runner = RLRunner(config, load_model_path=f'/scratch/network/te6653/qrm_optimal_execution/save_model/ddqn_{train_run_id}.zip')
-    dic, run_id = runner.run(agent_info='DQN')
-    with open(f'/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
-        pickle.dump(dic, f)
+    # ### === DDQN Agent Testing === ###
+    # runner = RLRunner(config, load_model_path=f'/scratch/network/te6653/qrm_optimal_execution/save_model/ddqn_{train_run_id}.zip')
+    # dic, run_id = runner.run(agent_info='DQN')
+    # with open(f'/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries/ddqn_{train_run_id}.pkl', 'wb') as f:
+    #     pickle.dump(dic, f)
 
     # # ### === Front Load Agent Testing === ###
     # runner = RLRunner(config)
@@ -40,6 +40,32 @@ if __name__ == "__main__":
     # dic, run_id = runner.run()
     # with open(f'/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries/front_load_{train_run_id}.pkl', 'wb') as f:
     #     pickle.dump(dic, f)
+
+    # ### === Front Load Agent Testing === ###
+    runner = RLRunner(config)
+    agent = FrontLoadAgent(fixed_action=1)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries/front_load_half_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
+
+    ## === Best Volume - Agent Testing === ###
+    mod = 2
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=1, modulo=mod)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries/best_volume_half_{mod}_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
+
+    ## === Best Volume - Agent Testing === ###
+    mod = 3
+    runner = RLRunner(config)
+    agent = BestVolumeAgent(fixed_action=1, modulo=mod)
+    runner.agent = agent
+    dic, run_id = runner.run()
+    with open(f'/scratch/network/te6653/qrm_optimal_execution/data_wandb/dictionaries/best_volume_half_{mod}_{train_run_id}.pkl', 'wb') as f:
+        pickle.dump(dic, f)
 
 
     # ## === Best Volume - Agent Testing === ###

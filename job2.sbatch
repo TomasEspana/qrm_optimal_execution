@@ -5,7 +5,7 @@
 #SBATCH --mem-per-cpu=32G
 #SBATCH -t 12:00:00
 #SBATCH --gres=gpu:1
-#SBATCH --output=logs/relative_heatmap/test.txt
+#SBATCH --output=logs_runs/relative_heatmap/test.txt
 
 module purge
 module load anaconda3/2025.6
