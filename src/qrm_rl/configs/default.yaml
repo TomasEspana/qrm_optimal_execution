@@ -17,7 +17,7 @@ len_state_lob: 3
 history_size: 1
 
 # Action space
-actions: [0, 0.5, 1.0] # [0, 0.25, 0.5, 0.75]
+actions: [0, 1.0] # [0, 0.25, 0.5, 0.75]
 
 # Parameters
 gamma: 0.995 # 1.0
