@@ -2,23 +2,23 @@
 
 ## 🚀 Setup Instructions
 
-### 1. Clone the repository
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/espanato/qrm_optimal_execution.git
 cd qrm_optimal_execution
 ```
 
-### 2. Create the virtual environment and install dependencies
+### 2. Virtual env dependencies
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate # or .venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 3. Run the `scripts\run_train.py` file and have fun!
+### 3. Run `scripts\run_train.py` and have fun!
 
 ---
 
