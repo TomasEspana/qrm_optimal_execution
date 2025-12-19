@@ -1,4 +1,4 @@
-# qrm_optimal_execution
+# RL for optimal execution in Queue-Reactive Models
 
 ## 🚀 Setup Instructions
 
@@ -9,7 +9,7 @@ git clone https://github.com/espanato/qrm_optimal_execution.git
 cd qrm_optimal_execution
 ```
 
-### 2. Virtual env dependencies
+### 2. Virtual env and dependencies
 
 ```bash
 python3 -m venv .venv
