@@ -1,4 +1,6 @@
-# RL for optimal execution in Queue-Reactive Models
+# RL for Optimal Execution in Queue-Reactive Models
+
+Code used in the paper: [![arXiv](https://img.shields.io/badge/arXiv-2511.15262-b31b1b.svg)](https://arxiv.org/abs/2511.15262)
 
 ## 🚀 Setup Instructions
 
