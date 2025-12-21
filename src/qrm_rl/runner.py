@@ -227,7 +227,7 @@ class RLRunner:
 
                 ### Feature importance
                 ## a) SHAP values
-                base_output_dir = "/scratch/network/te6653/qrm_optimal_execution/shap_plots"
+                base_output_dir = "./shap_plots"
                 os.makedirs(base_output_dir, exist_ok=True)
                 output_dir = os.path.join(base_output_dir, self.run_id)
                 os.makedirs(output_dir, exist_ok=True)

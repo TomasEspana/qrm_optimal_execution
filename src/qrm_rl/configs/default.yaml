@@ -1,6 +1,6 @@
 # Training parameters
 agent_type: "DDQN"
-episodes: 1000 #260000.  ### MODIFYYYYYYYY
+episodes: 100 #260000.  ### MODIFYYYYYYYY
 max_episodes: 1000000
 
 # Simulation parameters
