@@ -196,6 +196,8 @@ class RLRunner:
     def run(self, agent_info=None):
 
         print('RUNNING ON DEVICE:', self.device)
+        if self.device == 'cpu':
+            print("WARNING: Default device is GPU. Check CUDA availability.")
         
             # ===== TRAIN MODE =====
         if self.mode == 'train':

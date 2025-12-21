@@ -1,6 +1,6 @@
 # Training parameters
 agent_type: "DDQN"
-episodes: 260000 #260000
+episodes: 1000 #260000.  ### MODIFYYYYYYYY
 max_episodes: 1000000
 
 # Simulation parameters
@@ -28,7 +28,7 @@ n_steps: 1
 train_freq: 100 
 gradient_steps: 1
 batch_size: 1024
-learning_starts: 40000 
+learning_starts: 10 #40000  ### MODIFYYYYYYYY
 buffer_size: 1000000
 target_update_interval: 1000
 

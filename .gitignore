@@ -1,10 +1,2 @@
 .venv
-save_model
 wandb
-data_wandb
-shap_plots
-test_pole.py
-sb3_tensorboard
-plots
-logs_runs
-mid_price_simulations
