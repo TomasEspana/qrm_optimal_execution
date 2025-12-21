@@ -56,5 +56,5 @@ mode: train
 seed: 42
 logging: True
 logging_every: 100
-folder_path_intensity_table: "calibration_data/intensity_table/"
-folder_path_invariant: "calibration_data/invariant_distribution/"
+folder_path_intensity_table: "calibration_data/"
+folder_path_invariant: "calibration_data/"

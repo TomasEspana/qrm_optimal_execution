@@ -49,12 +49,8 @@ def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, 
         config['max_events'] = int((2 + config['time_horizon'] // config['trader_time_step']) * config['max_events_intra'])
     
     # Data files for intensities and invariant distributions
-    config['file_name'] = 'qrm_paper.npy'     # 'aapl_corrected.npy'
-    config['file_name_bid'] = 'qrm_paper.npy' # 'aapl_corrected.npy'
-    config['file_name_ask'] = 'qrm_paper.npy' # 'aapl_corrected.npy'
-
-    # Deprecated parameters
-    config['proba_0'] = 1 / len(config['actions'])
-    config['alpha_ramp'] = 15
+    config['file_name'] = 'intensity_table.npy'     
+    config['file_name_bid'] = 'invariant_distribution.npy'
+    config['file_name_ask'] = 'invariant_distribution.npy'
 
     return config
