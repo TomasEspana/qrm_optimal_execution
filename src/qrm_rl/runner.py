@@ -220,7 +220,7 @@ class RLRunner:
                  ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
-            self.model.save(f"/scratch/network/te6653/qrm_optimal_execution/save_model/{self.agent_type}_{self.run_id}.zip")
+            self.model.save(f"./save_model/{self.agent_type}_{self.run_id}.zip")
             wandb.finish()
 
             if self.agent_type == 'ddqn':
