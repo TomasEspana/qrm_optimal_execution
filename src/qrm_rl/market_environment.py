@@ -33,7 +33,6 @@ class MarketEnvironment:
         max_events: int, 
         max_events_intra: int, 
         history_size: int, 
-        alpha_ramp: float, 
         basic_state: bool, 
         len_basic_state: int,
         aes: list, 
@@ -54,7 +53,6 @@ class MarketEnvironment:
         self.final_penalty     = final_penalty
         self.risk_aversion     = risk_aversion
         self.history_size      = history_size
-        self.alpha_ramp        = alpha_ramp
         self.basic_state       = basic_state
         self.len_basic_state   = len_basic_state
         self.aes               = aes
@@ -272,7 +270,7 @@ class MarketEnvironment:
         self.final_is  += reward
 
         # risk aversion term
-        rat = self.risk_aversion * self.current_inventory / self.initial_inventory # * self.exponential_ramp(nxt, self.time_horizon, self.alpha_ramp)
+        rat = self.risk_aversion * self.current_inventory / self.initial_inventory
         reward -= rat
         self.risk_aversion_term = rat
 
