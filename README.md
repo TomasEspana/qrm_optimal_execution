@@ -1,6 +1,6 @@
 # RL for Optimal Execution in Queue-Reactive Models
 
-Code used in our paper: [![arXiv](https://img.shields.io/badge/arXiv-2511.15262-b31b1b.svg)](https://arxiv.org/abs/2511.15262)
+Code used in our paper: [![arXiv](https://img.shields.io/badge/arXiv-2511.15262-b31b1b.svg)](https://arxiv.org/abs/2511.15262) T. Espana, 
 
 ## 📄 Abstract
 
@@ -18,15 +18,19 @@ cd qrm_optimal_execution
 ### 2. Virtual env and dependencies
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate # or .venv\Scripts\activate
+python -m venv .venv
+# macOS / Linux
+source .venv/bin/activate
+# Windows (PowerShell)
+# .\.venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 ### 3. See the quick guide below and have fun!
 
 
-## 🚀 The Queue-Reactive Model 
+## 📊 The Queue-Reactive Model 
 
 The Queue-Reactive Model corresponds to Model I of the paper: [![arXiv](https://img.shields.io/badge/arXiv-1312.0563-b31b1b.svg)](https://arxiv.org/abs/1312.0563)

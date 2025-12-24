@@ -108,12 +108,6 @@ class RLRunner:
             net_arch=[30, 30, 30, 30, 30], 
             activation_fn=nn.LeakyReLU,
             )
-
-        def exp_decay_schedule(lr_start: float, lr_end: float):
-            ratio = lr_end / lr_start
-            def lr_fn(progress_remaining: float) -> float:
-                return lr_start * (ratio ** (1.0 - progress_remaining))
-            return lr_fn
         
         self.model = DQN(
             policy='MlpPolicy',
