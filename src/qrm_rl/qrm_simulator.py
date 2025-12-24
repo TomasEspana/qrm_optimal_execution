@@ -58,7 +58,7 @@ class QueueReactiveMarketSimulator:
         lob0 = np.empty(2*self.K, np.int8)
         one_spread = False
         
-        if one_spread: # force one spread
+        if one_spread: # force one tick spread
             while True:
                 lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
                 lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
@@ -70,7 +70,7 @@ class QueueReactiveMarketSimulator:
                     break
         
         else:
-            lob0[:self.K]   = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
+            lob0[:self.K] = sample_stationary_lob(self.inv_bid, np.empty((0,), np.int8))
             lob0[self.K:] = sample_stationary_lob(self.inv_ask, np.empty((0,), np.int8))
 
         # identify best bid and ask

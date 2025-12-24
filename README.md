@@ -34,3 +34,7 @@ python -m pip install -e .
 ## 📊 The Queue-Reactive Model 
 
 The Queue-Reactive Model corresponds to Model I of the paper: [![arXiv](https://img.shields.io/badge/arXiv-1312.0563-b31b1b.svg)](https://arxiv.org/abs/1312.0563)
+
+<p align="center">
+  <img src="img/lob_simulation.png" alt="Figure caption" width="600">
+</p>
