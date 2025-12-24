@@ -61,5 +61,6 @@ The queue sizes are expressed in Average Event Size (AES) units (see QRM paper f
 
 **Example:**
 
-In the red-highlighted row, we have an `ask` **cancel** at `depth = 1` (best ask) occurring at `time = 0.006905`.
+In the red-highlighted row, we have an `ask` **cancel** at `depth = 1` occurring at `time = 0.006905`.
 You can verify its effect by comparing the queue sizes with the previous row: `q_ask1` decreases from `3` to `2`, while other queues (and prices) remain unchanged.
+
