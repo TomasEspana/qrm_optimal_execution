@@ -5,7 +5,7 @@ from math import isnan
 from .sampling import choose_next_event_min, update_LOB
 
 """  
-    Simulate the QRM model on [0, time_end] using Numba. All the events are stored in arrays.
+    Simulate the QRM model on [0, time_end] or a maximum number of events in the LOB. All the events are stored in arrays.
     The function returns the arrays of: 
         - times
         - mid prices
