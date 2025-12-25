@@ -4,7 +4,7 @@ from .intensity import IntensityTable
 def compute_invariant_distribution(
         side: float,
         intensity_table: IntensityTable,
-        dump_path: str
+        dump_path='invariant_distribution.npy'
     ):
     """
         Compute and save the invariant distributions π_i for each depth i.
@@ -33,7 +33,7 @@ def compute_invariant_distribution(
     all_pi = np.zeros((K, Q + 1)) # invariant distribution for each depth           
 
     for i in range(K):
-        # Arrival/departure ratio vector \rho_i
+        # Arrival/departure ratio vector ρ_i (see paper)
         lamL = intensities[i][:-1, type_to_index['limit']]
         lamC = intensities[i][1:, type_to_index['cancel']]
         lamM = intensities[i][1:, type_to_index['market']]
@@ -47,7 +47,7 @@ def compute_invariant_distribution(
         pi /= np.sum(pi)                   
         all_pi[i] = pi
 
-    folder_path = 'calibration_data/invariant_distribution/'
+    folder_path = 'calibration_data/'
     if side in ['bid', 'ask']:
         file_path = dump_path[:-4] + '_' + side + dump_path[-4:]
         np.save(folder_path + file_path, all_pi)
