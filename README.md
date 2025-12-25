@@ -74,9 +74,9 @@ You can verify its effect by comparing the queue sizes with the previous row: `q
 
 Save the intensities $`\lambda_i^{\{L, C, M\}}(q_i)`$ in a numpy array (`calibration_data/intensity_table.npy`) of shape $`(K, Q+1, 2, 3)`$ where $K$ is the depth of the LOB (here, $K=3$); $Q$ the maximum queue size (here, $Q=50$); shape `2` is for the book sides (1:`bid` and 2:`ask`) and shape `3` is for the event types (1: `limit`, 2: `cancel`, 3: `market`). For more details, see `src/qrm_core/intensity.py`.
 
-<ins>Note</ins>: bid ask asymmetry allowed, code is adapted for two invariant distributions but is it adapted for two intensities ? dont think so....
+<ins>Note:</ins> bid ask asymmetry allowed, code is adapted for two invariant distributions but is it adapted for two intensities ? dont think so....
 
-**Invariant Distribution:**
+<ins>**Invariant Distribution:**</ins>
 
 Run the function in `src/qrm_core/invariant_distribution.py` which will create and save the `.npy` file of the invariant distribution in the folder `calibration_data`. 
 
