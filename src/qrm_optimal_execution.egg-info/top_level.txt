@@ -1,2 +1,0 @@
-qrm_core
-qrm_rl
