@@ -35,7 +35,7 @@ python -m pip install -e .
 
 The implemented Queue-Reactive Model corresponds to Model I of the paper: [![arXiv](https://img.shields.io/badge/arXiv-1312.0563-b31b1b.svg)](https://arxiv.org/abs/1312.0563)
 
-    ### 1. Quick Guide 
+### 1. Quick Guide 
 
 See `notebooks/main.ipynb` (Section I) for a step-by-step walkthrough of running QRM LOB simulations, as illustrated below.
 
@@ -74,7 +74,7 @@ You can verify its effect by comparing the queue sizes with the previous row: `q
 
 Save the intensities $`\lambda_i^{\{L, C, M\}}(q_i)`$ in a numpy array (`calibration_data/intensity_table.npy`) of shape $`(K, Q+1, 2, 3)`$ where $K$ is the depth of the LOB (here, $K=3$); $Q$ the maximum queue size (here, $Q=50$); shape `2` is for the book sides (1:`bid` and 2:`ask`) and shape `3` is for the event types (1: `limit`, 2: `cancel`, 3: `market`). For more details, see `src/qrm_core/intensity.py`.
 
-Note: bid ask asymmetry allowed, code is adapted for two invariant distributions but is it adapted for two intensities ? dont think so....
+<u>Note</u>: bid ask asymmetry allowed, code is adapted for two invariant distributions but is it adapted for two intensities ? dont think so....
 
 **Invariant Distribution:**
 
