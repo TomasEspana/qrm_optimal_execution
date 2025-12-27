@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 
 from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
-from qrm_rl.agents.benchmark_strategies import TWAPAgent, BestVolumeAgent
+from qrm_rl.agents.benchmark_strategies import TWAPAgent, POPV
 
 if __name__ == "__main__":
 
@@ -44,11 +44,8 @@ if __name__ == "__main__":
     for k in range(1, 5):
         action_idx = -1 # biggest action (full buy)
         runner = RLRunner(config)
-        agent = BestVolumeAgent(fixed_action=action_idx, modulo=k)
+        agent = POPV(fixed_action=action_idx, modulo=k)
         runner.agent = agent
         dic, run_id = runner.run()
         with open(f'./test_data/popv{k}_{train_run_id}.pkl', 'wb') as f:
             pickle.dump(dic, f)
-
-            # volume half with action_idx = 1
-            # rename to POPV agent
