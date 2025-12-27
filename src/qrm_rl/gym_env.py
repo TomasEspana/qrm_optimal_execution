@@ -8,7 +8,7 @@ from .market_environment import MarketEnvironment
 
 class QRMEnv(gym.Env):
     """
-        Gym wrapper for the Queue Reactive Model market environment.
+        Gym wrapper for the QRM market environment.
     """
     metadata = {"render_modes": ["human"]}
 
@@ -45,6 +45,7 @@ class QRMEnv(gym.Env):
         **kwargs
     ):
         super().__init__()
+
         # Initialize the underlying market environment
         self._env = MarketEnvironment(
             intensity_table=intensity_table,
@@ -74,7 +75,7 @@ class QRMEnv(gym.Env):
             event_time=event_time
         )
 
-        # Define action and observation spaces
+        # Action and observation spaces
         self.action_space = spaces.Discrete(action_dim)
         self.observation_space = spaces.Box(
             low=-np.inf,
@@ -83,7 +84,7 @@ class QRMEnv(gym.Env):
             dtype=np.float32
         )
 
-        self._executed = _executed  # for the agents: either number of shares to execute or the index of the selected action
+        self._executed = _executed # If True, actions represent action indices, else the number of shares to execute.
 
     def reset(self, *, seed=None, options=None):
         """
@@ -103,7 +104,7 @@ class QRMEnv(gym.Env):
             Simulate one step in the environment.
 
         Input:
-            - action (int): action index or number of shares to execute (if _executed=True)
+            - action (int): action index (if _executed=True), else the number of shares to execute
 
         Outputs:
             - obs (np.ndarray): next state vector
@@ -115,10 +116,10 @@ class QRMEnv(gym.Env):
         best_ask_volume = next(x for x in ask_volumes if x != 0)
         bid_volumes = self._env.simulator.states[self._env.simulator.step - 1, :self._env.simulator.K]
         best_bid_volume = next(x for x in bid_volumes if x != 0)
-        if not self._executed:
-            action_val = round(self._env.actions[action] * best_ask_volume)
-        else:
+        if self._executed:
             action_val = action
+        else:
+            action_val = round(self._env.actions[action] * best_ask_volume)
 
         next_state, reward, done, executed, total_ask = self._env.step(action_val)
         obs = self._env.state_to_vector(next_state).astype(np.float32)
@@ -141,6 +142,7 @@ class QRMEnv(gym.Env):
             "final_penalty_coeff": self._env.final_penalty
         }
         return obs, reward, done, False, info
+    
 
     def close(self):
         """

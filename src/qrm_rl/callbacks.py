@@ -51,7 +51,7 @@ class InfoLoggerCallback(BaseCallback):
                 "Final Penalty": info['final_penalty_coeff'] * info['inventory'],
             }
 
-            # Reset EPISODE metrics
+            # Reset episode metrics
             self.episode_length = 0
             self.episode_reward = 0.
             self.episode_is = 0.
@@ -61,7 +61,7 @@ class InfoLoggerCallback(BaseCallback):
         else:
             log_dict = {}
         
-        # Log STEP metrics
+        # Log step metrics
         log_dict.update({
             "Implementation Shortfall": info["implementation_shortfall"],
             "Inventory": info['inventory'],
@@ -90,7 +90,6 @@ class InfoLoggerCallback(BaseCallback):
         ]
         payload = {k: float(v) for k, v in name_to_val.items() if k in keys}
 
-        # DQN TD loss may also appear here (aggregate over last update)
         if "train/loss" in name_to_val:
             payload["train/td_loss"] = float(name_to_val["train/loss"])
         if payload:
