@@ -1,5 +1,9 @@
 import torch
 
+"""
+    GENERAL DESCRIPTION:
+        Utility functions for saving and loading RL agent models.
+"""
 
 def save_model(agent, path):
     torch.save({
@@ -29,41 +33,3 @@ def load_model(agent, path, test_mode=False):
             agent.policy_net.eval()
             agent.target_net.eval()
             agent.epsilon = 0.0
-
-
-
-### --- Not used at the moment --- ###
-
-def generate_boundary_episodes(env, strategy="sell_first", n_pretrain_paths=100):
-
-    episodes = []
-    
-    for _ in range(n_pretrain_paths):
-
-        state = env.reset()
-        # state_vec = state_to_vector(state)
-        
-        (state)
-        transitions = []
-        done = False
-
-        while not done:
-
-            if strategy == "sell_first":
-                action = 4 
-            elif strategy == "sell_last":
-                if env.current_time < env.time_horizon - 25:
-                    action = 0
-                else:
-                    action = 4
-            elif strategy == "do_nothing":
-                action = 0
-            
-            next_state, reward, done = env.step(action)
-            # next_state_vec = state_to_vector(next_state)
-            # transitions.append((state_vec, action, reward, next_state_vec, done))
-
-        episodes.extend(transitions)
-
-    return episodes
-        
