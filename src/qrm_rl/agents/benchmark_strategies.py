@@ -4,6 +4,10 @@ import numpy as np
 GENERAL DESCRIPTION:
 
     Implementation of the benchmark trading strategies: TWAP and POPV.
+
+    Note: 
+        - TWAP select_action() returns the number of shares to execute at step k.
+        - POPV selection_action() returns the index of the action to execute at step k.
 """
     
 class TWAPAgent:
@@ -30,14 +34,14 @@ class TWAPAgent:
         for i in range(new_n_0):
             index = round(i * (n - 1) / (new_n_0 - 1)) if new_n_0 > 1 else n // 2
             arr[index] += 1
-        assert np.sum(arr) == n_0, "TWAP Error: The number of shares in the array does not match n_0."
+        assert np.sum(arr) == n_0, "TWAPAgent Error: The number of shares in the array does not match n_0."
         return arr
 
     def select_action(self):
         """
             Return the number of shares to execute at step k. 
         """
-        assert self.k-1 < len(self.actions_schedule), "TWAP Error: Index out of bounds."      
+        assert self.k-1 < len(self.actions_schedule), "TWAPAgent Error: Index out of bounds."      
         return self.actions_schedule[self.k-1]
     
 
