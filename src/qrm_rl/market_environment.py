@@ -8,7 +8,7 @@ from qrm_core.sampling import update_LOB
 class MarketEnvironment:
     """
         RL environment for optimal execution with market interaction,
-        backed by QueueReactiveMarketSimulator.
+        backed by the QueueReactiveMarketSimulator class.
     """
 
     def __init__(
@@ -39,8 +39,9 @@ class MarketEnvironment:
         test_mode: bool, 
         event_time: bool
     ):
-        # — core parameters —
-        self.actions = actions
+        
+        # Core parameters
+        self.actions       = actions
         self.arrival_price = arrival_price
         self.price_offset  = price_offset
         self.price_std     = price_std
@@ -59,7 +60,7 @@ class MarketEnvironment:
         self.test_mode         = test_mode
         self.event_time        = event_time
 
-        # load intensity / inv. distributions
+        # Load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
                                             (2,0,1,3)).copy()
         self.theta        = theta
@@ -90,6 +91,7 @@ class MarketEnvironment:
             event_time       = event_time
         )
 
+
     def reset(self):
         """
             Reset to start a fresh episode.
@@ -101,11 +103,12 @@ class MarketEnvironment:
         self.risk_aversion_term = 0.0
         self.non_executed_liquidity_constraint = 0
 
-        # reset & run initial QRM up to first trader time
+        # reset & run QRM up to first trader time
         self.simulator.initialize()
         self.simulator.simulate_step()
 
         return self.get_state()
+    
     
     def close(self):
         import gc
@@ -131,6 +134,8 @@ class MarketEnvironment:
 
         gc.collect()
 
+
+
     def current_time(self):
         return self.simulator.current_time()
 
@@ -142,6 +147,7 @@ class MarketEnvironment:
     
     def current_state(self, hist_size=1):
         return self.simulator.current_state(hist_size)
+    
 
     @staticmethod
     def _best_quotes(st, K, p_ref, tick):
@@ -177,20 +183,15 @@ class MarketEnvironment:
         K  = self.simulator.K
         p_ref = self.current_ref_price()
 
-        # lob_states = np.empty((self.history_size, 2, 2), dtype=object)
-        # for i in range(self.history_size):
-        #     bid_info, ask_info = self._best_quotes(st[i], K, p_ref, self.tick)
-        #     lob_states[i][0][:2] = ask_info[:2]  # (price_ask, size_ask)
-        #     lob_states[i][1][:2] = bid_info[:2]  # (price_bid, size_bid)
-
         lob_states = np.empty((self.history_size, 3), dtype=object)
         for i in range(self.history_size):
             bid_info, ask_info = self._best_quotes(st[i], K, p_ref, self.tick)
-            lob_states[i][0] = ask_info[0]  # (ask price)
-            lob_states[i][1] = ask_info[1]  # (ask size)
-            lob_states[i][2] = bid_info[1]  # (bid size)
+            lob_states[i][0] = ask_info[0]  # ask price
+            lob_states[i][1] = ask_info[1]  # ask size
+            lob_states[i][2] = bid_info[1]  # bid size
 
         return lob_states.reshape(-1).tolist()
+    
 
     def get_state(self):
         """ 
@@ -216,28 +217,19 @@ class MarketEnvironment:
         """
         st_n = np.empty_like(st, dtype=np.float64)
         st = np.array(st)
-        st_n[0] = 2 * st[0] / self.initial_inventory - 1 
-        st_n[1] = 2 * st[1] / self.time_horizon - 1      
-        st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std
-        st_n[3:] = (st[3:] - self.vol_offset) / self.vol_std
+        st_n[0] = 2 * st[0] / self.initial_inventory - 1 # map to [-1,1]
+        st_n[1] = 2 * st[1] / self.time_horizon - 1      # map to [-1,1]
+        st_n[2::3] = (st[2::3] - self.arrival_price - self.price_offset) / self.price_std # z-score normalization
+        st_n[3:] = (st[3:] - self.vol_offset) / self.vol_std # z-score normalization
 
         return st_n
 
-    # deprecated
-    @staticmethod
-    def exponential_ramp(t, time_horizon, alpha, max_penalty_intra_ep=1):
-        """
-            Exponential ramp function for the penalty term. 
-            Finishes at `max_penalty_intra_ep` (default 1) at time `time_horizon`.
-        """
-        numerator = np.exp(alpha * t / time_horizon) - 1
-        denominator = np.exp(alpha) - 1
-        return max_penalty_intra_ep * numerator / denominator
 
     def step(self, action: int):
         """
             Apply trader action and simulate the market until the next trader time.
         """
+
         nxt     = self.trader_times[self.simulator.next_trader_time_idx]
         st      = self.current_state()[0]
         p_ref   = self.current_ref_price()
@@ -269,7 +261,7 @@ class MarketEnvironment:
         self.current_is = reward
         self.final_is  += reward
 
-        # risk aversion term
+        # risk aversion term (not used in our paper, but included for completeness)
         rat = self.risk_aversion * self.current_inventory / self.initial_inventory
         reward -= rat
         self.risk_aversion_term = rat
@@ -329,7 +321,7 @@ class MarketEnvironment:
                         if rem == 0:
                             break
                     if rem > 0:
-                        # we suppose there is infinite liquidity at price p_ref + tick * (K + 0.5)
+                        # we suppose there is infinite liquidity at price p_ref + tick*(K + 0.5)
                         rwd += (self.arrival_price - (p_ref + self.tick * (K + 0.5))) * rem
 
                     self.final_is += rwd
