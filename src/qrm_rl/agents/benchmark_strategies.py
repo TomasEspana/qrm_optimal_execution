@@ -3,7 +3,7 @@ import numpy as np
 """ 
 GENERAL DESCRIPTION:
 
-    Implementation of the benchmark trading strategies.
+    Implementation of the benchmark trading strategies: TWAP and POPV.
 """
     
 class TWAPAgent:
@@ -44,7 +44,7 @@ class TWAPAgent:
 class POPV:
     """
         Take a specific action at regular time intervals.
-        E.g., if modulo=2 and fixed_action=3, the agent takes action 3 at every odd steps, 
+        E.g., if modulo=2 and fixed_action=3, the agent takes action 3 at every two steps, 
         and action 0 otherwise.
     """
     def __init__(self, fixed_action=-1, k=0, modulo=2):
