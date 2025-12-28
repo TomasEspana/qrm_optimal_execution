@@ -208,7 +208,7 @@ class RLRunner:
 
             callback = CallbackList([
                   WandbCallback(verbose=2,),
-                  InfoLoggerCallback(self.cfg["action_dim"], self.model)
+                  InfoLoggerCallback(self.cfg["action_dim"])
                  ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)

@@ -1,5 +1,4 @@
 import wandb
-import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
 
 class InfoLoggerCallback(BaseCallback):
@@ -7,20 +6,16 @@ class InfoLoggerCallback(BaseCallback):
         Pulls info dicts from the env and logs custom metrics to wandb.
     """
 
-    def __init__(self, action_dim, rl_model, verbose=0):
+    def __init__(self, action_dim, verbose=0):
 
         super().__init__(verbose)
 
         self.action_dim = action_dim
         self.episode = 0
-        self.rl_model = rl_model
         self.episode_reward = 0.
         self.episode_is = 0.
         self.episode_length = 0
         self.actions = []
-        self.loss_sum = 0.
-        self.metrics_buffer = {}
-
 
     def _on_step(self) -> bool:
 
@@ -33,15 +28,12 @@ class InfoLoggerCallback(BaseCallback):
         self.episode_is += info["implementation_shortfall"]
         self.actions.append(info['action_idx'])
         name_to_val = getattr(self.model.logger, "name_to_value", {})
-        if "train/loss" in name_to_val:
-            self.loss_sum += float(name_to_val["train/loss"])
 
         # Log episode metrics
         if done:
             self.episode += 1
             log_dict = {
                 "Episode": self.episode,
-                'Mean TD Loss': self.loss_sum / self.episode_length if self.episode_length > 0 else 0.,
                 "Final Reward": self.episode_reward,
                 "Final Implementation Shortfall": self.episode_is, 
                 "Final Inventory": info['inventory'], 
@@ -56,7 +48,6 @@ class InfoLoggerCallback(BaseCallback):
             self.episode_reward = 0.
             self.episode_is = 0.
             self.actions = []
-            self.loss_sum = 0.
         
         else:
             log_dict = {}
@@ -78,23 +69,10 @@ class InfoLoggerCallback(BaseCallback):
         })
 
         keys = [
-            "train/value_loss",
             "train/loss",
-            "train/policy_gradient_loss",
-            "train/value_loss",
-            "train/entropy_loss",
-            "train/approx_kl",
-            "train/clip_fraction",
-            "train/learning_rate",
-            "train/explained_variance",
+            "train/learning_rate"
         ]
         payload = {k: float(v) for k, v in name_to_val.items() if k in keys}
-
-        if "train/loss" in name_to_val:
-            payload["train/td_loss"] = float(name_to_val["train/loss"])
-        if payload:
-            wandb.log(payload, step=self.num_timesteps)
-
-        wandb.log(log_dict, step=self.num_timesteps)
+        wandb.log({**log_dict, **payload}, step=self.num_timesteps)
 
         return True
