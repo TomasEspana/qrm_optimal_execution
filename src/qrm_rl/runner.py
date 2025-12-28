@@ -11,7 +11,7 @@ from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import CallbackList
 from wandb.integration.sb3 import WandbCallback
-from qrm_rl.callbacks import InfoLoggerCallback, StopAfterEpisodes
+from qrm_rl.callbacks import InfoLoggerCallback
 import shap
 import pandas as pd
 import os
@@ -25,7 +25,6 @@ class RLRunner:
 
         # Unpack config
         self.cfg = config
-        self.max_episodes = config['max_episodes']
         self.agent_type = config['agent_type'].lower()
         self.mode = config['mode']
         self.test_mode = (self.mode == 'test')
@@ -209,8 +208,7 @@ class RLRunner:
 
             callback = CallbackList([
                   WandbCallback(verbose=2,),
-                  InfoLoggerCallback(self.cfg["action_dim"], self.model),
-                  StopAfterEpisodes(max_episodes=self.max_episodes, verbose=1)
+                  InfoLoggerCallback(self.cfg["action_dim"], self.model)
                  ])
 
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)

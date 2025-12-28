@@ -98,39 +98,3 @@ class InfoLoggerCallback(BaseCallback):
         wandb.log(log_dict, step=self.num_timesteps)
 
         return True
-    
-
-
-
-class StopAfterEpisodes(BaseCallback):
-    def __init__(self, max_episodes: int, verbose: int = 0):
-        super().__init__(verbose)
-        self.max_episodes = max_episodes
-        self.episode_count = 0
-
-    def _on_step(self) -> bool:
-        # Handle both single env and VecEnv
-        dones = self.locals.get("dones")
-        infos = self.locals.get("infos")
-
-        if dones is None or infos is None:
-            return True  # nothing to do
-
-        # Vectorized: dones is a bool array; single env: bool
-        if np.isscalar(dones):
-            done_list = [dones]
-            info_list = [infos]
-        else:
-            done_list = list(dones)
-            info_list = list(infos)
-
-        for d, info in zip(done_list, info_list):
-            if d:
-                self.episode_count += 1
-
-                if self.episode_count >= self.max_episodes:
-                    if self.verbose:
-                        print(f"[Callback] Reached {self.max_episodes} episodes. Stopping training.")
-                    return False  # stop training
-
-        return True
