@@ -4,6 +4,7 @@ from qrm_core.engine import simulate_QRM_jit
 
 
 class QueueReactiveMarketSimulator:
+
     def __init__(
         self,
         intensity_table: np.ndarray,
@@ -118,6 +119,7 @@ class QueueReactiveMarketSimulator:
         self.redrawn[i0:i1] = redrawns
         self.states[i0:i1, :] = np.vstack(lob_states)
 
+
     def current_time(self):
         return self.times[self.step - 1]
 
@@ -129,6 +131,7 @@ class QueueReactiveMarketSimulator:
 
     def current_state(self, history_size=1):
         return self.states[self.step - history_size:self.step].copy()[::-1]
+    
 
     def simulate_step(self):
         """
@@ -155,39 +158,6 @@ class QueueReactiveMarketSimulator:
             sides, depths, events,
             redrawns, lob_states
         )
-
-
-    def to_dataframe(self):
-        """
-            Convert the LOB to a Pandas DataFrame.
-        """
-        import pandas as pd
-
-        df = pd.DataFrame({
-            'time':   self.times[:self.step],
-            'p_mid':  self.p_mids[:self.step],
-            'p_ref':  self.p_refs[:self.step],
-            'side':   self.sides[:self.step],
-            'depth':  self.depths[:self.step],
-            'event':  self.events[:self.step],
-            'redrawn':self.redrawn[:self.step]
-        })
-
-        df['side']  = df['side'].map({1:'bid', 2:'ask'})
-        df['event'] = df['event'].map({1:'limit', 2:'cancel', 3:'market', 4:'trader'})
-        df['redrawn'] = df['redrawn'].astype(bool)
-
-        bids = [f"q_bid{i+1}" for i in range(self.K)][::-1]
-        asks = [f"q_ask{i+1}" for i in range(self.K)]
-        cols = bids + asks
-        block = self.states[:self.step, :]
-        for j, name in enumerate(cols):
-            if j < self.K:
-                df[name] = block[:, self.K - j - 1]
-            else:
-                df[name] = block[:, j]
-
-        return df
     
 
     def close(self):
