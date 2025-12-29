@@ -316,7 +316,7 @@ class MarketEnvironment:
                         if rem == 0:
                             break
                     if rem > 0:
-                        # we suppose there is infinite liquidity at price p_ref + tick*(K + 0.5)
+                        # we suppose there is infinite liquidity at price level p_ref + tick*(K + 0.5)
                         rwd += (self.arrival_price - (p_ref + self.tick * (K + 0.5))) * rem
 
                     self.final_is += rwd
