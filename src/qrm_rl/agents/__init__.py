@@ -1,1 +1,1 @@
-from .benchmark_strategies import TWAPAgent, POPV
+from .benchmark_strategies import TWAPAgent, POPVAgent

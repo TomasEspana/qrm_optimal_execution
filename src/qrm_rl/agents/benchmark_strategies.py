@@ -45,7 +45,7 @@ class TWAPAgent:
         return self.actions_schedule[self.k-1]
     
 
-class POPV:
+class POPVAgent:
     """
         Take a specific action at regular time intervals.
         E.g., if modulo=2 and fixed_action=3, the agent takes action 3 at every two steps, 
