@@ -80,8 +80,6 @@ class RLRunner:
             max_events=config['max_events'],
             max_events_intra=config['max_events_intra'],
             history_size=config['history_size'],
-            basic_state=config['basic_state'],
-            len_basic_state=config['len_basic_state'],
             state_dim=config['state_dim'],
             action_dim=config['action_dim'], 
             aes=np.array(config['aes']), 
@@ -89,10 +87,9 @@ class RLRunner:
             event_time=self.event_time
         )
 
-        self.env = Monitor(self.env)
+        self.env = Monitor(self.env) ### MODIFYYYYY AGENTS HERE 
         self.agent_name_map = {
             DQN: 'ddqn',
-            PPO: 'ppo',
             TWAPAgent: 'twap', 
             FrontLoadAgent: 'front_load', 
             BestVolumeAgent: 'best_volume'
@@ -255,7 +252,7 @@ class RLRunner:
                 states_t = torch.tensor(background, dtype=torch.float32, device=self.device, requires_grad=True)
                 num_actions = self.cfg['action_dim']
                 feature_names = ["inventory", "time", "ask price", "ask volume", "bid volume"]
-                feature_names = feature_names[:self.cfg['len_basic_state']]
+                feature_names = feature_names[:self.cfg['state_dim']]
                 
                 gradient_importances = []
                 for action_idx in range(num_actions):

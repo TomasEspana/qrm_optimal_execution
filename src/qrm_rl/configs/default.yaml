@@ -10,9 +10,7 @@ final_penalty: 1
 risk_aversion: 0.
 
 # State space
-basic_state: True
-len_basic_state: 5
-len_state_lob: 3
+state_dim: 5
 history_size: 1
 
 # Action space

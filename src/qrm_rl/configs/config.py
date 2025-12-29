@@ -31,12 +31,6 @@ def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, 
     th = config['time_horizon']
     st = config['trader_time_step']
     config['trader_times'] = np.concatenate(([0], np.arange(0, th + st, st)))
-
-    # State dimension
-    if config['basic_state']:
-        config['state_dim'] = config['len_basic_state']
-    else:
-        config['state_dim'] = config['len_state_lob'] * config['history_size'] + 2
     
     # Pre-allocation for LOB events
     if longest_step is not None:

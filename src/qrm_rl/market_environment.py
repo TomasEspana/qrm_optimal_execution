@@ -33,14 +33,13 @@ class MarketEnvironment:
         max_events: int, 
         max_events_intra: int, 
         history_size: int, 
-        basic_state: bool, 
-        len_basic_state: int,
+        state_dim: int,
         aes: list, 
         test_mode: bool, 
         event_time: bool
     ):
         
-        # Core parameters
+        # Parameters
         self.actions       = actions
         self.arrival_price = arrival_price
         self.price_offset  = price_offset
@@ -54,8 +53,7 @@ class MarketEnvironment:
         self.final_penalty     = final_penalty
         self.risk_aversion     = risk_aversion
         self.history_size      = history_size
-        self.basic_state       = basic_state
-        self.len_basic_state   = len_basic_state
+        self.state_dim         = state_dim
         self.aes               = aes
         self.test_mode         = test_mode
         self.event_time        = event_time
@@ -63,16 +61,16 @@ class MarketEnvironment:
         # Load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
                                             (2,0,1,3)).copy()
-        self.theta        = theta
-        self.theta_reinit = theta_reinit
-        self.tick         = tick
-        self.inv_bid      = np.load(inv_bid_file)
-        self.inv_ask      = np.load(inv_ask_file)
+        self.theta           = theta
+        self.theta_reinit    = theta_reinit
+        self.tick            = tick
+        self.inv_bid         = np.load(inv_bid_file)
+        self.inv_ask         = np.load(inv_ask_file)
 
-        self.trader_times = trader_times
-        self.step_trader_times = self.trader_times[1] - self.trader_times[0]
-        self.current_is = 0.0
-        self.final_is   = 0.0
+        self.trader_times       = trader_times
+        self.step_trader_times  = self.trader_times[1] - self.trader_times[0]
+        self.current_is         = 0.0
+        self.final_is           = 0.0
         self.risk_aversion_term = 0.0
         self.non_executed_liquidity_constraint = 0
 
@@ -204,11 +202,8 @@ class MarketEnvironment:
         else:
             nxt = self.trader_times[-1] + self.step_trader_times
         
-        if self.basic_state: 
-            state = [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]]
-            return state[:self.len_basic_state]
-        else:
-            return [self.current_inventory, nxt] + lob_states
+        state = [self.current_inventory, nxt, lob_states[0], lob_states[1], lob_states[2]]
+        return state[:self.state_dim]
         
 
     def state_to_vector(self, st):

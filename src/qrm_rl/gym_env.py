@@ -34,8 +34,6 @@ class QRMEnv(gym.Env):
         max_events: int,
         max_events_intra: int,
         history_size: int,
-        basic_state: bool,
-        len_basic_state: int,
         state_dim: int,
         action_dim: int,
         aes: list,
@@ -68,8 +66,7 @@ class QRMEnv(gym.Env):
             max_events=max_events,
             max_events_intra=max_events_intra,
             history_size=history_size,
-            basic_state=basic_state,
-            len_basic_state=len_basic_state,
+            state_dim=state_dim,
             aes=aes,
             test_mode=test_mode, 
             event_time=event_time
