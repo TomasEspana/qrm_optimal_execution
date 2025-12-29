@@ -14,7 +14,7 @@ state_dim: 5
 history_size: 1
 
 # Action space
-actions: [0, 1.0]
+actions: [0, 0.5, 1.0]
 
 # Parameters
 gamma: 0.995

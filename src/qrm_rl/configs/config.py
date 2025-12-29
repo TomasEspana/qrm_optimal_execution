@@ -15,7 +15,7 @@ def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, 
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    # Override
+    # Override parameters if provided
     if time_horizon is not None:
         config['time_horizon'] = time_horizon
     if theta is not None:
@@ -37,12 +37,13 @@ def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, 
         config['max_events_intra'] = int(config['max_events_per_second'] * longest_step) + 1
     else:
         config['max_events_intra'] = int(config['max_events_per_second'] * config['trader_time_step']) + 1 
+
     if nb_steps is not None:
         config['max_events'] = int(nb_steps * config['max_events_intra']) + 1
     else:
         config['max_events'] = int((2 + config['time_horizon'] // config['trader_time_step']) * config['max_events_intra'])
     
-    # Data files for intensities and invariant distributions
+    # Intensities and invariant distributions
     config['file_name'] = 'intensity_table.npy'     
     config['file_name_bid'] = 'invariant_distribution.npy'
     config['file_name_ask'] = 'invariant_distribution.npy'
