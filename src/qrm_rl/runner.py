@@ -33,7 +33,7 @@ class RLRunner:
         self.load_model_path = load_model_path
         self.model = None
 
-        # seeds
+        # Seeds
         np.random.seed(config['seed'])
         @njit
         def _init_numba(seed): np.random.seed(seed)
@@ -48,7 +48,7 @@ class RLRunner:
                 sync_tensorboard=False,
             )
 
-        # Build intensity table
+        # Intensity table
         inten_arr = np.load(config['folder_path_intensity_table'] + config['file_name'])
         K, Q1, *_ = inten_arr.shape
         inten_table = IntensityTable(max_depth=K, max_queue=Q1-1)
@@ -91,10 +91,12 @@ class RLRunner:
         }
 
 
+    # Build DQN agent
     def _build_dqn(self):
         if self.model is not None:
             return
 
+        # NN architecture
         policy_kwargs = dict(
             net_arch=[30, 30, 30, 30, 30], 
             activation_fn=nn.LeakyReLU,
@@ -123,10 +125,13 @@ class RLRunner:
 
 
     def unwrap_env(self, env):
-
+        """
+            Helper function to unwrap nested Gym wrappers to access the underlying base environment.
+        """
         while hasattr(env, "env"):
             env = env.env
         return env
+
 
     def run(self, agent_info=None):
 
@@ -261,7 +266,7 @@ class RLRunner:
             # ===== TEST MODE =====
         else:
 
-            if agent_info in ['DQN', 'PPO']:
+            if agent_info in ['DQN']: # RL agent
                 self._build_dqn()
                 if self.load_model_path is not None:
                     self.model = DQN.load(self.load_model_path, env=self.env, device=self.device)
