@@ -122,56 +122,6 @@ class RLRunner:
         self.agent = self.model
 
 
-    def _build_ppo(self):
-        if self.model is not None:
-            return
-
-        policy_kwargs = dict(
-            net_arch=[30, 30, 30, 30, 30], 
-            activation_fn=nn.LeakyReLU,
-            ortho_init=True
-            )
-
-        def linear_with_floor(start=3e-4, end=3e-6):
-            def lr_fn(progress_remaining: float):
-                return max(end, progress_remaining * (start - end) + end)
-            return lr_fn
-        learning_rate = linear_with_floor(3e-4, 3e-6)
-
-        def clip_linear(start=0.2, end=0.1):
-            def cr_fn(progress_remaining: float):
-                return progress_remaining * (start - end) + end
-            return cr_fn
-        clip_range = clip_linear(0.2, 0.1)
-        
-
-        self.model = PPO(
-            policy="MlpPolicy",
-            env=self.env,
-
-            # --- kept / analogous ---
-            learning_rate=learning_rate,                 # callable schedule supported
-            n_steps=768,                                 # 256 rollout length per env 
-            batch_size=self.cfg.get("batch_size", 128),  # minibatch size for SGD
-            gamma=self.cfg.get("gamma", 0.99),
-
-            # --- new (PPO-specific) ---
-            gae_lambda=self.cfg.get("gae_lambda", 0.95), # bias/variance trade-off in GAE
-            n_epochs=self.cfg.get("n_epochs", 10),       # SGD passes over each batch
-            clip_range=clip_range,                       # policy ratio clip
-            ent_coef=self.cfg.get("ent_coef", 0.03),    # entropy bonus (↑ early exploration)
-            vf_coef=self.cfg.get("vf_coef", 0.5),        # value loss weight
-            max_grad_norm=self.cfg.get("max_grad_norm", 0.5),
-            target_kl=self.cfg.get("target_kl", 0.025),   # e.g., 0.02 to early-stop updates
-
-            # --- misc ---
-            policy_kwargs=policy_kwargs,
-            device=self.device,
-            verbose=0,
-        )
-
-        self.agent = self.model
-
     def unwrap_env(self, env):
 
         while hasattr(env, "env"):
