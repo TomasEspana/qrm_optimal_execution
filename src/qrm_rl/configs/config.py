@@ -30,7 +30,7 @@ def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, 
     # Trader times
     th = config['time_horizon']
     st = config['trader_time_step']
-    config['trader_times'] = np.concatenate(([0], np.arange(0, th + st, st)))
+    config['trader_times'] = np.concatenate(([0], np.arange(0, th + st, st))) # sample a LOB at t=0 and the first trader time is also at t=0
     
     # Pre-allocation for LOB events
     if longest_step is not None:
