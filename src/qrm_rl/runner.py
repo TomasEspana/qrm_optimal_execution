@@ -289,6 +289,7 @@ class RLRunner:
                 index_actions[ep] = idx_actions[:-1]
                 mid_prices_events[ep] = unwrapped_env._env.simulator.p_mids[:unwrapped_env._env.simulator.step][idx_actions[:-1]].astype(np.float32)
 
+                # save LOB data (if not saving memory)
                 if not self.cfg['test_save_memory']:
                     lob = unwrapped_env._env.simulator.to_dataframe()
                     lob['time'] = lob['time'].astype(np.float32)

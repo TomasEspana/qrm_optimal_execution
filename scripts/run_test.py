@@ -47,8 +47,9 @@ if __name__ == "__main__":
         pickle.dump(dic, f)
 
     ### === POPV === ###
-    for k in range(1, 5):
-        action_idx = -1 # biggest action (full buy)
+    for k in range(1, 3):
+        action_idx = 1 # buy 50% of available volume at best ask at each trader time 
+        # Note: make sure action_idx matches config['actions'] (default [0, 0.5, 1.0]) in src/qrm_rl/configs/default.yaml
         runner = RLRunner(config)
         agent = POPVAgent(fixed_action=action_idx, modulo=k)
         runner.agent = agent
