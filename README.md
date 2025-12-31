@@ -90,7 +90,7 @@ The RL agent is a Double Deep Q-learning agent using the `DQN` function of `Stab
 To modify and play with the parameters/configurations, see the `default.yaml` file in `src/qrm_rl/configs`. 
 
 
-Arborescence Section: done autmatically ? 
+Arborescence Section: done autmatically ? (Generate the repo “tree” once (local)). 
 
 
 

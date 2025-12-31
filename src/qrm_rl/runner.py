@@ -98,8 +98,11 @@ class RLRunner:
         }
 
 
-    # Build DQN agent
     def _build_dqn(self):
+        """
+            Build the DQN agent using Stable-Baselines3.
+        """
+
         if self.model is not None:
             return
 
@@ -141,12 +144,15 @@ class RLRunner:
 
 
     def run(self, agent_info=None):
+        """
+            Main loop to run training or testing of the RL agent.
+        """
 
         print('RUNNING ON DEVICE:', self.device)
         if self.device == 'cpu':
             print("WARNING: Default device is GPU. Check CUDA availability.")
         
-            # ===== TRAIN MODE =====
+        # ===== TRAIN MODE =====
         if self.mode == 'train':
 
             if self.agent_type == 'ddqn':
@@ -156,13 +162,12 @@ class RLRunner:
             
             self.run_id = wandb.run.id
             wandb.run.name = f"{self.agent_type}_{self.run_id}"
-            total_steps = self.cfg["total_timesteps"]
-
             callback = CallbackList([
                   WandbCallback(verbose=2,),
                   InfoLoggerCallback(self.cfg["action_dim"])
                  ])
 
+            total_steps = self.cfg["total_timesteps"]
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
             self.model.save(f"./save_model/{self.agent_type}_{self.run_id}.zip")
             wandb.finish()
@@ -171,11 +176,6 @@ class RLRunner:
 
                 ### Feature importance
                 ## a) SHAP values
-                base_output_dir = "./shap_plots"
-                os.makedirs(base_output_dir, exist_ok=True)
-                output_dir = os.path.join(base_output_dir, self.run_id)
-                os.makedirs(output_dir, exist_ok=True)
-
                 sample_size = 200 
                 background_size = 500
                 buffer = self.model.replay_buffer
@@ -187,10 +187,6 @@ class RLRunner:
                 bg_start = max(0, sample_start - background_size)
                 background = obs[bg_start:sample_start]
                 background = background.reshape(background.shape[0], background.shape[2])
-
-                save_path = os.path.join(output_dir, "shap_data.npz")
-                np.savez_compressed(save_path, sample_states=sample_states, background=background)
-                print(f"Saved SHAP data to {save_path}")
 
                 # Q-network prediction function
                 q_net = self.model.policy.q_net
@@ -232,45 +228,10 @@ class RLRunner:
                     print(f"\n=== Action {action_idx} Feature Importance ===")
                     print(df_compare)
 
-                    # SHAP summary plot
-                    fig = plt.figure()
-                    shap.summary_plot(values, sample_states, feature_names=feature_names, 
-                                    title=f"SHAP Values for Action {action_idx}", show=False)
-                    fig.tight_layout()
-                    plt.savefig(os.path.join(output_dir, f"summary_action_{action_idx}.pdf"), bbox_inches='tight')
-                    plt.close(fig)
-
-                    fig = plt.figure()
-                    shap_values_obj = shap.Explanation(
-                        values=values,
-                        data=sample_states,
-                        feature_names=feature_names
-                    )
-                    shap.plots.bar(shap_values_obj, show=False)
-                    fig.tight_layout()
-                    plt.savefig(os.path.join(output_dir, f"bar_action_{action_idx}.pdf"), bbox_inches='tight')
-                    plt.close(fig)
-
-                    for feat in shap_values_obj.feature_names:
-                        fig = plt.figure()
-                        shap.plots.scatter(shap_values_obj[:, feat], color=shap_values_obj, show=False)
-                        fig.tight_layout() 
-                        plt.savefig(os.path.join(output_dir, f"scatter_action_{action_idx}_{feat}.pdf"), bbox_inches='tight')
-                        plt.close(fig)
-
-                    # Gradient bar plot
-                    plt.figure()
-                    plt.bar(feature_names, grad_importance)
-                    plt.title(f"Gradient-based Feature Importance (Action {action_idx})")
-                    plt.ylabel("Mean |∂Q/∂s|")
-                    plt.tight_layout()
-                    plt.savefig(os.path.join(output_dir, f"grad_bar_action_{action_idx}.pdf"), bbox_inches='tight')
-                    plt.close()
-
                 self.env.close()
             return
         
-            # ===== TEST MODE =====
+        # ===== TEST MODE =====
         else:
 
             if agent_info in ['DQN']: # RL agent
