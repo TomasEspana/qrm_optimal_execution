@@ -291,7 +291,7 @@ class RLRunner:
                     else:
                         self.agent.k = k
                         if isinstance(self.agent, TWAPAgent):
-                            self.unwrap_env(self.env)._executed = True
+                            self.unwrap_env(self.env)._twap_execution = True
                             action = self.agent.select_action()
                             obs, reward, done, _, info = self.env.step(action)
                         else:
