@@ -17,8 +17,7 @@ class QueueReactiveMarketSimulator:
         trader_times: np.ndarray,
         max_events: int, 
         max_events_intra: int, 
-        aes: np.ndarray, 
-        event_time: bool,
+        aes: np.ndarray
     ):
         self.intensity_table = intensity_table
         self.K = intensity_table.shape[1]
@@ -30,7 +29,6 @@ class QueueReactiveMarketSimulator:
         self.trader_times = trader_times
         self.initial_price = initial_price
         self.aes = aes
-        self.event_time = event_time
 
         # logging buffer capacity (pre-allocation)
         self.max_events = max_events             # max number of LOB events to log for one episode
@@ -150,7 +148,7 @@ class QueueReactiveMarketSimulator:
             self.intensity_table,
             self.tick, self.theta, self.theta_reinit,
             next_t, self.inv_bid, self.inv_ask, self.max_events_intra, self.aes, 
-            self.event_time*next_t
+            np.nan # change this arg. to an integer if you want the trader to act on a number-of-event-frequency (instead of default time-frequency)
         )
 
         self._write_batch(

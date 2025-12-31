@@ -7,7 +7,7 @@ import torch
 from numba import njit
 from torch import nn
 import gymnasium as gym
-from stable_baselines3 import DQN, PPO
+from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import CallbackList
 from wandb.integration.sb3 import WandbCallback
@@ -16,12 +16,11 @@ import shap
 import pandas as pd
 import os
 
-import qrm_rl.gym_env
-from qrm_rl.agents.benchmark_strategies import TWAPAgent, FrontLoadAgent, BestVolumeAgent
+from qrm_rl.agents.benchmark_strategies import TWAPAgent, POPVAgent
 from qrm_core.intensity import IntensityTable
 
 class RLRunner:
-    def __init__(self, config, load_model_path=None, event_time=np.nan):
+    def __init__(self, config, load_model_path=None):
 
         # Unpack config
         self.cfg = config
@@ -30,11 +29,9 @@ class RLRunner:
         self.test_mode = (self.mode == 'test')
         self.episodes = config['episodes']
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.prop_greedy_eps = config['exploration_fraction']
         self.agent = None
         self.load_model_path = load_model_path
         self.model = None
-        self.event_time = event_time
 
         # seeds
         np.random.seed(config['seed'])
@@ -83,16 +80,14 @@ class RLRunner:
             state_dim=config['state_dim'],
             action_dim=config['action_dim'], 
             aes=np.array(config['aes']), 
-            test_mode=self.test_mode, 
-            event_time=self.event_time
+            test_mode=self.test_mode
         )
 
-        self.env = Monitor(self.env) ### MODIFYYYYY AGENTS HERE 
+        self.env = Monitor(self.env)
         self.agent_name_map = {
             DQN: 'ddqn',
             TWAPAgent: 'twap', 
-            FrontLoadAgent: 'front_load', 
-            BestVolumeAgent: 'best_volume'
+            POPVAgent: 'popv'
         }
 
 
@@ -108,7 +103,7 @@ class RLRunner:
         self.model = DQN(
             policy='MlpPolicy',
             env=self.env,
-            learning_rate=self.cfg["learning_rate"], #exp_decay_schedule(lr_start=1e-4, lr_end=5e-7),
+            learning_rate=self.cfg["learning_rate"],
             buffer_size=self.cfg["buffer_size"],
             batch_size=self.cfg["batch_size"],
             learning_starts=self.cfg["learning_starts"],
@@ -194,8 +189,6 @@ class RLRunner:
 
             if self.agent_type == 'ddqn':
                 self._build_dqn()
-            elif self.agent_type == 'ppo':
-                self._build_ppo()
             else:
                 raise ValueError(f"Unknown agent type {self.agent_type} for training.")
             
@@ -341,7 +334,7 @@ class RLRunner:
 
                 while not done:
 
-                    if isinstance(self.agent, (DQN, PPO)):
+                    if isinstance(self.agent, (DQN)):
                         action, _ = self.model.predict(obs, deterministic=True)
                         obs, reward, done, _, info = self.env.step(action)
 

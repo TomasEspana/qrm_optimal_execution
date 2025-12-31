@@ -35,8 +35,7 @@ class MarketEnvironment:
         history_size: int, 
         state_dim: int,
         aes: list, 
-        test_mode: bool, 
-        event_time: bool
+        test_mode: bool
     ):
         
         # Parameters
@@ -56,7 +55,6 @@ class MarketEnvironment:
         self.state_dim         = state_dim
         self.aes               = aes
         self.test_mode         = test_mode
-        self.event_time        = event_time
 
         # Load intensity / inv. distributions
         self.intensity_table = np.transpose(intensity_table._data,
@@ -85,8 +83,7 @@ class MarketEnvironment:
             trader_times     = self.trader_times,
             max_events       = max_events,
             max_events_intra = max_events_intra, 
-            aes              = aes, 
-            event_time       = event_time
+            aes              = aes
         )
 
 

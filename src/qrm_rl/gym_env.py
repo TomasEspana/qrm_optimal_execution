@@ -38,7 +38,6 @@ class QRMEnv(gym.Env):
         action_dim: int,
         aes: list,
         test_mode: bool,
-        event_time: bool,
         _executed: bool = False,
         **kwargs
     ):
@@ -68,8 +67,7 @@ class QRMEnv(gym.Env):
             history_size=history_size,
             state_dim=state_dim,
             aes=aes,
-            test_mode=test_mode, 
-            event_time=event_time
+            test_mode=test_mode
         )
 
         # Action and observation spaces
@@ -92,7 +90,7 @@ class QRMEnv(gym.Env):
         """
         
         state = self._env.reset()
-        obs = self._env.state_to_vector(state).astype(np.float32)
+        obs = self._env.state_to_vector(state).astype(np.float32) # normalize
         return obs, {}
     
 
@@ -119,7 +117,7 @@ class QRMEnv(gym.Env):
             action_val = round(self._env.actions[action] * best_ask_volume)
 
         next_state, reward, done, executed, total_ask = self._env.step(action_val)
-        obs = self._env.state_to_vector(next_state).astype(np.float32)
+        obs = self._env.state_to_vector(next_state).astype(np.float32) # normalize
 
         info = {
             "obs": obs,
