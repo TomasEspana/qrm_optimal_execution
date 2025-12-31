@@ -1,6 +1,3 @@
-import matplotlib
-matplotlib.use("Agg") 
-import matplotlib.pyplot as plt
 import wandb
 import numpy as np
 import torch
@@ -14,7 +11,6 @@ from wandb.integration.sb3 import WandbCallback
 from qrm_rl.callbacks import InfoLoggerCallback
 import shap
 import pandas as pd
-import os
 
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, POPVAgent
 from qrm_core.intensity import IntensityTable
@@ -23,6 +19,7 @@ from qrm_core.intensity import IntensityTable
 """
     GENERAL DESCRIPTION:
         Runner class to manage training and testing of RL agents in the QRM environment.
+        Used in scripts/run_train.py and scripts/run_test.py.
 """
 
 
@@ -213,7 +210,7 @@ class RLRunner:
 
                 gradient_importances = np.array(gradient_importances)  # shape (num_actions, num_features)
 
-
+                # Compare and print feature importances
                 for action_idx in range(shap_values.shape[2]):
                     values = shap_values[:, :, action_idx]
                     shap_importance = np.abs(values).mean(0)
@@ -317,4 +314,4 @@ class RLRunner:
 
             self.env.close()
 
-            return dic, 0
+            return dic, 0.
