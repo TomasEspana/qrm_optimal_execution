@@ -2,6 +2,11 @@ import numpy as np
 from qrm_core.sampling import sample_stationary_lob
 from qrm_core.engine import simulate_QRM_jit
 
+"""
+    GENERAL DESCRIPTION:
+        Simulator for the Queue-Reactive Model.
+"""
+
 
 class QueueReactiveMarketSimulator:
 

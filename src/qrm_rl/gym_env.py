@@ -5,11 +5,14 @@ import numpy as np
 from qrm_core.intensity import IntensityTable
 from .market_environment import MarketEnvironment
 
+"""
+    GENERAL DESCRIPTION:
+        Gym wrapper for the QRM market environment.
+"""
+
 
 class QRMEnv(gym.Env):
-    """
-        Gym wrapper for the QRM market environment.
-    """
+
     metadata = {"render_modes": ["human"]}
 
     def __init__(

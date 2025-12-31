@@ -7,6 +7,12 @@ from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, POPVAgent
 
+"""
+    GENERAL DESCRIPTION:
+        Script to run tests for different agents (DDQN, TWAP, POPV) using a pre-trained model.
+"""
+
+
 if __name__ == "__main__":
 
     config = load_config()

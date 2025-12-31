@@ -83,6 +83,14 @@ Run the function in `src/qrm_core/invariant_distribution.py` which will create a
 
 ## 🤖 Reinforcement Learning
 
+In its interaction with the market, the RL agent can only buy shares (see the function `step` in `src/qrm_rl/market_environment.py`).
+
+The RL agent is a Double Deep Q-learning agent using the `DQN` function of `Stable-Baselines3`. To see how the agent is built, refer to the function `_build_dqn` in `src/qrm_rl/runner.py`. In particular to modify the neural network architecture. 
+
+To modify and play with the parameters/configurations, see the `default.yaml` file in `src/qrm_rl/configs`. 
+
+
+Arborescence Section: done autmatically ? 
 
 
 

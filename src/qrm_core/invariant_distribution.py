@@ -6,20 +6,23 @@ def compute_invariant_distribution(
         intensity_table: IntensityTable,
         dump_path='invariant_distribution.npy'
     ):
+    
     """
         Compute and save the invariant distributions π_i for each depth i.
         Refer to Section 2.3.3 of Huang et al. (2015).
 
-    Inputs:
-        - side: 'bid', 'ask' or None.
-            We allow bid-ask asymmetry in the order flow intensities.
-            None means we assume symmetry.  
-        - intensity_table: IntensityTable object with order-flow intensities.
-        - dump_path: path to .npy file to save the invariant distribution.
-    
-    Outputs:
-        - None. The invariant distribution is saved in a .npy file.
+        Inputs:
+            - side: 'bid', 'ask' or None.
+                We allow bid-ask asymmetry in the order flow intensities.
+                None means we assume symmetry.  
+            - intensity_table: IntensityTable object with order-flow intensities.
+            - dump_path: path to .npy file to save the invariant distribution.
+        
+        Outputs:
+            - None. The invariant distribution is saved in a .npy file.
     """
+
+
     if side not in [None, 'bid', 'ask']:
         raise ValueError("side must be 'bid', 'ask' or None")
     elif side in [None, 'bid']:

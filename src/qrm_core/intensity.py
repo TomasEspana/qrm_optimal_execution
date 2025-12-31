@@ -5,6 +5,8 @@ class IntensityTable:
         Stores order-flow intensities λ^type(depth, queue_size).
         See Section 2.3.1 of Huang et al. (2015).
     """
+
+    
     def __init__(
         self,
         max_depth: int,

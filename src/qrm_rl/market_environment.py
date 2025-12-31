@@ -5,11 +5,14 @@ from qrm_core.intensity import IntensityTable
 from qrm_core.sampling import update_LOB
 
 
-class MarketEnvironment:
-    """
+"""
+    GENERAL DESCRIPTION:
         RL environment for optimal execution with market interaction,
         backed by the QueueReactiveMarketSimulator class.
-    """
+"""
+
+
+class MarketEnvironment:
 
     def __init__(
         self,

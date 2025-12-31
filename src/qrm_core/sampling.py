@@ -3,15 +3,12 @@ from numba import njit
 
 
 """ 
-GENERAL DESCRIPTION:
+    GENERAL DESCRIPTION:
 
-    This file gathers auxiliary functions for simulating the QRM model.
-        1) `sample_stationary_lob`: redraw the volumes from the invariant distribution.
-        2) `choose_next_event_min`: sample the next event in the LOB.
-        3) `update_LOB`: update the LOB after a mid-price change.
-
-    `choose_next_event_min` and `update_LOB` are used in the `simulate_QRM_jit` function (.engine.py).
-
+        This file gathers auxiliary functions for simulating the QRM model.
+            1) `sample_stationary_lob`: redraw the volumes from the invariant distribution.
+            2) `choose_next_event`: sample the next event in the LOB.
+            3) `update_LOB`: update the LOB after a mid-price change.
 """
 
 
@@ -70,7 +67,7 @@ def sample_stationary_lob(inv_dist: np.ndarray, depths: np.ndarray):
 # -----------------------------------------------------------------------------
 
 @njit
-def choose_next_event_min(K: int,
+def choose_next_event(K: int,
                           Q: int,
                           rates: np.ndarray,
                           state: np.ndarray, 

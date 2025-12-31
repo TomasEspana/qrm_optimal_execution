@@ -2,27 +2,31 @@ import numpy as np
 from numba import njit
 from math import isnan
 
-from .sampling import choose_next_event_min, update_LOB
+from .sampling import choose_next_event, update_LOB
 
-"""  
-    Simulate the QRM model on [0, time_end] or a maximum number of events in the LOB. All the events are stored in arrays.
-    The function returns the arrays of: 
-        - times
-        - mid prices
-        - reference prices
-        - sides (1: bid, 2: ask)
-        - depths (1 to K) depth of the event (wrt the reference price)
-        - events (1: limit, 2: cancel, 3: market, 4: trader)
-        - redrawns (0: False, 1: True)
-        - states: volumes q_i with format [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK]
 
-    NB:
-        - rate_int_all: intensities. Shape (2, K, Q+1, 3) for (side, depth, queue size, event type). 
-        - time_end: end time of the simulation. 
-        - inv_bid, inv_ask: invariant distributions for bid and ask sides. Shape (K, Q+1). 
-        - max_events_intra: maximum number of events to simulate (preallocation). 
-        - aes: average event size (calibrated on data). Shape (K,). 
 """
+    GENERAL DESCRIPTION:
+
+        Simulate the QRM model on [0, time_end] or a maximum number of events in the LOB. All the events are stored in arrays.
+        The function returns the arrays of: 
+            - times
+            - mid prices
+            - reference prices
+            - sides (1: bid, 2: ask)
+            - depths (1 to K) depth of the event (wrt the reference price)
+            - events (1: limit, 2: cancel, 3: market, 4: trader)
+            - redrawns (0: False, 1: True)
+            - states: volumes q_i with format [q_bid1, q_bid2, ..., q_bidK, q_ask1, q_ask2, ..., q_askK]
+
+        NB:
+            - rate_int_all: intensities. Shape (2, K, Q+1, 3) for (side, depth, queue size, event type). 
+            - time_end: end time of the simulation. 
+            - inv_bid, inv_ask: invariant distributions for bid and ask sides. Shape (K, Q+1). 
+            - max_events_intra: maximum number of events to simulate (preallocation). 
+            - aes: average event size (calibrated on data). Shape (K,). 
+"""
+
 
 @njit
 def simulate_QRM_jit(time: float,
@@ -74,7 +78,7 @@ def simulate_QRM_jit(time: float,
                     idx += 1
 
         # generate next LOB event
-        nb, na, st2, sf, dp, ef, t = choose_next_event_min(K, Q, rates, state, t)
+        nb, na, st2, sf, dp, ef, t = choose_next_event(K, Q, rates, state, t)
         if (isnan(max_nb_events)) and (t > time_end):
             break
         elif (not isnan(max_nb_events)) and (count >= 1*max_nb_events):

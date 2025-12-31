@@ -1,13 +1,13 @@
 import numpy as np
 
 """ 
-GENERAL DESCRIPTION:
+    GENERAL DESCRIPTION:
 
-    Implementation of the benchmark trading strategies: TWAP and POPV.
+        Implementation of the benchmark trading strategies: TWAP and POPV.
 
-    Note: 
-        - TWAP select_action() returns the number of shares to execute at step k.
-        - POPV selection_action() returns the index of the action to execute at step k.
+        Note: 
+            - TWAP select_action() returns the number of shares to execute at step k.
+            - POPV selection_action() returns the index of the action to execute at step k.
 """
     
 class TWAPAgent:

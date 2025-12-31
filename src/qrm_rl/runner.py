@@ -19,6 +19,13 @@ import os
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, POPVAgent
 from qrm_core.intensity import IntensityTable
 
+
+"""
+    GENERAL DESCRIPTION:
+        Runner class to manage training and testing of RL agents in the QRM environment.
+"""
+
+
 class RLRunner:
     def __init__(self, config, load_model_path=None):
 

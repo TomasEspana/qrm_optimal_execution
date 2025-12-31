@@ -3,9 +3,8 @@ import os
 import numpy as np
 
 """ 
-GENERAL DESCRIPTION:
-
-    Set the parameters of a run.
+    GENERAL DESCRIPTION:
+        Set the parameters of a run.
 """
 
 def load_config(theta=None, theta_r=None, time_horizon=None, longest_step=None, nb_steps=None, filename="default.yaml"):
