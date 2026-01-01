@@ -283,11 +283,6 @@ def plot_intra_mean_distance_boxplots(executed, trader_times, run_id=None):
 
 
 
-
-
-
-from itertools import cycle
-
 def plot_overview(
     run_names,
     run_labels,
@@ -301,7 +296,6 @@ def plot_overview(
     save_fig=True
 ):
     non_red_colors = ['C0', 'C1', 'C2', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
-    # --- Load all final_IS and inventory dicts ---
     final_is = {}
     actions = {}
     ddqn_lengths = []

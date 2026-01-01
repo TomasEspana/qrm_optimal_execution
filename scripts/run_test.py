@@ -35,7 +35,7 @@ if __name__ == "__main__":
     ### === DDQN === ###
     runner = RLRunner(config, load_model_path=f'./saved_models/ddqn_{train_run_id}.zip')
     dic, run_id = runner.run(agent_info='DQN')
-    with open(f'./test_data/ddqn_{train_run_id}.pkl', 'wb') as f:
+    with open(f'./results/ddqn_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)
 
     ### === TWAP === ###
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
     runner.agent = agent
     dic, run_id = runner.run()
-    with open(f'./test_data/twap_{train_run_id}.pkl', 'wb') as f:
+    with open(f'./results/twap_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)
 
     ### === POPV === ###
@@ -55,8 +55,8 @@ if __name__ == "__main__":
         runner.agent = agent
         dic, run_id = runner.run()
         if action_idx == 1:
-            with open(f'./test_data/popv{k}_half_{train_run_id}.pkl', 'wb') as f:
+            with open(f'./results/popv{k}_half_{train_run_id}.pkl', 'wb') as f:
                 pickle.dump(dic, f)
         elif action_idx == -1:
-            with open(f'./test_data/popv{k}_{train_run_id}.pkl', 'wb') as f:
+            with open(f'./results/popv{k}_{train_run_id}.pkl', 'wb') as f:
                 pickle.dump(dic, f)
