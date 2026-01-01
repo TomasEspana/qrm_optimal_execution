@@ -104,9 +104,3 @@ Edit `scripts/run_test.py` and set `train_run_id` to the desired run id, then ru
 
 ### Extending the market environment
 Most environment logic lives in `src/qrm_rl/market_environment.py` (state construction, action-to-order mapping, reward, and episode termination). To extend or modify the environment, start there. For example, to add more state features (e.g., a longer LOB history), edit `get_state()` (`src/qrm_rl/market_environment.py`).
-
-
-Arborescence Section: done autmatically ? (Generate the repo “tree” once (local)). 
-
-
-
