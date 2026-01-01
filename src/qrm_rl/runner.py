@@ -11,6 +11,7 @@ from wandb.integration.sb3 import WandbCallback
 from qrm_rl.callbacks import InfoLoggerCallback
 import shap
 import pandas as pd
+import qrm_rl.gym_env
 
 from qrm_rl.agents.benchmark_strategies import TWAPAgent, POPVAgent
 from qrm_core.intensity import IntensityTable
@@ -166,7 +167,7 @@ class RLRunner:
 
             total_steps = self.cfg["total_timesteps"]
             self.model.learn(total_timesteps=total_steps, callback=callback, progress_bar=True)
-            self.model.save(f"./save_model/{self.agent_type}_{self.run_id}.zip")
+            self.model.save(f"./saved_models/{self.agent_type}_{self.run_id}.zip")
             wandb.finish()
 
             if self.agent_type == 'ddqn':

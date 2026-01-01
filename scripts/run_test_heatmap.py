@@ -45,7 +45,7 @@ if __name__ == "__main__":
             
 
             ### === DDQN Agent Testing === ###
-            runner = RLRunner(config, load_model_path=f'/scratch/network/te6653/qrm_optimal_execution/save_model/ddqn_{train_run_id}.zip')
+            runner = RLRunner(config, load_model_path=f'/scratch/network/te6653/qrm_optimal_execution/saved_models/ddqn_{train_run_id}.zip')
             dic, run_id = runner.run(agent_info='DQN')
             mi_rl = np.mean(np.array(dic['final_is']))
 

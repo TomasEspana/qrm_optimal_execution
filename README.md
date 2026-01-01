@@ -97,7 +97,7 @@ The default configuration matches the paper settings (Section 5).
 ### Reproducing the results
 1) **Train**  
 Run `scripts/run_train.py`.  
-This trains the DDQN agent and saves the SB3 model as `save_model/ddqn_{run_id}.zip`. The script also outputs feature-importance diagnostics (input gradients and SHAP).
+This trains the DDQN agent and saves the SB3 model as `saved_models/ddqn_{run_id}.zip`. The script also outputs feature-importance diagnostics (input gradients and SHAP).
 
 2) **Test**  
 Edit `scripts/run_test.py` and set `train_run_id` to the desired run id, then run it. Test outputs are saved as `.pkl` files in `test_data/`.

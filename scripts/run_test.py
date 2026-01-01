@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
 
     ### === DDQN === ###
-    runner = RLRunner(config, load_model_path=f'./save_model/ddqn_{train_run_id}.zip')
+    runner = RLRunner(config, load_model_path=f'./saved_models/ddqn_{train_run_id}.zip')
     dic, run_id = runner.run(agent_info='DQN')
     with open(f'./test_data/ddqn_{train_run_id}.pkl', 'wb') as f:
         pickle.dump(dic, f)

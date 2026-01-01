@@ -2,16 +2,8 @@ import torch
 
 """
     GENERAL DESCRIPTION:
-        Utility functions for saving and loading RL agent models.
+        Utility function for loading RL agent models.
 """
-
-def save_model(agent, path):
-    torch.save({
-        'policy_net': agent.policy_net.state_dict(),
-        'target_net': agent.target_net.state_dict(),
-        'optimizer': agent.optimizer.state_dict()
-    }, path)
-
 
 def load_model(agent, path, test_mode=False):
     if not test_mode:
