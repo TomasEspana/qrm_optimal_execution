@@ -83,11 +83,43 @@ Run the function in `src/qrm_core/invariant_distribution.py` which will create a
 
 ## 🤖 Reinforcement Learning
 
-In its interaction with the market, the RL agent can only buy shares (see the function `step` in `src/qrm_rl/market_environment.py`).
+This repo trains a **Double Deep Q-Network (DDQN)** trading agent using **Stable-Baselines3 `DQN`**. The model is built in `_build_dqn` (`src/qrm_rl/runner.py`)—edit this function to change the **neural network architecture**.
 
-The RL agent is a Double Deep Q-learning agent using the `DQN` function of `Stable-Baselines3`. To see how the agent is built, refer to the function `_build_dqn` in `src/qrm_rl/runner.py`. In particular to modify the neural network architecture. 
+### Environment and actions
+The agent acts on an **evenly spaced trading schedule** over the horizon $[0, T]$. At each decision time, it selects an action that translates into a **buy quantity proportional to the available volume at the best ask**, with the objective of buying a total inventory $X_0$. The agent **only buys** (no selling); see `step()` in `src/qrm_rl/market_environment.py`.
 
-To modify and play with the parameters/configurations, see the `default.yaml` file in `src/qrm_rl/configs`. 
+### Configuration
+All experiment parameters (time horizon, initial inventory, etc.) are in:
+- `src/qrm_rl/configs/default.yaml`
+
+The default configuration matches the paper settings (Section 5).
+
+### Reproducing the results
+1) **Train**  
+Run `scripts/run_train.py`.  
+This trains the DDQN agent and saves the SB3 model as `save_model/ddqn_{run_id}.zip`. The script also outputs feature-importance diagnostics (input gradients and SHAP).
+
+2) **Test**  
+Edit `scripts/run_test.py` and set `train_run_id` to the desired run id, then run it. Test outputs are saved as `.pkl` files in `test_data/`.
+
+### Extending the state space
+To add more state features (e.g., longer LOB history), modify `get_state()` in `src/qrm_rl/market_environment.py`.
+
+
+
+
+The RL agent is a Double Deep Q-learning agent using the `DQN` function of `Stable-Baselines3`. To see how the agent is built, refer to the function `_build_dqn` in `src/qrm_rl/runner.py`. In particular to modify the neural network architecture. The trader (RL agent) is given a schedule (evenly spaced times over time $[0,T]$) in which he has the choice among several actions at each time step. Here the agent can only buy an amount of shares that is proportional to the available volume at the best ask (he has to buy a the total amout $X_0$). In its interaction with the market, the RL agent can only buy shares (see the function `step` in `src/qrm_rl/market_environment.py`).
+
+To modify and play with the parameters/configurations (e.g., time horizon, initial inventory, etc), see the `default.yaml` file in `src/qrm_rl/configs`. 
+
+The default parameters are exactly the same than used in the paper presented in Section 5.
+To reproduce the results yourself, do the following steps:
+
+1) TRAIN: Run `scripts/run_train.py`: this will train the DQN agent and save a ZIP file of the model weights in the folder `save_model`. The file will be called `ddqn_{run_id}.zip`. The python script will also display feature importance infomation (input-gradient and SHAP analysis). 
+
+2) TEST: Open `scripts/run_test.py` and replace the variable `train_run_id` by the correct run id and then run the file. This will save `.pkl` files in the folder `test_data`. 
+
+To extend the state space (e.g., by including more previous LOB observations, see the `get_state()` function in `src/qrm_rl/market_environment.py`). 
 
 
 Arborescence Section: done autmatically ? (Generate the repo “tree” once (local)). 
