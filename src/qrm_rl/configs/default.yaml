@@ -1,27 +1,35 @@
-# Training parameters
+## Training parameters
 agent_type: "DDQN"
-episodes: 100 #260000.  ### MODIFYYYYYYYY
+episodes: 100 #260000 # Number of training episodes (approximation)
 
-# Simulation parameters
-time_horizon: 600 
-trader_time_step: 25 
-initial_inventory: 25
-final_penalty: 1
+## Simulation parameters
+time_horizon: 600      # Time horizon of the execution in seconds (T in the paper)
+trader_time_step: 25   # Time step between two trader decisions in seconds
+initial_inventory: 25  # Number of shares to buy (X_0 in the paper)
+final_penalty: 1       # Penalty coefficient for remaining inventory at final time (α in the paper)
 risk_aversion: 0.
 
-# State space
-state_dim: 5
-history_size: 1
+## State space
+state_dim: 5    # Dimension of the state space. Works with 3, 4 or 5 (see paper for details).
+history_size: 1 # Number of previous LOB observations to include in the state. Works with 1 only.
+# For modifications, see the get_state() function in src/qrm_rl/market_environment.py
 
-# Action space
-actions: [0, 0.5, 1.0]
+## Action space
+actions: [0, 0.5, 1.0] # Possible actions as fraction of available volume at best ask
+# Note: in the paper, we study [0, 0.5, 1.0] and [0, 1.0]. 
 
-# Parameters
-gamma: 0.995
-learning_rate: 0.0001
-n_steps: 1 
+## QRM parameters
+theta: 0.7
+theta_reinit: 0.85
+tick: 0.01               # Tick size
+arrival_price: 100.005   # Initial price of the simulations
 
-# DQN parameters
+## Parameters
+gamma: 0.995           # Discount factor
+learning_rate: 0.0001  # Learning rate 
+n_steps: 1             # Number of steps to use in the n-step TD update
+
+## DQN parameters (see Stable-Baselines3 documentation for details)
 train_freq: 100 
 gradient_steps: 1
 batch_size: 1024
@@ -29,26 +37,21 @@ learning_starts: 10 #40000  ### MODIFYYYYYYYY
 buffer_size: 1000000
 target_update_interval: 1000
 
-# Epsilon greedy
+## Epsilon greedy (see Stable-Baselines3 documentation for details)
 exploration_initial_eps: 1.0
 exploration_final_eps: 0.01 
 exploration_fraction: 0.03
 
-# Normalization parameters (approximation from simulations)
+## Normalization parameters (approximation from simulations)
 price_offset: 0.0177
 price_std: 0.0217 
 vol_offset: 8.356 
 vol_std: 6.446
 
-# QRM parameters
-theta: 0.7
-theta_reinit: 0.85
-tick: 0.01
-arrival_price: 100.005
-
-# Other
-max_events_per_second: 20
-aes: [836, 1068, 1069]
+## Others
+aes: [836, 1068, 1069]    # AES per depth (taken from Huang et al. 2015)
+max_events_per_second: 20 # Upper bound on the number of events per second in the LOB simulation (for numpy size pre-allocation)
+# Note: max_events_per_second depends on the calibrated intensities.
 mode: train
 seed: 42
 logging: True
