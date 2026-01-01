@@ -21,7 +21,7 @@ if __name__ == "__main__":
     config['test_save_memory'] = True
 
     ### ---------------------- ###
-    train_run_id = 'k3631p6d'
+    train_run_id = '5d_state_3d_action' # see saved_models/ for available run ids
     config['episodes'] = 20_000
     ### ---------------------- ###
 
@@ -54,5 +54,9 @@ if __name__ == "__main__":
         agent = POPVAgent(fixed_action=action_idx, modulo=k)
         runner.agent = agent
         dic, run_id = runner.run()
-        with open(f'./test_data/popv{k}_{train_run_id}.pkl', 'wb') as f:
-            pickle.dump(dic, f)
+        if action_idx == 1:
+            with open(f'./test_data/popv{k}_half_{train_run_id}.pkl', 'wb') as f:
+                pickle.dump(dic, f)
+        elif action_idx == -1:
+            with open(f'./test_data/popv{k}_{train_run_id}.pkl', 'wb') as f:
+                pickle.dump(dic, f)
