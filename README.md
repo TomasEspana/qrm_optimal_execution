@@ -109,6 +109,25 @@ Edit `scripts/run_test.py` and set `train_run_id` to the desired run id, then ru
 ### Extending the market environment
 Most environment logic lives in `src/qrm_rl/market_environment.py` (state construction, action-to-order mapping, reward, and episode termination). To extend or modify the environment, start there. For example, to add more state features (e.g., a longer LOB history), edit `get_state()` (`src/qrm_rl/market_environment.py`).
 
+
+## 🗂️ Code structure
+
+```
+.
+├── calibration_data  # QRM order-flow intensites and invariant distributions      
+├── results           # 
+├── saved_models      # trained DQN agents (model weights)
+├── scripts           # 
+└── src               # the package
+    ├── qrm_core      #   QRM LOB simulation 
+    └── qrm_rl        #   RL-QRM interaction 
+        ├── agents    #   benchmark strategies
+        ├── configs   #   experiment parameters  
+```
+
+
+
+
 ## 🔖 Citation
 
 If you find this repository useful in your research, please consider giving a star :star: and a citation
