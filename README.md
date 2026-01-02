@@ -33,7 +33,7 @@ python -m pip install -e .
 
 ## 📊 The Queue-Reactive Model 
 
-The implemented Queue-Reactive Model corresponds to Model I of the paper: [![arXiv](https://img.shields.io/badge/arXiv-1312.0563-b31b1b.svg)](https://arxiv.org/abs/1312.0563)
+The implemented Queue-Reactive Model corresponds to Model I of the paper: [![arXiv](https://img.shields.io/badge/arXiv-1312.0563-b31b1b.svg)](https://arxiv.org/abs/1312.0563) W. Huang, CA Lehalle, M. Rosenbaum (2015)
 
 ### 1. Quick Guide 
 
@@ -95,12 +95,28 @@ All experiment parameters (time horizon, initial inventory, etc.) are in:
 The default configuration matches the paper settings (Section 5).
 
 ### Reproducing the results
+
+See `notebooks/main.ipynb` (Section II) to reproduce the figures of the paper. The model weights are saved in `saved_models/` and the corresponding test results in `results/`.
+
+### Train and test your own model
 1) **Train**  
 Run `scripts/run_train.py`.  
-This trains the DDQN agent and saves the SB3 model as `saved_models/ddqn_{run_id}.zip`. The script also outputs feature-importance diagnostics (input gradients and SHAP).
+This trains the DDQN agent and saves the SB3 model as `saved_models/ddqn_{train_run_id}.zip` (`train_run_id` is automatically created by WandB). The script also outputs feature-importance diagnostics (input gradients and SHAP).
 
 2) **Test**  
-Edit `scripts/run_test.py` and set `train_run_id` to the desired run id, then run it. Test outputs are saved as `.pkl` files in `results/`.
+Edit `scripts/run_test.py` and set `train_run_id` to the desired run id, then run it. Test outputs are saved as `.pkl` files in `results/`. Use the notebook code to create the figures.
 
 ### Extending the market environment
 Most environment logic lives in `src/qrm_rl/market_environment.py` (state construction, action-to-order mapping, reward, and episode termination). To extend or modify the environment, start there. For example, to add more state features (e.g., a longer LOB history), edit `get_state()` (`src/qrm_rl/market_environment.py`).
+
+## 🔖 Citation
+
+If you find this repository useful in your research, please consider giving a star :star: and a citation
+```bibtex
+@article{espana2025reinforcement,
+  title={Reinforcement Learning in Queue-Reactive Models: Application to Optimal Execution},
+  author={Espana, Tomas and Hafsi, Yadh and Lillo, Fabrizio and Vittori, Edoardo},
+  journal={arXiv preprint arXiv:2511.15262},
+  year={2025}
+}
+```
