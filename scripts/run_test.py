@@ -1,7 +1,7 @@
 import pickle 
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))) 
 
 from qrm_rl.configs.config import load_config
 from qrm_rl.runner import RLRunner
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     agent = TWAPAgent(time_horizon=th, initial_inventory=ii, trader_time_step=tts)
     runner.agent = agent
     dic, run_id = runner.run()
-    with open(f'./results/twap_{train_run_id}.pkl', 'wb') as f:
+    with open(f'./results/twap.pkl', 'wb') as f:
         pickle.dump(dic, f)
 
     ### === POPV === ###
@@ -55,8 +55,8 @@ if __name__ == "__main__":
         runner.agent = agent
         dic, run_id = runner.run()
         if action_idx == 1:
-            with open(f'./results/popv{k}_half_{train_run_id}.pkl', 'wb') as f:
+            with open(f'./results/popv{k}_half.pkl', 'wb') as f:
                 pickle.dump(dic, f)
-        elif action_idx == -1:
-            with open(f'./results/popv{k}_{train_run_id}.pkl', 'wb') as f:
+        elif action_idx == -1: # buy 100%
+            with open(f'./results/popv{k}.pkl', 'wb') as f:
                 pickle.dump(dic, f)
