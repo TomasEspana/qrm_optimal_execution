@@ -115,17 +115,15 @@ Most environment logic lives in `src/qrm_rl/market_environment.py` (state constr
 ```
 .
 ├── calibration_data  # QRM order-flow intensites and invariant distributions      
-├── results           # 
+├── results           # saved test metrics to reproduce the paper figures 
 ├── saved_models      # trained DQN agents (model weights)
-├── scripts           # 
+├── scripts           # train and evaluate the RL agent
 └── src               # the package
-    ├── qrm_core      #   QRM LOB simulation 
-    └── qrm_rl        #   RL-QRM interaction 
-        ├── agents    #   benchmark strategies
-        ├── configs   #   experiment parameters  
+    ├── qrm_core      #    QRM LOB simulation 
+    └── qrm_rl        #    RL-QRM interaction 
+        ├── agents    #    benchmark strategies
+        ├── configs   #    experiment parameters  
 ```
-
-
 
 
 ## 🔖 Citation
